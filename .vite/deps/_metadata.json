@@ -1,0 +1,44 @@
+{
+  "hash": "08b7a67b",
+  "configHash": "8356606c",
+  "lockfileHash": "0b10b951",
+  "browserHash": "ea373061",
+  "optimized": {
+    "heic2any": {
+      "src": "../../node_modules/heic2any/dist/heic2any.js",
+      "file": "heic2any.js",
+      "fileHash": "f1b23ecc",
+      "needsInterop": true
+    },
+    "jszip": {
+      "src": "../../node_modules/jszip/dist/jszip.min.js",
+      "file": "jszip.js",
+      "fileHash": "fc0b8b66",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "010b5651",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "f12570fe",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "871f4995",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk--pCwnCzo": {
+      "file": "chunk--pCwnCzo.js",
+      "isDynamicEntry": false
+    }
+  }
+}
