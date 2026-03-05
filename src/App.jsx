@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import AnimatedRecorder from "./AnimatedRecorder";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -1271,17 +1270,17 @@ function LoginPage({ onLogin, loading }) {
     window.addEventListener("resize", onResize);
 
     // ── Particles ──────────────────────────────────────────────
-    const COUNT = 180;
+    const COUNT = 260;
     const particles = Array.from({ length: COUNT }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
       z: Math.random() * 3 + 0.2,      // depth 0.2–3.2
-      vx: (Math.random() - 0.5) * 0.12,
-      vy: (Math.random() - 0.5) * 0.12,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
       r: Math.random() * 1.8 + 0.3,
       alpha: Math.random() * 0.6 + 0.15,
       pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.005 + Math.random() * 0.012,
+      pulseSpeed: 0.008 + Math.random() * 0.022,
       color: Math.random() > 0.8
         ? `rgba(91,79,255,`     // purple accent ~20%
         : Math.random() > 0.5
@@ -1294,8 +1293,8 @@ function LoginPage({ onLogin, loading }) {
       x: Math.random() * W,
       y: Math.random() * H,
       r: 60 + Math.random() * 120,
-      vx: (Math.random() - 0.5) * 0.04,
-      vy: (Math.random() - 0.5) * 0.04,
+      vx: (Math.random() - 0.5) * 0.09,
+      vy: (Math.random() - 0.5) * 0.09,
       color: Math.random() > 0.5 ? "26,130,255" : "91,79,255",
       alpha: 0.025 + Math.random() * 0.035,
     }));
@@ -1878,6 +1877,7 @@ export default function App() {
             .then(user => {
               sessionStorage.setItem("lp_authed", "1");
               sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
+              sessionStorage.setItem("lp_gtoken", resp.access_token);
               setAuthed(true);
               resolve();
             })
@@ -2108,8 +2108,10 @@ export default function App() {
   };
 
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [allPreviews, setAllPreviews] = useState([]); // [{name, url}]
+  const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
-  const [gmailToken, setGmailToken] = useState(null);
+  const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
   const [editingDomain, setEditingDomain] = useState({}); // { [id]: draftString }
   const [editingContact, setEditingContact] = useState(null); // { id, name, email }
 
@@ -2122,10 +2124,23 @@ export default function App() {
 
   const showPreview = () => {
     if (!baseImageRef.current) return;
-    const first = companies.find(c => c.status === "ok");
     const { w, h } = canvasSizeRef.current;
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first?.personName || "Jordan", first?.companyName || "Stratton Oakmont", first?.logoEl || null, canvasBg);
-    off.toBlob(blob => setPreviewUrl(URL.createObjectURL(blob)));
+    const ready = companies.filter(c => c.status === "ok");
+    const targets = ready.length > 0 ? ready : [{ personName: "Jordan", companyName: "Stratton Oakmont", logoEl: null }];
+    const previews = [];
+    let done = 0;
+    targets.forEach((comp, i) => {
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, canvasBg);
+      off.toBlob(blob => {
+        previews[i] = { name: comp.companyName || "Forhandsgranskning", url: URL.createObjectURL(blob) };
+        done++;
+        if (done === targets.length) {
+          setAllPreviews(previews);
+          setPreviewIdx(0);
+          setPreviewUrl(previews[0].url);
+        }
+      });
+    });
   };
 
   const onMouseDown = (e) => {
@@ -2214,7 +2229,6 @@ export default function App() {
         <div className="mode-tabs">
           <button className={`mode-tab${mode === "bild" ? " active" : ""}`} onClick={() => setMode("bild")}>Bild</button>
           <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>Video</button>
-          <button className={`mode-tab${mode === "animate" ? " active" : ""}`} onClick={() => setMode("animate")}>Animera</button>
         </div>
 
         {mode === "video" && <VideoMode
@@ -2227,17 +2241,7 @@ export default function App() {
             textLayers, symbols
           } : null}
         />}
-        {mode === "animate" && (
-          <AnimatedRecorder
-            renderIngredients={hasImage && baseImageRef.current ? {
-              baseImg: baseImageRef.current,
-              logoInstances, myLogoEl, myLogoPos, myLogoSize,
-              w: canvasSizeRef.current.w, h: canvasSizeRef.current.h,
-              textLayers, symbols
-            } : null}
-            companies={companies}
-          />
-        )}
+
         {mode === "bild" && <div className="workspace">
           <div className="sidebar">
 
@@ -2534,17 +2538,67 @@ export default function App() {
 
         {toast && <div className="toast">{toast}</div>}
 
-        {/* Image preview modal */}
+        {/* Preview gallery modal */}
         {previewUrl && (
-          <div onClick={() => setPreviewUrl(null)} style={{
-            position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:1000,
+          <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} style={{
+            position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,
             display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"
           }}>
-            <div onClick={e => e.stopPropagation()} style={{position:"relative",maxWidth:"90vw",maxHeight:"90vh",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-              <img src={previewUrl} style={{maxWidth:"90vw",maxHeight:"82vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.6)"}} alt="Förhandsgranskning" />
+            <div onClick={e => e.stopPropagation()} style={{
+              display:"flex",flexDirection:"column",alignItems:"center",gap:14,
+              maxWidth:"92vw", maxHeight:"96vh",
+            }}>
+              {/* Company name + counter */}
+              <div style={{display:"flex",alignItems:"center",gap:16}}>
+                <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>
+                  {allPreviews[previewIdx]?.name}
+                </span>
+                {allPreviews.length > 1 && (
+                  <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>
+                    {previewIdx+1} / {allPreviews.length}
+                  </span>
+                )}
+              </div>
+
+              {/* Image */}
+              <img src={allPreviews[previewIdx]?.url || previewUrl}
+                style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}}
+                alt="Forhandsgranskning" />
+
+              {/* Thumbnail strip */}
+              {allPreviews.length > 1 && (
+                <div style={{display:"flex",gap:8,overflowX:"auto",maxWidth:"88vw",padding:"4px 0"}}>
+                  {allPreviews.map((p,i) => (
+                    <img key={i} src={p.url} alt={p.name}
+                      onClick={() => setPreviewIdx(i)}
+                      style={{
+                        width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",
+                        border: i===previewIdx ? "2px solid var(--blue)" : "2px solid transparent",
+                        opacity: i===previewIdx ? 1 : 0.55, transition:"all .15s",
+                      }} />
+                  ))}
+                </div>
+              )}
+
+              {/* Buttons */}
               <div style={{display:"flex",gap:8}}>
-                <button onClick={() => setPreviewUrl(null)} className="btn-s">Stäng</button>
-                <button onClick={() => { const a=document.createElement("a");a.href=previewUrl;a.download="forhandsvisning.png";a.click(); }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Ladda ner</button>
+                {allPreviews.length > 1 && (
+                  <>
+                    <button className="btn-s"
+                      onClick={() => setPreviewIdx(i => Math.max(i-1,0))}
+                      disabled={previewIdx===0}>Forra</button>
+                    <button className="btn-s"
+                      onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))}
+                      disabled={previewIdx===allPreviews.length-1}>Nasta</button>
+                  </>
+                )}
+                <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Stang</button>
+                <button onClick={() => {
+                  const a=document.createElement("a");
+                  a.href=allPreviews[previewIdx]?.url||previewUrl;
+                  a.download=`${allPreviews[previewIdx]?.name||"forhandsvisning"}.png`;
+                  a.click();
+                }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Ladda ner</button>
               </div>
             </div>
           </div>
@@ -2555,7 +2609,7 @@ export default function App() {
             companies={companies}
             getImageBlob={getImageBlob}
             sharedToken={gmailToken}
-            onTokenAcquired={t => setGmailToken(t)}
+            onTokenAcquired={t => { setGmailToken(t); sessionStorage.setItem("lp_gtoken", t); }}
             onClose={() => setShowSendModal(false)}
           />
         )}
