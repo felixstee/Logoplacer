@@ -115,117 +115,144 @@ function HeroScene() {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0, 0);
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 200);
-    camera.position.set(0, 2, 14);
+    camera.position.set(0, 0, 16);
 
-    // Lights for glass effect
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const pt1 = new THREE.PointLight(0x88bbff, 3, 40); pt1.position.set(6, 8, 6); scene.add(pt1);
-    const pt2 = new THREE.PointLight(0xbbccff, 2, 40); pt2.position.set(-6, -4, -4); scene.add(pt2);
-    const pt3 = new THREE.PointLight(0xffffff, 1.5, 30); pt3.position.set(0, -6, 8); scene.add(pt3);
+    // Lights for glass
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const pl1 = new THREE.PointLight(0xaaccff, 4, 50); pl1.position.set(8, 10, 8); scene.add(pl1);
+    const pl2 = new THREE.PointLight(0xccddff, 3, 50); pl2.position.set(-8, -6, -4); scene.add(pl2);
+    const pl3 = new THREE.PointLight(0xffffff, 2, 30); pl3.position.set(0, -8, 10); scene.add(pl3);
 
-    // Glass material factory
-    const glassMat = (opacity = 0.18, color = 0xaaccff) => new THREE.MeshPhongMaterial({
-      color, emissive: 0x1133aa, emissiveIntensity: 0.06,
-      specular: 0xffffff, shininess: 120,
+    const glassMat = (opacity = 0.18) => new THREE.MeshPhongMaterial({
+      color: 0xddeeff, emissive: 0x0a1a3a, emissiveIntensity: 0.04,
+      specular: 0xffffff, shininess: 180,
       transparent: true, opacity, side: THREE.DoubleSide,
     });
-    const wireGlass = (color = 0xaaccff, opacity = 0.35) => new THREE.LineBasicMaterial({
-      color, transparent: true, opacity,
-    });
+    const wireMat = () => new THREE.LineBasicMaterial({ color: 0x99bbdd, transparent: true, opacity: 0.5 });
 
-    // ── Central floating frame (product mockup) ────────────────
-    const frameGeo = new THREE.BoxGeometry(7, 4.5, 0.1);
-    const frame = new THREE.Mesh(frameGeo, glassMat(0.12, 0xddeeff));
-    frame.add(new THREE.LineSegments(new THREE.EdgesGeometry(frameGeo), wireGlass(0x99ccff, 0.5)));
-    scene.add(frame);
+    // ── Email envelope function ───────────────────────────────────
+    const makeEnvelope = (size = 1) => {
+      const group = new THREE.Group();
+      // Body — flat box
+      const bodyGeo = new THREE.BoxGeometry(size * 1.4, size, size * 0.12);
+      const body = new THREE.Mesh(bodyGeo, glassMat(0.2));
+      body.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo), wireMat()));
+      group.add(body);
+      // Flap — two triangles forming a V on front face
+      const flapPts = [
+        new THREE.Vector3(-size*0.7, size*0.5, 0.07),
+        new THREE.Vector3(0, 0, 0.07),
+        new THREE.Vector3(size*0.7, size*0.5, 0.07),
+      ];
+      const flapGeo = new THREE.BufferGeometry().setFromPoints(flapPts);
+      group.add(new THREE.Line(flapGeo, wireMat()));
+      // Bottom triangle
+      const bot = [
+        new THREE.Vector3(-size*0.7, -size*0.5, 0.07),
+        new THREE.Vector3(0, 0.1, 0.07),
+        new THREE.Vector3(size*0.7, -size*0.5, 0.07),
+      ];
+      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(bot), wireMat()));
+      return group;
+    };
 
-    // Inner grid on frame
-    for (let i = -3; i <= 3; i++) {
-      const lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i*1.1,2.2,0.06), new THREE.Vector3(i*1.1,-2.2,0.06)]);
-      frame.add(new THREE.Line(lg, wireGlass(0x88aadd, 0.12)));
-      const lg2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-3.4,i*0.7,0.06), new THREE.Vector3(3.4,i*0.7,0.06)]);
-      frame.add(new THREE.Line(lg2, wireGlass(0x88aadd, 0.12)));
-    }
-
-    // ── Glass geometries floating around ──────────────────────
-    const shapes = [];
-    const geoList = [
-      new THREE.IcosahedronGeometry(0.55, 0),
-      new THREE.OctahedronGeometry(0.55, 0),
-      new THREE.BoxGeometry(0.7, 0.7, 0.7),
-      new THREE.TetrahedronGeometry(0.6, 0),
-      new THREE.DodecahedronGeometry(0.5, 0),
-      new THREE.BoxGeometry(0.4, 0.4, 0.4),
+    // ── Spread envelopes through scene ────────────────────────────
+    const envelopes = [];
+    const positions = [
+      [-5.5, 2.8, 1], [5.2, 3, 0.5], [-4, -2.5, 2],
+      [4.5, -2.2, 1.5], [0.5, 4.2, -1], [-2, -4.2, 0.5],
+      [6.5, 0.5, -1], [-6, 0, 0], [2.5, -1, 3],
+      [-3, 3.5, -2], [3.5, 2, -2.5], [-1, -1.5, 4],
     ];
-    const positions = [[-4.8,1.8,1.5],[4.6,2,1],[- 3.8,-1.6,2],[4,-1.8,1.8],[0.5,3.4,0.5],[-1.2,-3.2,1.2]];
+    const sizes = [0.55, 0.7, 0.45, 0.65, 0.5, 0.6, 0.4, 0.72, 0.48, 0.55, 0.62, 0.38];
 
     positions.forEach((pos, i) => {
-      const geo = geoList[i % geoList.length];
-      const mesh = new THREE.Mesh(geo, glassMat(0.2 + i*0.02, 0xccddff));
-      mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), wireGlass(0xaaccff, 0.7)));
-      mesh.position.set(...pos);
-      mesh.userData.baseY = pos[1];
-      mesh.userData.phase = i * 1.1;
-      mesh.userData.floatSpeed = 0.35 + i * 0.07;
-      mesh.userData.rotX = (Math.random()-.5)*0.015;
-      mesh.userData.rotY = (Math.random()-.5)*0.018;
-      scene.add(mesh);
-      shapes.push(mesh);
+      const env = makeEnvelope(sizes[i]);
+      env.position.set(...pos);
+      env.rotation.set(
+        (Math.random() - 0.5) * 0.6,
+        (Math.random() - 0.5) * 0.8,
+        (Math.random() - 0.5) * 0.4
+      );
+      env.userData.baseY = pos[1];
+      env.userData.phase = i * 0.55;
+      env.userData.floatSpeed = 0.28 + i * 0.04;
+      env.userData.rotSpeed = { x: (Math.random()-.5)*0.006, y: (Math.random()-.5)*0.008 };
+      scene.add(env);
+      envelopes.push(env);
     });
 
-    // ── Torus ring ─────────────────────────────────────────────
-    const ringGeo = new THREE.TorusGeometry(6.5, 0.03, 8, 90);
-    const ring = new THREE.Mesh(ringGeo, glassMat(0.25, 0xbbddff));
+    // ── Central floating "@ " orb ────────────────────────────────
+    const orbGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    const orbMat = new THREE.MeshPhongMaterial({ color: 0xaaccff, transparent: true, opacity: 0.6, specular: 0xffffff, shininess: 200 });
+
+    // Orbit ring
+    const ringGeo = new THREE.TorusGeometry(7.5, 0.02, 6, 80);
+    const ring = new THREE.Mesh(ringGeo, glassMat(0.2));
     ring.rotation.x = Math.PI / 3.5;
     scene.add(ring);
 
-    const ring2Geo = new THREE.TorusGeometry(9, 0.018, 8, 120);
-    const ring2 = new THREE.Mesh(ring2Geo, glassMat(0.15, 0xaabbdd));
+    const ring2Geo = new THREE.TorusGeometry(10.5, 0.015, 6, 100);
+    const ring2 = new THREE.Mesh(ring2Geo, glassMat(0.12));
     ring2.rotation.x = Math.PI / 6; ring2.rotation.y = Math.PI / 5;
     scene.add(ring2);
 
-    // ── Particles ──────────────────────────────────────────────
-    const pCount = 260;
+    // Orbit dots
+    const orbitDots = Array.from({length: 5}, () => {
+      const m = new THREE.Mesh(orbGeo, orbMat.clone());
+      scene.add(m); return m;
+    });
+
+    // Particles
+    const pCount = 300;
     const pPos = new Float32Array(pCount * 3);
     for (let i = 0; i < pCount * 3; i += 3) {
-      pPos[i] = (Math.random()-.5)*32; pPos[i+1] = (Math.random()-.5)*22; pPos[i+2] = (Math.random()-.5)*18;
+      pPos[i]=(Math.random()-.5)*36; pPos[i+1]=(Math.random()-.5)*24; pPos[i+2]=(Math.random()-.5)*20;
     }
     const pGeo = new THREE.BufferGeometry();
     pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
-    scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x7799cc, size: 0.055, transparent: true, opacity: 0.45 })));
+    scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x5577aa, size: 0.05, transparent: true, opacity: 0.4 })));
 
-    // Mouse
-    const onMouse = (e) => { mouseRef.current = { x: (e.clientX/window.innerWidth-.5)*2, y: (e.clientY/window.innerHeight-.5)*2 }; };
+    const onMouse = (e) => {
+      mouseRef.current = { x: (e.clientX/window.innerWidth-.5)*2, y: (e.clientY/window.innerHeight-.5)*2 };
+    };
     window.addEventListener("mousemove", onMouse);
-    const onResize = () => { W=el.clientWidth; H=el.clientHeight; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H); };
+
+    const onResize = () => {
+      W=el.clientWidth; H=el.clientHeight;
+      camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H);
+    };
     window.addEventListener("resize", onResize);
 
-    let raf, t = 0;
+    let raf; let t = 0;
     const animate = () => {
-      raf = requestAnimationFrame(animate); t += 0.011;
+      raf = requestAnimationFrame(animate); t += 0.01;
       const mx = mouseRef.current.x, my = mouseRef.current.y;
 
-      frame.position.y = Math.sin(t * 0.45) * 0.2;
-      frame.rotation.y = Math.sin(t * 0.28) * 0.05 + mx * 0.035;
-      frame.rotation.x = -my * 0.025;
-
-      shapes.forEach(s => {
-        s.rotation.x += s.userData.rotX;
-        s.rotation.y += s.userData.rotY;
-        s.position.y = s.userData.baseY + Math.sin(t * s.userData.floatSpeed + s.userData.phase) * 0.45;
+      envelopes.forEach((env, i) => {
+        env.rotation.x += env.userData.rotSpeed.x + my * 0.001;
+        env.rotation.y += env.userData.rotSpeed.y + mx * 0.001;
+        env.position.y = env.userData.baseY + Math.sin(t * env.userData.floatSpeed + env.userData.phase) * 0.5;
       });
 
-      ring.rotation.z += 0.0025;
-      ring2.rotation.z -= 0.0018; ring2.rotation.y += 0.001;
+      ring.rotation.z  += 0.002;
+      ring2.rotation.z -= 0.0015; ring2.rotation.y += 0.001;
 
-      camera.position.x += (mx * 1.4 - camera.position.x) * 0.035;
-      camera.position.y += (-my * 0.9 + 2 - camera.position.y) * 0.035;
-      camera.lookAt(0, 0.5, 0);
+      orbitDots.forEach((dot, i) => {
+        const angle = t * 0.8 + i * (Math.PI * 2 / 5);
+        dot.position.x = Math.cos(angle) * 7.5;
+        dot.position.y = Math.sin(angle) * 7.5 * Math.sin(Math.PI / 3.5);
+        dot.position.z = Math.sin(angle) * 7.5 * Math.cos(Math.PI / 3.5);
+      });
+
+      camera.position.x += (mx * 1.8 - camera.position.x) * 0.04;
+      camera.position.y += (-my * 1.2 - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
       renderer.render(scene, camera);
     };
     animate();
@@ -693,17 +720,32 @@ function LiveDemo() {
     if (!company.trim()) { setLogoEl(null); setAccentColor(null); return; }
     debounceRef.current = setTimeout(async () => {
       setFetching(true);
-      try {
-        const domain = company.toLowerCase().replace(/\s+/g, "") + ".com";
-        const res = await fetch(`/.netlify/functions/logo?domain=${encodeURIComponent(domain)}`);
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const img = new Image();
-          img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
-          img.src = url;
-        } else { setLogoEl(null); setFetching(false); }
-      } catch { setLogoEl(null); setFetching(false); }
+      // Try .com first, then .se, then exact input as domain
+      const input = company.trim();
+      const isUrl = input.includes(".");
+      const candidates = isUrl
+        ? [input.replace(/^https?:\/\//, "").replace(/\/.*$/, "")]
+        : [
+            input.toLowerCase().replace(/\s+/g,"") + ".com",
+            input.toLowerCase().replace(/\s+/g,"") + ".se",
+            input.toLowerCase().replace(/\s+/g,"") + ".io",
+          ];
+      let found = false;
+      for (const domain of candidates) {
+        try {
+          const res = await fetch(`/.netlify/functions/logo?domain=${encodeURIComponent(domain)}`);
+          if (res.ok) {
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
+            img.src = url;
+            found = true;
+            break;
+          }
+        } catch {}
+      }
+      if (!found) { setLogoEl(null); setFetching(false); }
     }, 700);
   }, [company]);
 
@@ -801,7 +843,7 @@ function LiveDemo() {
           </div>
 
           {[
-            { label: "Company", placeholder: "e.g. Spotify", val: company, set: setCompany, type: "text" },
+            { label: "Company", placeholder: "e.g. Hooli", val: company, set: setCompany, type: "text" },
             { label: "Name",    placeholder: "e.g. Marcus",  val: name,    set: setName,    type: "text" },
             { label: "Email",   placeholder: "marcus@co.com",val: email,   set: setEmail,   type: "email" },
           ].map(({ label, placeholder, val, set, type }) => (
@@ -895,11 +937,11 @@ const DEMO_STEPS = [
     desc: "Drop in company names and contacts. Logoplacers auto-fetches every logo simultaneously.",
     tag: "Step 2",
     leads: [
-      { company: "Klarna",    name: "Emma Svensson",  email: "emma@klarna.com",    status: "ok" },
-      { company: "Spotify",   name: "Marcus Berg",    email: "marcus@spotify.com", status: "ok" },
-      { company: "Bolt",      name: "Sofia Lindgren", email: "sofia@bolt.eu",      status: "ok" },
-      { company: "Revolut",   name: "Erik Hansson",   email: "erik@revolut.com",   status: "ok" },
-      { company: "Northvolt", name: "Anna Karlsson",  email: "anna@northvolt.com", status: "ok" },
+      { company: "Pied Piper",    name: "Jared Dunn",  email: "jared@piedpiper.com",    status: "ok" },
+      { company: "Hooli",   name: "Gavin Belson",    email: "gavin@hooli.com", status: "ok" },
+      { company: "Aviato",      name: "Erlich Bachman", email: "erlich@aviato.com",      status: "ok" },
+      { company: "Initech",   name: "Michael Bolton",   email: "michael@initech.com",   status: "ok" },
+      { company: "Globodyne", name: "Richard Hendricks",  email: "richard@globodyne.com", status: "ok" },
     ],
   },
   {
@@ -911,6 +953,11 @@ const DEMO_STEPS = [
     title: "Export or send via Gmail",
     desc: "Download all 100 demos as a ZIP, or send directly from Gmail with one click — with anti-spam delays built in.",
     tag: "Step 4",
+  },
+  {
+    title: "Video demos with website screenshots",
+    desc: "Record a product walkthrough video, add a website screenshot of your prospect's site, and generate a personalised .webm video per company — automatically.",
+    tag: "Bonus",
   },
 ];
 
@@ -1088,9 +1135,9 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.fillStyle="#e2e8f0"; ctx.fillRect(260,150,W-280,1);
 
       ctx.fillStyle="#0f172a"; ctx.font="bold 13px 'DM Sans',sans-serif";
-      ctx.fillText("Demo — Klarna",275,120);
+      ctx.fillText("Demo — Pied Piper",275,120);
       ctx.fillStyle="#64748b"; ctx.font="10px 'DM Sans',sans-serif";
-      ctx.fillText("Hi Emma, here's what Klarna could look like in your workflow",275,137);
+      ctx.fillText("Hi Jared, here's what Pied Piper could look like in your workflow",275,137);
 
       // Sidebar controls
       ctx.fillStyle="#f8fafc"; rr(260,152,160,H-164,8); ctx.fill();
@@ -1103,7 +1150,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
         ctx.fillStyle="rgba(0,0,0,0.06)"; rr(270,ly+6,146,36,6); ctx.fill();
         ctx.strokeStyle="rgba(0,0,0,0.08)"; ctx.lineWidth=1; ctx.stroke();
         if(i===0){ ctx.fillStyle="#334155"; ctx.font="11px sans-serif"; ctx.fillText("Hi Emma, see how...",278,ly+28); }
-        if(i===1){ ctx.fillStyle="#1d4ed8"; ctx.font="600 11px sans-serif"; ctx.fillText("Klarna logo ✓",278,ly+28); }
+        if(i===1){ ctx.fillStyle="#1d4ed8"; ctx.font="600 11px sans-serif"; ctx.fillText("Pied Piper logo ✓",278,ly+28); }
         if(i===2){
           ctx.fillStyle="#3b82f6"; rr(270,ly+20,80,8,4); ctx.fill();
           ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(350,ly+24,5,0,Math.PI*2); ctx.fill();
@@ -1127,12 +1174,12 @@ function DemoCanvas({ step, activeLeadIdx }) {
         ctx.fillStyle="#0f172a"; ctx.font="bold 18px sans-serif"; ctx.fillText(w.v,wx+9,wy+42);
       });
 
-      // Logo (Klarna pink placeholder)
+      // Logo (Pied Piper pink placeholder)
       ctx.fillStyle="rgba(255,20,100,0.12)"; ctx.strokeStyle="rgba(255,20,100,0.4)";
       ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
       rr(436,238,72,44,8); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle="#e0115f"; ctx.font="bold 11px sans-serif";
-      ctx.textAlign="center"; ctx.fillText("Klarna",472,264); ctx.textAlign="left";
+      ctx.textAlign="center"; ctx.fillText("Pied Piper",472,264); ctx.textAlign="left";
       // Drag handles
       [[436,238],[508,238],[436,282],[508,282]].forEach(([hx,hy]) => {
         ctx.fillStyle="#3b82f6"; ctx.fillRect(hx-3,hy-3,6,6);
@@ -1140,9 +1187,9 @@ function DemoCanvas({ step, activeLeadIdx }) {
 
       // Text layer
       ctx.fillStyle="#1e293b"; ctx.font="bold 12px 'DM Sans',sans-serif";
-      ctx.fillText("Hi Emma — see Klarna's data",436,310);
+      ctx.fillText("Hi Jared — see Pied Piper's data",436,310);
       ctx.fillStyle="#64748b"; ctx.font="10px 'DM Sans',sans-serif";
-      ctx.fillText("Personalised for emma@klarna.com",436,326);
+      ctx.fillText("Personalised for jared@piedpiper.com",436,326);
     }
 
     if (step === 3) {
@@ -1150,7 +1197,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.fillStyle="#0a1020"; ctx.fillRect(0,88,W,H-88);
 
       // Generated demos grid
-      const demoCompanies = ["Klarna","Spotify","Bolt","Revolut","Northvolt","Wise","Skyscanner","iZettle"];
+      const demoCompanies = ["Pied Piper","Hooli","Aviato","Initech","Globodyne","Vandelay","Dinoco","Bluth Co"];
       const cols=4, rows=2, dw=Math.floor((W-32)/cols)-10, dh=Math.floor((H-140)/rows)-10;
       demoCompanies.slice(0,cols*rows).forEach((co,i) => {
         const col=i%cols, row=Math.floor(i/cols);
@@ -1164,7 +1211,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
         ctx.fillText(`Demo — ${co}`,dx+6,dy+14);
 
         // Fake logo blob
-        const colors={"Klarna":"#e0115f","Spotify":"#1db954","Bolt":"#34d399","Revolut":"#0666eb","Northvolt":"#f59e0b","Wise":"#9ece6a","Skyscanner":"#00b9f1","iZettle":"#ee3124"};
+        const colors={"Pied Piper":"#1a82ff","Hooli":"#ff6b35","Aviato":"#f59e0b","Initech":"#10b981","Globodyne":"#8b5cf6","Vandelay":"#e0115f","Dinoco":"#0099ff","Bluth Co":"#f97316"};
         ctx.fillStyle=colors[co]||"#3b82f6"; rr(dx+dw-44,dy+26,36,22,5); ctx.fill();
         ctx.fillStyle="#fff"; ctx.font="bold 8px sans-serif";
         ctx.textAlign="center"; ctx.fillText(co.slice(0,3),dx+dw-26,dy+41); ctx.textAlign="left";
@@ -1197,6 +1244,181 @@ function DemoCanvas({ step, activeLeadIdx }) {
         ctx.fillStyle=tx; ctx.font="600 11px 'DM Sans',sans-serif";
         ctx.textAlign="center"; ctx.fillText(label,bx+60,H-26); ctx.textAlign="left";
       });
+    }
+
+    if (step === 4) {
+      // Step 5: Video demo with website screenshot
+      ctx.fillStyle="#0f1520"; ctx.fillRect(0,0,W,H);
+
+      // App header
+      ctx.fillStyle="#141e30"; ctx.fillRect(0,0,W,52);
+      ctx.fillStyle="rgba(26,130,255,0.4)"; ctx.fillRect(0,51,W,1);
+      ctx.fillStyle="#1a82ff"; rr(16,14,26,26,7); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="bold 10px sans-serif"; ctx.textAlign="center";
+      ctx.fillText("LP",29,31); ctx.textAlign="left";
+      ctx.fillStyle="#fff"; ctx.font="bold 13px 'DM Sans',sans-serif"; ctx.fillText("LogoPlacer",50,28);
+      ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.font="10px 'DM Sans',sans-serif"; ctx.fillText("Personalised demos",50,41);
+      // Buttons
+      [["Preview","rgba(255,255,255,0.08)","rgba(255,255,255,0.6)",W-310],
+       ["Send","rgba(255,255,255,0.08)","rgba(255,255,255,0.6)",W-210],
+       ["Download (5)","#1a82ff","#fff",W-120]].forEach(([lbl,bg,tc,bx])=>{
+        ctx.fillStyle=bg; rr(bx,16,102,22,6); ctx.fill();
+        ctx.fillStyle=tc; ctx.font="600 10px 'DM Sans',sans-serif"; ctx.textAlign="center";
+        ctx.fillText(lbl,bx+51,31); ctx.textAlign="left";
+      });
+
+      // Tabs
+      ctx.fillStyle="#141e30"; ctx.fillRect(0,52,W,34);
+      ["Image","Video"].forEach((t,i)=>{
+        ctx.fillStyle=i===1?"#fff":"rgba(255,255,255,0.3)";
+        ctx.font=i===1?"600 13px 'DM Sans',sans-serif":"13px 'DM Sans',sans-serif";
+        ctx.textAlign="center"; ctx.fillText(t,i===0?W*0.27:W*0.73,73); ctx.textAlign="left";
+        if(i===1){ ctx.fillStyle="#1a82ff"; ctx.fillRect(W*0.73-30,84,60,2); }
+      });
+      ctx.fillStyle="rgba(26,130,255,0.4)"; ctx.fillRect(0,86,W,1);
+
+      // Sidebar
+      ctx.fillStyle="#141e30"; ctx.fillRect(0,87,240,H-87);
+      ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.fillRect(240,87,1,H-87);
+
+      // YOUR VIDEO label + upload zone
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.fillText("YOUR VIDEO",16,108);
+      ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.strokeStyle="rgba(255,255,255,0.12)";
+      ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+      rr(16,116,210,90,8); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      // Video icon
+      ctx.strokeStyle="rgba(255,255,255,0.3)"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.roundRect(80,132,50,36,4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(130,138); ctx.lineTo(146,144); ctx.lineTo(130,150); ctx.closePath();
+      ctx.strokeStyle="rgba(255,255,255,0.3)"; ctx.stroke();
+      ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.font="600 10px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Click or drag your video",120,178); ctx.textAlign="left";
+      ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="9px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("MP4 · MOV · WEBM",120,191); ctx.textAlign="left";
+
+      // PERSONAL DEMO IMAGE
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.fillText("PERSONAL DEMO IMAGE",16,222);
+      ctx.fillStyle="rgba(16,185,129,0.1)"; ctx.strokeStyle="rgba(16,185,129,0.3)";
+      ctx.lineWidth=1; rr(16,230,210,50,8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle="#10b981"; ctx.beginPath(); ctx.arc(28,255,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="600 11px 'DM Sans',sans-serif"; ctx.fillText("Demo image ready",40,252);
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="9px 'DM Sans',sans-serif";
+      ctx.fillText("Rendered uniquely per company",40,266);
+
+      // INTRO TEXT
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.fillText("INTRO TEXT (PHASE 1)",16,298);
+      ctx.fillStyle="rgba(255,255,255,0.06)"; rr(16,306,210,30,6); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="11px 'DM Sans',sans-serif"; ctx.fillText("((name))'s future IR",22,325);
+      // Tag buttons
+      ["+first name","+full name","+company"].forEach((tag,i)=>{
+        const tx=16+i*72;
+        ctx.fillStyle="rgba(26,130,255,0.15)"; rr(tx,341,66,18,5); ctx.fill();
+        ctx.fillStyle="#5ba4ff"; ctx.font="9px 'DM Sans',sans-serif";
+        ctx.textAlign="center"; ctx.fillText(tag,tx+33,353); ctx.textAlign="left";
+      });
+
+      // Font + size row
+      ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.font="9px 'DM Sans',sans-serif";
+      ctx.fillText("Size (px)",16,374); ctx.fillText("Font",100,374);
+      ctx.fillStyle="rgba(255,255,255,0.06)"; rr(16,379,70,22,5); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="11px 'DM Sans',sans-serif"; ctx.fillText("28",22,394);
+      ctx.fillStyle="rgba(255,255,255,0.06)"; rr(100,379,130,22,5); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="11px 'DM Sans',sans-serif"; ctx.fillText("Inter",106,394);
+
+      // B Bold button
+      ctx.fillStyle="rgba(255,255,255,0.07)"; rr(16,408,100,22,5); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="bold 10px 'DM Sans',sans-serif"; ctx.textAlign="center"; ctx.fillText("B Bold",66,423); ctx.textAlign="left";
+
+      // ── Main video preview area ─────────────────────────────────
+      const vx=250, vy=96, vw=W-260, vh=H-100;
+
+      // Company header row
+      ctx.fillStyle="rgba(255,255,255,0.06)"; rr(vx,vy,vw,36,6); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,0.06)"; ctx.beginPath(); ctx.arc(vx+20,vy+18,10,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#1a82ff"; ctx.font="bold 10px 'DM Sans',sans-serif"; ctx.textAlign="center"; ctx.fillText("PP",vx+20,vy+22); ctx.textAlign="left";
+      ctx.fillStyle="#fff"; ctx.font="600 11px 'DM Sans',sans-serif"; ctx.fillText("Jared Dunn",vx+36,vy+16);
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="9px 'DM Sans',sans-serif"; ctx.fillText("piedpiper.com",vx+36,vy+28);
+      // Timing dots
+      ctx.fillStyle="#3b82f6"; ctx.beginPath(); ctx.arc(vx+vw-180,vy+18,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.font="9px"; ctx.fillText("4s intro",vx+vw-170,vy+22);
+      ctx.fillStyle="#8b5cf6"; ctx.beginPath(); ctx.arc(vx+vw-110,vy+18,4,0,Math.PI*2); ctx.fill();
+      ctx.fillText("7s demo",vx+vw-100,vy+22);
+      ctx.fillStyle="#10b981"; ctx.beginPath(); ctx.arc(vx+vw-42,vy+18,4,0,Math.PI*2); ctx.fill();
+      ctx.fillText("8s site",vx+vw-32,vy+22);
+
+      // ── Video preview: two-panel (video left, website screenshot right) ──
+      const panelY=vy+44, panelH=vh-52, splitX=vx+Math.floor(vw*0.55);
+
+      // LEFT: video preview (dark with mockup frame)
+      ctx.fillStyle="#0a0f1a"; rr(vx,panelY,splitX-vx-4,panelH,8); ctx.fill();
+      ctx.strokeStyle="rgba(26,130,255,0.2)"; ctx.lineWidth=1;
+      rr(vx,panelY,splitX-vx-4,panelH,8); ctx.stroke();
+
+      // Fake video frame — product demo screenshot mockup
+      const fw2=splitX-vx-24, fh=Math.floor(panelH*0.72), fx=vx+10, fy=panelY+16;
+      ctx.fillStyle="#1a2744"; rr(fx,fy,fw2,fh,8); ctx.fill();
+      // Screen content
+      ctx.fillStyle="#0d1628"; rr(fx+10,fy+10,fw2-20,fh-20,5); ctx.fill();
+      // Mini stat bars
+      [0.5,0.8,0.6,0.95,0.7].forEach((h2,i)=>{
+        const bh2=Math.floor(h2*(fh-50)), bx2=fx+18+i*Math.floor((fw2-36)/5);
+        ctx.fillStyle=i===3?"#1a82ff":"rgba(26,130,255,0.3)";
+        rr(bx2,fy+fh-30-bh2,Math.floor((fw2-36)/5)-4,bh2,3); ctx.fill();
+      });
+      // Text overlay chip (personalised intro text)
+      const chipW=Math.min(fw2-20,200);
+      ctx.fillStyle="rgba(0,0,0,0.6)"; rr(fx+10,fy+fh-24,chipW,18,9); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Jared's future IR",fx+10+chipW/2,fy+fh-12); ctx.textAlign="left";
+      // Play button
+      ctx.fillStyle="rgba(26,130,255,0.85)"; ctx.beginPath(); ctx.arc(splitX-vx-24>>1,panelY+panelH/2,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.beginPath();
+      const px2=vx+(splitX-vx-24)/2, py2=panelY+panelH/2;
+      ctx.moveTo(px2-6,py2-8); ctx.lineTo(px2+10,py2); ctx.lineTo(px2-6,py2+8); ctx.closePath(); ctx.fill();
+      // Duration bar
+      ctx.fillStyle="rgba(255,255,255,0.08)"; rr(vx+10,panelY+panelH-18,splitX-vx-24,6,3); ctx.fill();
+      ctx.fillStyle="#1a82ff"; rr(vx+10,panelY+panelH-18,Math.floor((splitX-vx-24)*0.35),6,3); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(vx+10+Math.floor((splitX-vx-24)*0.35),panelY+panelH-15,5,0,Math.PI*2); ctx.fill();
+
+      // RIGHT: website screenshot panel
+      ctx.fillStyle="#e8edf5"; rr(splitX+4,panelY,vx+vw-splitX-14,panelH,8); ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,0.08)"; ctx.lineWidth=1;
+      rr(splitX+4,panelY,vx+vw-splitX-14,panelH,8); ctx.stroke();
+
+      // Browser chrome
+      ctx.fillStyle="#fff"; rr(splitX+4,panelY,vx+vw-splitX-14,32,8); ctx.fill();
+      ctx.fillStyle="#e8edf5"; ctx.fillRect(splitX+4,panelY+24,vx+vw-splitX-14,8);
+      // Browser dots
+      [0,1,2].forEach(i=>{ ctx.fillStyle=["#ff5f57","#ffbd2e","#28c940"][i]; ctx.beginPath(); ctx.arc(splitX+16+i*14,panelY+16,4,0,Math.PI*2); ctx.fill(); });
+      // URL bar
+      ctx.fillStyle="#f1f5f9"; rr(splitX+52,panelY+8,Math.min(vx+vw-splitX-80,160),18,9); ctx.fill();
+      ctx.fillStyle="#64748b"; ctx.font="9px monospace";
+      ctx.fillText("piedpiper.com",splitX+60,panelY+20);
+
+      // Website content (fake landing page of Pied Piper)
+      const wx2=splitX+10, wy2=panelY+36, ww=vx+vw-splitX-24;
+      ctx.fillStyle="#1e3a5f"; rr(wx2,wy2,ww,40,0); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font="bold 12px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Pied Piper",wx2+ww/2,wy2+17); ctx.textAlign="left";
+      ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.font="9px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Middle-out compression",wx2+ww/2,wy2+32); ctx.textAlign="left";
+      ctx.fillStyle="#fff"; ctx.font="600 9px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Get started →",wx2+ww/2,wy2+52); ctx.textAlign="left";
+      // Hero section blocks
+      ctx.fillStyle="#f8fafc"; rr(wx2,wy2+62,ww,panelH-110,0); ctx.fill();
+      [[0.3,"#3b82f6"],[0.6,"#93c5fd"],[0.45,"#bfdbfe"],[0.7,"#3b82f6"]].forEach(([h3,col],i)=>{
+        const bw3=Math.floor(ww/4)-6, bh3=Math.floor(h3*60), bx3=wx2+4+i*(bw3+6), by3=wy2+panelH-80-bh3;
+        ctx.fillStyle=col; rr(bx3,by3,bw3,bh3,3); ctx.fill();
+      });
+      // Screenshot badge
+      ctx.fillStyle="rgba(26,130,255,0.12)"; ctx.strokeStyle="rgba(26,130,255,0.4)"; ctx.lineWidth=1.5;
+      rr(splitX+4,panelY,vx+vw-splitX-14,panelH,8); ctx.stroke();
+      ctx.fillStyle="rgba(26,130,255,0.1)"; rr(splitX+8,panelY+panelH-28,120,20,10); ctx.fill();
+      ctx.fillStyle="#3b82f6"; ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Live website screenshot",splitX+68,panelY+panelH-15); ctx.textAlign="left";
     }
 
     ctx.fillStyle="rgba(0,0,0,0)"; // flush
@@ -1553,14 +1775,20 @@ export default function Landing({ onEnterApp }) {
   const [ctaRef,   ctaVis]   = useReveal(0.15);
   const [navScrolled, setNavScrolled] = useState(false);
 
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
   useEffect(() => {
     const fn = () => setNavScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+  useEffect(() => {
+    const fn = (e) => setMouse({ x: (e.clientX/window.innerWidth-.5)*2, y: (e.clientY/window.innerHeight-.5)*2 });
+    window.addEventListener("mousemove", fn);
+    return () => window.removeEventListener("mousemove", fn);
+  }, []);
 
   return (
-    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden" }}>
+    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", "--mx": mouse.x, "--my": mouse.y }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
 
       {/* NAV */}
@@ -1685,7 +1913,7 @@ export default function Landing({ onEnterApp }) {
             { val: "< 30s", lbl: "to personalise per prospect" },
             { val: "94%", lbl: "of buyers prefer visual demos" },
           ].map(({ val, lbl }, i) => (
-            <div key={i} style={{ transition: `opacity .7s ${i*150}ms, transform .7s ${i*150}ms`, opacity: statsVis ? 1 : 0, transform: statsVis ? "translateY(0)" : "translateY(20px)" }}>
+            <div key={i} style={{ transition: `opacity .7s ${i*150}ms, transform .7s ${i*150}ms`, opacity: statsVis ? 1 : 0, transform: statsVis ? `translateY(0) translate(${mouse.x*-4*(i-1)}px,${mouse.y*-3}px)` : "translateY(20px)" }}>
               <div style={{
                 fontSize: "clamp(36px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", lineHeight: 1,
                 background: "linear-gradient(135deg,#fff,rgba(26,130,255,0.7))",

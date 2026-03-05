@@ -235,7 +235,11 @@ const style = `
   .timing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
   .timing-cell { display: flex; flex-direction: column; gap: 4px; }
   .timing-label { font-size: 11px; color: var(--t3); }
-  .timing-input { background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 6px 9px; border-radius: var(--r-sm); outline: none; width: 100%; }
+  .timing-input { background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 6px 9px; border-radius: var(--r-sm); outline: none; width: 100%; transition: border-color .15s; }
+  .timing-input:focus { border-color: var(--blue); }
+  .font-select { appearance: none; -webkit-appearance: none; background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 12px; padding: 7px 28px 7px 10px; border-radius: var(--r-sm); outline: none; cursor: pointer; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color .15s; }
+  .font-select:focus { border-color: var(--blue); }
+  .font-select option { background: var(--bg2); color: var(--t1); }
   .timing-input:focus { border-color: var(--blue); }
   .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--sep); }
   .contact-row:last-child { border-bottom: none; }
@@ -708,9 +712,9 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
           <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hej ((name)) på ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
-            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ förnamn</button>
-            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ fullnamn</button>
-            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ bolag</button>
+            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
+            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
+            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
@@ -719,7 +723,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
             </div>
             <div className="cg-cell">
               <span className="cg-label">Font</span>
-              <select className="inp sm" value={layer.fontFamily} onChange={e => onChange({ fontFamily: e.target.value })} style={{background:"var(--bg4)",color:"var(--t1)"}}>
+              <select className="font-select" value={layer.fontFamily} onChange={e => onChange({ fontFamily: e.target.value })}>
                 {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
               </select>
             </div>
@@ -780,7 +784,7 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
 
 
 const DEFAULT_VIDEO_OVERLAY = {
-  text: "((name))s framtida IR",
+  text: "((name))'s future IR",
   fontSize: 28,
   fontFamily: "Inter",
   color: "#ffffff",
@@ -1047,7 +1051,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <label style={{cursor:"pointer",display:"block"}}>
                 <input type="file" accept="video/*" style={{display:"none"}} onChange={e => handleVideoFile(e.target.files[0])} />
                 <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg></div>
-                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag here din video</p>}
+                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag your video here</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
@@ -1064,16 +1068,16 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0"}}>
                 <div style={{width:8,height:8,borderRadius:"50%",background:"var(--green)",flexShrink:0}} />
                 <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Demobild redo</div>
-                  <div style={{fontSize:11,color:"var(--t3)"}}>Renderas unikt per bolag vid generering</div>
+                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Demo image ready</div>
+                  <div style={{fontSize:11,color:"var(--t3)"}}>Rendered uniquely per company on export</div>
                 </div>
               </div>
             ) : (
               <div style={{padding:"10px 0",display:"flex",alignItems:"flex-start",gap:10}}>
                 <div style={{width:8,height:8,borderRadius:"50%",background:"var(--orange)",marginTop:4,flexShrink:0}} />
                 <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Ingen demobild</div>
-                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Gå till Image-läget och lägg till logga + text. Den renderas automatiskt per bolag.</div>
+                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>No demo image</div>
+                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Go to Image mode and add logo + text. It renders automatically per company.</div>
                 </div>
               </div>
             )}
@@ -1084,12 +1088,12 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         <span className="s-label">Intro text (phase 1)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
-            <input className="inp" value={overlay.text} placeholder="((name))s framtida IR"
+            <input className="inp" value={overlay.text} placeholder="((name))'s future IR"
               onChange={e => updateOverlay({ text: e.target.value })} />
             <div className="tag-btns">
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ förnamn</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((fullname))" })}>+ fullnamn</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ bolag</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ first name</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((fullname))" })}>+ full name</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ company</button>
             </div>
             <div className="timing-grid">
               <div className="timing-cell">
@@ -1099,13 +1103,13 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Font</span>
-                <select className="timing-input" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })}
+                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })}
                   style={{background:"var(--bg4)",color:"var(--t1)"}}>
                   {["Inter","Syne","Montserrat","Oswald","Bebas Neue","Raleway","Arial"].map(f => <option key={f}>{f}</option>)}
                 </select>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Textfärg</span>
+                <span className="timing-label">Text colour</span>
                 <div style={{display:"flex",alignItems:"center",gap:7}}>
                   <div className="color-swatch" style={{background:overlay.color}}>
                     <input type="color" value={overlay.color} onChange={e => updateOverlay({color:e.target.value})} />
@@ -1114,7 +1118,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 </div>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Textbakgrund</span>
+                <span className="timing-label">Text background</span>
                 <div className="sl-wrap" style={{marginTop:0}}>
                   <div className="sl-head"><span className="sl-label">Opacity</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
                   <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"var(--blue)"}} />
@@ -1123,7 +1127,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             </div>
             <div className="trow">
               <button className={`tbtn${overlay.bold ? " on" : ""}`} onClick={() => updateOverlay({bold:!overlay.bold})}>B  Bold</button>
-              <button className="tbtn" style={{color:"var(--t3)",cursor:"default",pointerEvents:"none"}}>Längd nedan</button>
+              <button className="tbtn" style={{color:"var(--t3)",cursor:"default",pointerEvents:"none"}}>Duration below</button>
             </div>
           </div>
         </div>
@@ -1190,17 +1194,17 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
         {/* Toolbar */}
         <div style={{padding:"10px 18px",borderBottom:"0.5px solid var(--sep)",background:"var(--bg2)",display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} bolag redo</span>
+          <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} companies ready</span>
           {noDemoImg && (
             <span style={{fontSize:12,color:"var(--orange)",display:"flex",alignItems:"center",gap:5}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:"var(--orange)",display:"inline-block"}} />
-              Ingen demobild — gå till Image-läget
+              No demo image — gå till Image-läget
             </span>
           )}
           <button className="btn-p" style={{marginLeft:"auto",width:"auto",padding:"8px 16px",fontSize:13}}
             disabled={readyCompanies.length===0||!myVideo||generating!==null}
             onClick={async()=>{for(const c of readyCompanies)await generateVideo(c);}}>
-            Generera alla ({readyCompanies.length})
+            Generate all ({readyCompanies.length})
           </button>
         </div>
 
@@ -1210,8 +1214,8 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             {previewText}
           </div>
           <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--blue)",display:"inline-block"}}/>{overlay.duration}s intro</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--purple)",display:"inline-block"}}/>{timings.demoImg}s {phaseOrder[0]==="demo"?"demo":"hemsida"}</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--green)",display:"inline-block"}}/>{timings.screenshot}s {phaseOrder[0]==="demo"?"hemsida":"demo"}</span>
+          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--purple)",display:"inline-block"}}/>{timings.demoImg}s {phaseOrder[0]==="demo"?"demo":"website"}</span>
+          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--green)",display:"inline-block"}}/>{timings.screenshot}s {phaseOrder[0]==="demo"?"website":"demo"}</span>
           <span style={{fontSize:11,color:"var(--blue)",fontWeight:600}}>{totalSec}s totalt</span>
         </div>
 
@@ -1231,7 +1235,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div className="contact-row-name">{c.personName || "—"}</div>
                 <div className="contact-row-company">{c.companyName}</div>
               </div>
-              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")} title="Öppna hemsida">
+              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")} title="Open website">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {c.domain}
               </button>
@@ -1275,7 +1279,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         </div>
 
         <div className="canvas-footer">
-          Klicka eller dra hemsidescreenshot till rutan · Skapa genererar en .webm-video per bolag
+          Click or drag a website screenshot here · Generate creates a .webm video per company
         </div>
       </div>
     </div>
@@ -1724,9 +1728,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   placeholder="En personlig demo för ((company))" />
                 <div className="tag-btns" style={{marginTop:1}}>
                   <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((name))")}>+ förnamn</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((fullname))")}>+ fullnamn</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((company))")}>+ bolag</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((name))")}>+ first name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((fullname))")}>+ full name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((company))")}>+ company</button>
                 </div>
               </div>
 
@@ -1736,9 +1740,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
                 <div className="tag-btns" style={{marginTop:1}}>
                   <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((name))")}>+ förnamn</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((fullname))")}>+ fullnamn</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((company))")}>+ bolag</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((name))")}>+ first name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((fullname))")}>+ full name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((company))")}>+ company</button>
                 </div>
                 <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personaliserad bild bifogas automatiskt som .png-bilaga per mottagare.</p>
               </div>
@@ -2425,9 +2429,9 @@ function App() {
               <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extract contacts</button>
               <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
                 <p style={{fontSize:12,color:"var(--t3)"}}>Eller lägg till manuellt</p>
-                <input className="inp sm" placeholder="Personens namn (valfritt)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
+                <input className="inp sm" placeholder="Person name (optional)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
                 <div style={{display:"flex",gap:7}}>
-                  <input className="inp sm" style={{flex:1}} placeholder="Bolagsnamn eller domän" value={singleCompany}
+                  <input className="inp sm" style={{flex:1}} placeholder="Company name or domain" value={singleCompany}
                     onChange={e => setSingleCompany(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany); setSingleCompany(""); setSinglePerson(""); } }} />
                   <button className="btn-s" disabled={!singleCompany.trim()}
