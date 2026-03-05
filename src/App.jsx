@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import Landing from "./Landing";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -1855,7 +1856,7 @@ const uid = () => idCounter++;
 const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
 const defaultLogoInst = (w = 400, h = 300) => ({ id: uid(), size: 120, opacity: 100, pos: { x: Math.floor(w / 2) - 60, y: Math.floor(h / 2) - 60 } });
 
-export default function App() {
+function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -2617,3 +2618,20 @@ export default function App() {
     </>
   );
 }
+
+// ── Hash-based router — "/" = landing, "#app" = tool ──────────────
+export default function AppRouter() {
+  const [view, setView] = useState(() => window.location.hash === "#app" ? "app" : "landing");
+
+  useEffect(() => {
+    const onHash = () => setView(window.location.hash === "#app" ? "app" : "landing");
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const goToApp = () => { window.location.hash = "app"; setView("app"); };
+
+  if (view === "landing") return <Landing onEnterApp={goToApp} />;
+  return <App />;
+}
+
