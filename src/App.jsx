@@ -1251,6 +1251,227 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
 
 // ── Gmail helpers ─────────────────────────────────────────────────────────────
+
+// ── 3D Login Page — Space ─────────────────────────────────────────
+function LoginPage({ onLogin, loading }) {
+  const canvasRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    let raf;
+
+    const onResize = () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
+
+    // ── Particles ──────────────────────────────────────────────
+    const COUNT = 180;
+    const particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      z: Math.random() * 3 + 0.2,      // depth 0.2–3.2
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+      r: Math.random() * 1.8 + 0.3,
+      alpha: Math.random() * 0.6 + 0.15,
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.005 + Math.random() * 0.012,
+      color: Math.random() > 0.8
+        ? `rgba(91,79,255,`     // purple accent ~20%
+        : Math.random() > 0.5
+          ? `rgba(26,130,255,`  // blue ~40%
+          : `rgba(180,210,255,` // white-blue ~40%
+    }));
+
+    // ── Occasional large glowing orbs ──────────────────────────
+    const orbs = Array.from({ length: 5 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: 60 + Math.random() * 120,
+      vx: (Math.random() - 0.5) * 0.04,
+      vy: (Math.random() - 0.5) * 0.04,
+      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255",
+      alpha: 0.025 + Math.random() * 0.035,
+    }));
+
+    let t = 0;
+    const draw = () => {
+      raf = requestAnimationFrame(draw);
+      t++;
+
+      // Deep space background
+      ctx.fillStyle = "#070b12";
+      ctx.fillRect(0, 0, W, H);
+
+      // Orbs
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if (o.x < -o.r) o.x = W + o.r;
+        if (o.x > W + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = H + o.r;
+        if (o.y > H + o.r) o.y = -o.r;
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, `rgba(${o.color},${o.alpha})`);
+        g.addColorStop(1, `rgba(${o.color},0)`);
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      // Particles
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.pulse += p.pulseSpeed;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+        const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
+        const r = p.r / p.z;
+
+        // Glow
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
+        g.addColorStop(0, `${p.color}${a})`);
+        g.addColorStop(1, `${p.color}0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+
+        // Core dot
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`;
+        ctx.fill();
+      });
+
+      // Subtle connection lines between close particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 90) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
+      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
+
+      {/* Vignette */}
+      <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
+        background:"radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, rgba(7,11,18,0.5) 100%)" }} />
+
+      {/* Content */}
+      <div style={{
+        position:"absolute", inset:0, zIndex:10,
+        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24,
+      }}>
+        {/* Logo */}
+        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52, animation:"fadeUp .9s ease both" }}>
+          <div style={{
+            width:50, height:50, borderRadius:15,
+            background:"linear-gradient(135deg,#1a82ff,#5b4fff)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            boxShadow:"0 0 48px rgba(26,130,255,0.45), 0 8px 24px rgba(0,0,0,0.5)",
+          }}>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
+              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
+              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
+              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            </svg>
+          </div>
+          <div>
+            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px", lineHeight:1 }}>LogoPlacer</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personaliserade demos</div>
+          </div>
+        </div>
+
+        {/* Card */}
+        <div style={{
+          background:"rgba(10,16,26,0.8)",
+          backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)",
+          border:"1px solid rgba(255,255,255,0.07)",
+          borderRadius:24, padding:"40px 44px",
+          width:"100%", maxWidth:390,
+          display:"flex", flexDirection:"column", alignItems:"center", gap:26,
+          boxShadow:"0 48px 96px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
+          animation:"fadeUp .9s .12s ease both",
+        }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>
+              Logga in
+            </div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>
+              Anvand ditt Google-konto for att<br/>fa tillgang till appen.
+            </div>
+          </div>
+
+          <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
+
+          <button
+            onClick={onLogin}
+            disabled={loading}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+              width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12,
+              padding:"13px 20px", borderRadius:12, border:"none",
+              background: hovered ? "#fff" : "rgba(255,255,255,0.93)",
+              color:"#111827", fontSize:14, fontWeight:600, fontFamily:"inherit",
+              cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1,
+              transition:"all .18s",
+              boxShadow: hovered ? "0 8px 32px rgba(26,130,255,0.3)" : "0 4px 16px rgba(0,0,0,0.4)",
+              transform: hovered ? "translateY(-1px) scale(1.01)" : "none",
+            }}>
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
+            </svg>
+            {loading ? "Loggar in..." : "Fortsatt med Google"}
+          </button>
+
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center" }}>
+            Endast godkanda anvandare far tillgang
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(24px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com";
 
 function loadGIS() {
@@ -1636,6 +1857,45 @@ const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 3
 const defaultLogoInst = (w = 400, h = 300) => ({ id: uid(), size: 120, opacity: 100, pos: { x: Math.floor(w / 2) - 60, y: Math.floor(h / 2) - 60 } });
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    try {
+      await loadGIS();
+      await new Promise((resolve, reject) => {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid email profile",
+          callback: (resp) => {
+            if (resp.error) { reject(resp.error); return; }
+            // Verify the token and get user info
+            fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+              headers: { Authorization: `Bearer ${resp.access_token}` }
+            })
+            .then(r => r.json())
+            .then(user => {
+              sessionStorage.setItem("lp_authed", "1");
+              sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
+              setAuthed(true);
+              resolve();
+            })
+            .catch(reject);
+          },
+        });
+        client.requestAccessToken({ prompt: "select_account" });
+      });
+    } catch { /* user cancelled */ }
+    setAuthLoading(false);
+  };
+
+  if (!authed) {
+    return <LoginPage onLogin={handleLogin} loading={authLoading} />;
+  }
+
+  const sessionUser = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
+
   const [baseImageName, setBaseImageName] = useState(null);
   const [converting, setConverting] = useState(false);
   const [companies, setCompanies] = useState(() => {
@@ -1931,6 +2191,14 @@ export default function App() {
             </div>
           </div>
           <div className="header-btns">
+            {sessionUser?.picture && (
+              <div style={{display:"flex",alignItems:"center",gap:8,marginRight:4}}>
+                <img src={sessionUser.picture} alt="" style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--sep)"}} />
+                <span style={{fontSize:12,color:"var(--t3)"}}>{sessionUser.name?.split(" ")[0]}</span>
+                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }}
+                  style={{fontSize:11,padding:"3px 8px"}}>Logga ut</button>
+              </div>
+            )}
             <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}><span style={{display:"flex",alignItems:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Förhandsvisa</span></button>
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
