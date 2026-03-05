@@ -90,6 +90,7 @@ function Logo({ size = 36 }) {
 // ─────────────────────────────────────────────
 function HeroScene() {
   const mountRef = useRef(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -100,10 +101,9 @@ function HeroScene() {
       script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
       document.head.appendChild(script);
     }
-    const tryInit = () => { if (window.THREE) { setLoaded(true); } else { setTimeout(tryInit, 50); } };
+    const tryInit = () => { if (window.THREE) setLoaded(true); else setTimeout(tryInit, 50); };
     script.onload = () => setLoaded(true);
-    if (window.THREE) setLoaded(true);
-    else tryInit();
+    if (window.THREE) setLoaded(true); else tryInit();
   }, []);
 
   useEffect(() => {
@@ -122,152 +122,110 @@ function HeroScene() {
     const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 200);
     camera.position.set(0, 2, 14);
 
-    // Ambient + directional light
-    scene.add(new THREE.AmbientLight(0x1a2040, 2));
-    const dir = new THREE.DirectionalLight(0x4499ff, 3);
-    dir.position.set(5, 8, 5);
-    scene.add(dir);
-    const dir2 = new THREE.DirectionalLight(0x8855ff, 2);
-    dir2.position.set(-5, -3, -5);
-    scene.add(dir2);
+    // Lights for glass effect
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const pt1 = new THREE.PointLight(0x88bbff, 3, 40); pt1.position.set(6, 8, 6); scene.add(pt1);
+    const pt2 = new THREE.PointLight(0xbbccff, 2, 40); pt2.position.set(-6, -4, -4); scene.add(pt2);
+    const pt3 = new THREE.PointLight(0xffffff, 1.5, 30); pt3.position.set(0, -6, 8); scene.add(pt3);
 
-    // ── Central floating "product screenshot" frame ──────────────
-    const frameGeo = new THREE.BoxGeometry(7, 4.5, 0.12);
-    const frameMat = new THREE.MeshPhongMaterial({
-      color: 0x0d1a2e,
-      emissive: 0x0a1428,
-      specular: 0x1a82ff,
-      shininess: 60,
-      transparent: true,
-      opacity: 0.92,
+    // Glass material factory
+    const glassMat = (opacity = 0.18, color = 0xaaccff) => new THREE.MeshPhongMaterial({
+      color, emissive: 0x1133aa, emissiveIntensity: 0.06,
+      specular: 0xffffff, shininess: 120,
+      transparent: true, opacity, side: THREE.DoubleSide,
     });
-    const frame = new THREE.Mesh(frameGeo, frameMat);
+    const wireGlass = (color = 0xaaccff, opacity = 0.35) => new THREE.LineBasicMaterial({
+      color, transparent: true, opacity,
+    });
+
+    // ── Central floating frame (product mockup) ────────────────
+    const frameGeo = new THREE.BoxGeometry(7, 4.5, 0.1);
+    const frame = new THREE.Mesh(frameGeo, glassMat(0.12, 0xddeeff));
+    frame.add(new THREE.LineSegments(new THREE.EdgesGeometry(frameGeo), wireGlass(0x99ccff, 0.5)));
     scene.add(frame);
 
-    // Frame border glow
-    const edgesGeo = new THREE.EdgesGeometry(frameGeo);
-    const edgesMat = new THREE.LineBasicMaterial({ color: 0x1a82ff, transparent: true, opacity: 0.4 });
-    frame.add(new THREE.LineSegments(edgesGeo, edgesMat));
+    // Inner grid on frame
+    for (let i = -3; i <= 3; i++) {
+      const lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i*1.1,2.2,0.06), new THREE.Vector3(i*1.1,-2.2,0.06)]);
+      frame.add(new THREE.Line(lg, wireGlass(0x88aadd, 0.12)));
+      const lg2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-3.4,i*0.7,0.06), new THREE.Vector3(3.4,i*0.7,0.06)]);
+      frame.add(new THREE.Line(lg2, wireGlass(0x88aadd, 0.12)));
+    }
 
-    // Inner screen plane
-    const screenGeo = new THREE.PlaneGeometry(6.5, 4.0);
-    const screenMat = new THREE.MeshBasicMaterial({ color: 0x0a1525, transparent: true, opacity: 0.8 });
-    const screen = new THREE.Mesh(screenGeo, screenMat);
-    screen.position.z = 0.07;
-    frame.add(screen);
-
-    // Grid lines on screen
-    const gridHelper = new THREE.GridHelper(6, 12, 0x1a82ff, 0x0d2040);
-    gridHelper.rotation.x = Math.PI / 2;
-    gridHelper.position.z = 0.08;
-    gridHelper.material.transparent = true;
-    gridHelper.material.opacity = 0.15;
-    frame.add(gridHelper);
-
-    // ── Floating logo cubes (representing prospect logos) ─────────
-    const logoColors = [0x1a82ff, 0x5b4fff, 0x4ecdc4, 0xff6b6b, 0xffd93d];
-    const logoCubes = [];
-    const positions = [
-      [-4.5, 1.5, 2], [4.5, 1.8, 1.5], [-3.8, -1.8, 2.5],
-      [4.2, -1.5, 2], [0, 3.2, 1], [-1.5, -3, 1.5],
+    // ── Glass geometries floating around ──────────────────────
+    const shapes = [];
+    const geoList = [
+      new THREE.IcosahedronGeometry(0.55, 0),
+      new THREE.OctahedronGeometry(0.55, 0),
+      new THREE.BoxGeometry(0.7, 0.7, 0.7),
+      new THREE.TetrahedronGeometry(0.6, 0),
+      new THREE.DodecahedronGeometry(0.5, 0),
+      new THREE.BoxGeometry(0.4, 0.4, 0.4),
     ];
-    positions.forEach((pos, i) => {
-      const s = 0.45 + Math.random() * 0.25;
-      const geo = new THREE.BoxGeometry(s, s, s);
-      const mat = new THREE.MeshPhongMaterial({
-        color: logoColors[i % logoColors.length],
-        emissive: logoColors[i % logoColors.length],
-        emissiveIntensity: 0.3,
-        transparent: true, opacity: 0.85,
-      });
-      const cube = new THREE.Mesh(geo, mat);
-      cube.position.set(...pos);
-      cube.userData.baseY = pos[1];
-      cube.userData.phase = Math.random() * Math.PI * 2;
-      cube.userData.speed = 0.4 + Math.random() * 0.5;
+    const positions = [[-4.8,1.8,1.5],[4.6,2,1],[- 3.8,-1.6,2],[4,-1.8,1.8],[0.5,3.4,0.5],[-1.2,-3.2,1.2]];
 
-      // Wire outline
-      const wire = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geo),
-        new THREE.LineBasicMaterial({ color: logoColors[i % logoColors.length], transparent: true, opacity: 0.6 })
-      );
-      cube.add(wire);
-      scene.add(cube);
-      logoCubes.push(cube);
+    positions.forEach((pos, i) => {
+      const geo = geoList[i % geoList.length];
+      const mesh = new THREE.Mesh(geo, glassMat(0.2 + i*0.02, 0xccddff));
+      mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), wireGlass(0xaaccff, 0.7)));
+      mesh.position.set(...pos);
+      mesh.userData.baseY = pos[1];
+      mesh.userData.phase = i * 1.1;
+      mesh.userData.floatSpeed = 0.35 + i * 0.07;
+      mesh.userData.rotX = (Math.random()-.5)*0.015;
+      mesh.userData.rotY = (Math.random()-.5)*0.018;
+      scene.add(mesh);
+      shapes.push(mesh);
     });
 
-    // ── Orbiting ring ─────────────────────────────────────────────
-    const ringGeo = new THREE.TorusGeometry(6, 0.025, 8, 80);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x1a82ff, transparent: true, opacity: 0.15 });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 3;
+    // ── Torus ring ─────────────────────────────────────────────
+    const ringGeo = new THREE.TorusGeometry(6.5, 0.03, 8, 90);
+    const ring = new THREE.Mesh(ringGeo, glassMat(0.25, 0xbbddff));
+    ring.rotation.x = Math.PI / 3.5;
     scene.add(ring);
 
-    const ring2Geo = new THREE.TorusGeometry(8, 0.015, 8, 100);
-    const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x5b4fff, transparent: true, opacity: 0.1 });
-    const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-    ring2.rotation.x = Math.PI / 5;
-    ring2.rotation.y = Math.PI / 4;
+    const ring2Geo = new THREE.TorusGeometry(9, 0.018, 8, 120);
+    const ring2 = new THREE.Mesh(ring2Geo, glassMat(0.15, 0xaabbdd));
+    ring2.rotation.x = Math.PI / 6; ring2.rotation.y = Math.PI / 5;
     scene.add(ring2);
 
-    // ── Particle field ────────────────────────────────────────────
-    const partCount = 300;
-    const partPos = new Float32Array(partCount * 3);
-    for (let i = 0; i < partCount * 3; i += 3) {
-      partPos[i]   = (Math.random() - 0.5) * 30;
-      partPos[i+1] = (Math.random() - 0.5) * 20;
-      partPos[i+2] = (Math.random() - 0.5) * 20;
+    // ── Particles ──────────────────────────────────────────────
+    const pCount = 260;
+    const pPos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount * 3; i += 3) {
+      pPos[i] = (Math.random()-.5)*32; pPos[i+1] = (Math.random()-.5)*22; pPos[i+2] = (Math.random()-.5)*18;
     }
-    const partGeo = new THREE.BufferGeometry();
-    partGeo.setAttribute("position", new THREE.BufferAttribute(partPos, 3));
-    const partMat = new THREE.PointsMaterial({ color: 0x3366aa, size: 0.07, transparent: true, opacity: 0.6 });
-    scene.add(new THREE.Points(partGeo, partMat));
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+    scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x7799cc, size: 0.055, transparent: true, opacity: 0.45 })));
 
-    // Mouse parallax
-    let mx = 0, my = 0;
-    const onMouse = (e) => {
-      mx = (e.clientX / window.innerWidth - 0.5) * 2;
-      my = (e.clientY / window.innerHeight - 0.5) * 2;
-    };
+    // Mouse
+    const onMouse = (e) => { mouseRef.current = { x: (e.clientX/window.innerWidth-.5)*2, y: (e.clientY/window.innerHeight-.5)*2 }; };
     window.addEventListener("mousemove", onMouse);
-
-    // Resize
-    const onResize = () => {
-      W = el.clientWidth; H = el.clientHeight;
-      camera.aspect = W / H; camera.updateProjectionMatrix();
-      renderer.setSize(W, H);
-    };
+    const onResize = () => { W=el.clientWidth; H=el.clientHeight; camera.aspect=W/H; camera.updateProjectionMatrix(); renderer.setSize(W,H); };
     window.addEventListener("resize", onResize);
 
-    // ── Animate ───────────────────────────────────────────────────
-    let raf;
-    let t = 0;
+    let raf, t = 0;
     const animate = () => {
-      raf = requestAnimationFrame(animate);
-      t += 0.012;
+      raf = requestAnimationFrame(animate); t += 0.011;
+      const mx = mouseRef.current.x, my = mouseRef.current.y;
 
-      // Frame: gentle float + tilt
-      frame.position.y = Math.sin(t * 0.5) * 0.18;
-      frame.rotation.y = Math.sin(t * 0.3) * 0.06 + mx * 0.04;
-      frame.rotation.x = Math.sin(t * 0.2) * 0.03 - my * 0.03;
+      frame.position.y = Math.sin(t * 0.45) * 0.2;
+      frame.rotation.y = Math.sin(t * 0.28) * 0.05 + mx * 0.035;
+      frame.rotation.x = -my * 0.025;
 
-      // Logo cubes: float + rotate
-      logoCubes.forEach((c, i) => {
-        c.rotation.x += 0.008 + i * 0.002;
-        c.rotation.y += 0.012 + i * 0.001;
-        c.position.y = c.userData.baseY + Math.sin(t * c.userData.speed + c.userData.phase) * 0.4;
+      shapes.forEach(s => {
+        s.rotation.x += s.userData.rotX;
+        s.rotation.y += s.userData.rotY;
+        s.position.y = s.userData.baseY + Math.sin(t * s.userData.floatSpeed + s.userData.phase) * 0.45;
       });
 
-      // Rings rotate
-      ring.rotation.z += 0.003;
-      ring2.rotation.z -= 0.002;
-      ring2.rotation.y += 0.001;
+      ring.rotation.z += 0.0025;
+      ring2.rotation.z -= 0.0018; ring2.rotation.y += 0.001;
 
-      // Camera parallax
-      camera.position.x += (mx * 1.2 - camera.position.x) * 0.04;
-      camera.position.y += (-my * 0.8 + 2 - camera.position.y) * 0.04;
+      camera.position.x += (mx * 1.4 - camera.position.x) * 0.035;
+      camera.position.y += (-my * 0.9 + 2 - camera.position.y) * 0.035;
       camera.lookAt(0, 0.5, 0);
-
       renderer.render(scene, camera);
     };
     animate();
@@ -281,19 +239,12 @@ function HeroScene() {
     };
   }, [loaded]);
 
-  return (
-    <div ref={mountRef} style={{
-      position: "absolute", inset: 0, zIndex: 1,
-      opacity: loaded ? 1 : 0, transition: "opacity 1s",
-    }} />
-  );
+  return <div ref={mountRef} style={{ position:"absolute", inset:0, zIndex:1, opacity:loaded?1:0, transition:"opacity 1s" }} />;
 }
 
-// ─────────────────────────────────────────────
-// FLOATING 3D FEATURE SCENE
-// ─────────────────────────────────────────────
 function FeatureScene({ index }) {
   const mountRef = useRef(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -308,92 +259,75 @@ function FeatureScene({ index }) {
     const W = el.clientWidth, H = el.clientHeight;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(W, H);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(W, H); renderer.setClearColor(0,0);
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(50, W/H, 0.1, 100);
     camera.position.z = 4;
 
-    scene.add(new THREE.AmbientLight(0x1a2040, 3));
-    const dl = new THREE.DirectionalLight(0x4499ff, 4);
-    dl.position.set(3, 5, 3);
-    scene.add(dl);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dl = new THREE.PointLight(0x99bbff, 3, 20); dl.position.set(3,4,4); scene.add(dl);
+    const dl2 = new THREE.PointLight(0xffffff, 2, 20); dl2.position.set(-3,-3,3); scene.add(dl2);
 
-    const colors = [0x1a82ff, 0x5b4fff, 0x4ecdc4, 0xff6b35, 0xffd93d, 0x2ecc71];
-    const c = colors[index % colors.length];
+    const glassMat = new THREE.MeshPhongMaterial({
+      color: 0xddeeff, emissive: 0x112244, emissiveIntensity: 0.05,
+      specular: 0xffffff, shininess: 160,
+      transparent: true, opacity: 0.22, side: THREE.DoubleSide,
+    });
+    const wireMat = new THREE.LineBasicMaterial({ color: 0x99bbdd, transparent: true, opacity: 0.65 });
 
-    let mainObj;
-    switch (index % 6) {
-      case 0: {
-        const g = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.2, wireframe: false, transparent: true, opacity: 0.8 }));
-        mainObj.add(new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.8 })));
-        break;
-      }
-      case 1: {
-        const g = new THREE.TorusGeometry(0.8, 0.25, 12, 40);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.2, transparent: true, opacity: 0.8 }));
-        break;
-      }
-      case 2: {
-        const g = new THREE.OctahedronGeometry(0.9);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.25, transparent: true, opacity: 0.75 }));
-        mainObj.add(new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.9 })));
-        break;
-      }
-      case 3: {
-        const g = new THREE.IcosahedronGeometry(0.9, 0);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.2, wireframe: true }));
-        break;
-      }
-      case 4: {
-        const g = new THREE.TorusKnotGeometry(0.6, 0.2, 60, 10);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.2, transparent: true, opacity: 0.85 }));
-        break;
-      }
-      case 5: {
-        const g = new THREE.DodecahedronGeometry(0.9, 0);
-        mainObj = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: c, emissive: c, emissiveIntensity: 0.2, transparent: true, opacity: 0.75 }));
-        mainObj.add(new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.8 })));
-        break;
-      }
-    }
-    scene.add(mainObj);
+    const geos = [
+      new THREE.IcosahedronGeometry(1.0, 0),
+      new THREE.OctahedronGeometry(1.0, 0),
+      new THREE.BoxGeometry(1.3, 1.3, 1.3),
+      new THREE.TorusGeometry(0.8, 0.28, 12, 48),
+      new THREE.TorusKnotGeometry(0.65, 0.22, 80, 12),
+      new THREE.DodecahedronGeometry(1.0, 0),
+    ];
+    const geo = geos[index % geos.length];
+    const mesh = new THREE.Mesh(geo, glassMat);
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), wireMat));
+    scene.add(mesh);
 
-    // Small orbiting particle
-    const orbitGeo = new THREE.SphereGeometry(0.07, 6, 6);
-    const orbitMat = new THREE.MeshBasicMaterial({ color: c });
-    const orbitDot = new THREE.Mesh(orbitGeo, orbitMat);
-    scene.add(orbitDot);
+    // Small orbiting glass sphere
+    const orbGeo = new THREE.SphereGeometry(0.12, 8, 8);
+    const orbMat = new THREE.MeshPhongMaterial({ color: 0xbbddff, transparent: true, opacity: 0.55, specular: 0xffffff, shininess: 200 });
+    const orb = new THREE.Mesh(orbGeo, orbMat);
+    scene.add(orb);
 
-    let raf, t = index * 1.3;
+    // Mouse interaction on card
+    const onMouse = (e) => {
+      const rect = el.getBoundingClientRect();
+      mouseRef.current = { x: (e.clientX-rect.left)/rect.width*2-1, y: -((e.clientY-rect.top)/rect.height*2-1) };
+    };
+    el.addEventListener("mousemove", onMouse);
+
+    let raf; let t = index * 1.4;
     const animate = () => {
-      raf = requestAnimationFrame(animate);
-      t += 0.014;
-      mainObj.rotation.x += 0.007;
-      mainObj.rotation.y += 0.011;
-      orbitDot.position.x = Math.cos(t * 1.5) * 1.6;
-      orbitDot.position.y = Math.sin(t * 1.5) * 1.6;
-      orbitDot.position.z = Math.sin(t) * 0.5;
+      raf = requestAnimationFrame(animate); t += 0.012;
+      const mx = mouseRef.current.x * 0.3;
+      const my = mouseRef.current.y * 0.3;
+      mesh.rotation.x += 0.006 + my * 0.02;
+      mesh.rotation.y += 0.009 + mx * 0.02;
+      orb.position.x = Math.cos(t * 1.4) * 1.7;
+      orb.position.y = Math.sin(t * 1.4) * 1.7;
+      orb.position.z = Math.sin(t * 0.8) * 0.6;
       renderer.render(scene, camera);
     };
     animate();
 
     return () => {
       cancelAnimationFrame(raf);
+      el.removeEventListener("mousemove", onMouse);
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
       renderer.dispose();
     };
   }, [loaded, index]);
 
-  return <div ref={mountRef} style={{ width: "100%", height: "100%" }} />;
+  return <div ref={mountRef} style={{ width:"100%", height:"100%" }} />;
 }
 
-// ─────────────────────────────────────────────
-// SCROLL REVEAL
-// ─────────────────────────────────────────────
 function useReveal(threshold = 0.1) {
   const ref = useRef(null);
   const [vis, setVis] = useState(false);
@@ -794,8 +728,22 @@ function LiveDemo() {
           border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20,
           padding: "26px 22px", display: "flex", flexDirection: "column", gap: 18,
         }}>
+          {/* Bulk badge */}
+          <div style={{
+            background: "rgba(26,130,255,0.08)", border: "1px solid rgba(26,130,255,0.18)",
+            borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 10,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="1.8" strokeLinecap="round" style={{flexShrink:0,marginTop:1}}>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+              In the real tool, paste <strong style={{color:"#5ba4ff"}}>100 companies at once</strong> and get 100 personalised demos in seconds.
+            </div>
+          </div>
+
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: ".2px" }}>
-            Personalise the demo
+            Personalise this demo
           </div>
 
           {[
@@ -823,17 +771,34 @@ function LiveDemo() {
             </div>
           )}
 
-          <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
-
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", lineHeight: 1.65 }}>
-            {fetching ? "Fetching logo…" :
-             logoEl ? `Logo found — drag it anywhere on the demo` :
-             company ? "No logo found — try a different name" :
-             "Start typing above to personalise"}
+          {/* Logo drop zone */}
+          <div style={{
+            border: `2px dashed ${logoEl ? "rgba(59,130,246,0.4)" : "rgba(255,255,255,0.18)"}`,
+            borderRadius: 14, padding: "18px 14px", textAlign: "center",
+            background: logoEl ? "rgba(59,130,246,0.06)" : "rgba(255,255,255,0.03)",
+            transition: "all .2s",
+          }}>
+            {logoEl ? (
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+                <img src={logoEl.src} style={{height:32,maxWidth:80,objectFit:"contain"}} alt="logo" />
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>Drag the logo on the canvas</div>
+              </div>
+            ) : (
+              <>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" style={{margin:"0 auto 8px",display:"block"}}>
+                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                  <path d="M3 9h18M9 21V9"/>
+                </svg>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",lineHeight:1.6}}>
+                  {fetching ? "Fetching logo…" : company ? "No logo found — try exact company name" : "Type a company above to auto-fetch their logo"}
+                </div>
+              </>
+            )}
           </div>
 
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
-            In the full tool: drag anywhere, add text layers, and send via Gmail in one click.
+          <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
+            Full tool: drag anywhere · add text layers · bulk export · send via Gmail
           </div>
         </div>
       </div>
@@ -850,6 +815,445 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
   ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+
+// ─────────────────────────────────────────────
+// DEMO WALKTHROUGH — animated step-by-step
+// ─────────────────────────────────────────────
+const DEMO_STEPS = [
+  {
+    title: "Upload your product screenshot",
+    desc: "Start by uploading any screenshot of your product — a dashboard, feature view, or landing page.",
+    tag: "Step 1",
+  },
+  {
+    title: "Paste your prospect list",
+    desc: "Drop in company names and contacts. Logoplacers auto-fetches every logo simultaneously.",
+    tag: "Step 2",
+    leads: [
+      { company: "Klarna",    name: "Emma Svensson",  email: "emma@klarna.com",    status: "ok" },
+      { company: "Spotify",   name: "Marcus Berg",    email: "marcus@spotify.com", status: "ok" },
+      { company: "Bolt",      name: "Sofia Lindgren", email: "sofia@bolt.eu",      status: "ok" },
+      { company: "Revolut",   name: "Erik Hansson",   email: "erik@revolut.com",   status: "ok" },
+      { company: "Northvolt", name: "Anna Karlsson",  email: "anna@northvolt.com", status: "ok" },
+    ],
+  },
+  {
+    title: "Position logo & add text",
+    desc: "Drag your prospect's logo onto your screenshot. Add personalised name and company text layers.",
+    tag: "Step 3",
+  },
+  {
+    title: "Export or send via Gmail",
+    desc: "Download all 100 demos as a ZIP, or send directly from Gmail with one click — with anti-spam delays built in.",
+    tag: "Step 4",
+  },
+];
+
+function DemoCanvas({ step, activeLeadIdx }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+
+    const rr = (x,y,w,h,r) => {
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+      ctx.closePath();
+    };
+
+    // ── App chrome ──────────────────────────────────────────────
+    // Header
+    ctx.fillStyle = "#0f1520"; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = "#141e30"; ctx.fillRect(0,0,W,52);
+    ctx.fillStyle = "rgba(26,130,255,0.4)"; ctx.fillRect(0,51,W,1);
+
+    // Logo
+    ctx.fillStyle = "#1a82ff"; rr(16,14,26,26,7); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 10px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("LP",29,31); ctx.textAlign="left";
+    ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans',sans-serif";
+    ctx.fillText("LogoPlacer", 50, 28);
+    ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px 'DM Sans',sans-serif";
+    ctx.fillText("Personalised demos", 50, 41);
+
+    // Top right buttons
+    const btns = ["Förhandsvisa","Skicka","Ladda ner"];
+    btns.forEach((b,i) => {
+      const bx = W - 260 + i * 90;
+      ctx.fillStyle = i===1 ? "#1a82ff" : "rgba(255,255,255,0.07)";
+      rr(bx,16,82,22,6); ctx.fill();
+      ctx.fillStyle = i===1 ? "#fff" : "rgba(255,255,255,0.5)";
+      ctx.font = "600 10px 'DM Sans',sans-serif"; ctx.textAlign="center";
+      ctx.fillText(b, bx+41,31); ctx.textAlign="left";
+    });
+
+    // Tabs
+    ctx.fillStyle = "#141e30"; ctx.fillRect(0,52,W,36);
+    ctx.fillStyle = "#1a82ff"; ctx.fillRect(0,87,W,1);
+    ["Bild","Video"].forEach((t,i) => {
+      const tx = 200 + i*320;
+      ctx.fillStyle = i===0 ? "#fff" : "rgba(255,255,255,0.3)";
+      ctx.font = i===0 ? "600 13px 'DM Sans',sans-serif" : "13px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText(t,tx,73); ctx.textAlign="left";
+      if(i===0){ ctx.fillStyle="#1a82ff"; ctx.fillRect(tx-30,85,60,2); }
+    });
+
+    // Sidebar
+    ctx.fillStyle = "#141e30"; ctx.fillRect(0,88,240,H-88);
+    ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.fillRect(240,88,1,H-88);
+
+    // ── STEP-SPECIFIC CONTENT ──────────────────────────────────
+    if (step === 0) {
+      // Step 1: Upload zone
+      ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+      rr(16,108,210,100,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="rgba(255,255,255,0.25)"; ctx.font="11px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("BASBILD",121,130);
+      ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.font="600 12px 'DM Sans',sans-serif";
+      ctx.fillText("Klicka eller dra hit",121,152);
+      ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="10px 'DM Sans',sans-serif";
+      ctx.fillText("JPG · PNG · WEBP · HEIC",121,168);
+      ctx.textAlign="left";
+
+      // Min logga zone
+      ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.strokeStyle="rgba(255,255,255,0.12)";
+      ctx.setLineDash([5,4]); rr(16,220,210,80,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="600 12px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("MIN LOGGA",121,258);
+      ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="10px 'DM Sans',sans-serif";
+      ctx.fillText("Klicka eller dra hit loggan",121,274); ctx.textAlign="left";
+
+      // Main area — empty state
+      ctx.fillStyle="#0a1020"; ctx.fillRect(241,88,W-241,H-88);
+      ctx.fillStyle="rgba(255,255,255,0.06)";
+      rr(320,180,W-400,H-250,16); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,0.15)"; ctx.font="13px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Ingen bild vald",W/2+60,280);
+      ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.font="11px 'DM Sans',sans-serif";
+      ctx.fillText("Ladda upp en basbild till vänster",W/2+60,300); ctx.textAlign="left";
+    }
+
+    if (step === 1) {
+      // Step 2: Prospect list
+      ctx.fillStyle="rgba(255,255,255,0.04)";
+      ctx.strokeStyle="rgba(255,255,255,0.08)"; ctx.lineWidth=1;
+      rr(16,108,210,30,6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle="#5ba4ff"; ctx.font="600 10px 'DM Sans',sans-serif";
+      ctx.fillText("MOTTAGARENS LOGGA",22,127);
+      ctx.fillStyle="#1a82ff"; ctx.font="600 10px 'DM Sans',sans-serif";
+      ctx.textAlign="right"; ctx.fillText("+ Ny",226,127); ctx.textAlign="left";
+
+      const leads = DEMO_STEPS[1].leads;
+      leads.forEach((lead,i) => {
+        const ly = 146 + i*46;
+        const isActive = i === activeLeadIdx;
+        ctx.fillStyle = isActive ? "rgba(26,130,255,0.15)" : "rgba(255,255,255,0.03)";
+        ctx.strokeStyle = isActive ? "rgba(26,130,255,0.4)" : "rgba(255,255,255,0.07)";
+        ctx.lineWidth=1; rr(16,ly,210,40,8); ctx.fill(); ctx.stroke();
+
+        // Status dot
+        ctx.fillStyle = lead.status==="ok" ? "#10b981" : "#f59e0b";
+        ctx.beginPath(); ctx.arc(30,ly+20,4,0,Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = isActive ? "#fff" : "rgba(255,255,255,0.7)";
+        ctx.font = "600 11px 'DM Sans',sans-serif";
+        ctx.fillText(lead.company, 42,ly+16);
+        ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font="10px 'DM Sans',sans-serif";
+        ctx.fillText(lead.name, 42,ly+30);
+      });
+
+      // Main preview area — show active lead demo
+      ctx.fillStyle="#0a1020"; ctx.fillRect(241,88,W-241,H-88);
+      const al = leads[Math.min(activeLeadIdx, leads.length-1)];
+
+      // Mock dashboard with company branding
+      ctx.fillStyle="#fff"; rr(270,108,W-290,H-120,12); ctx.fill();
+
+      // Light sidebar
+      ctx.fillStyle="#f0f4f8"; rr(270,108,140,H-120,12); ctx.fill();
+      ctx.fillStyle="#e2e8f0"; ctx.fillRect(410,108,1,H-120);
+      ["Dashboard","Assets","Portfolio","Settings"].forEach((item,i) => {
+        const iy = 148+i*38;
+        ctx.fillStyle = i===1 ? "#eff6ff" : "transparent";
+        if(i===1){ rr(278,iy-10,124,28,6); ctx.fill(); }
+        ctx.fillStyle = i===1 ? "#1d4ed8" : "#64748b";
+        ctx.font = i===1 ? "600 11px 'DM Sans',sans-serif" : "11px 'DM Sans',sans-serif";
+        ctx.fillText(item,290,iy+9);
+      });
+
+      // Main content
+      ctx.fillStyle="#1e293b"; ctx.font="bold 14px 'DM Sans',sans-serif";
+      ctx.fillText(`Demo for ${al.company}`,422,138);
+      ctx.fillStyle="#64748b"; ctx.font="10px 'DM Sans',sans-serif";
+      ctx.fillText(`Prepared for ${al.name}`,422,154);
+
+      // Stat cards
+      [{l:"Reply Rate",v:"34%",c:"#3b82f6"},{l:"Demos",v:"247",c:"#10b981"},{l:"Saved",v:"12h",c:"#8b5cf6"}].forEach((card,i)=>{
+        const cx=422+i*96, cy=168;
+        ctx.fillStyle="#fff"; ctx.shadowColor="rgba(0,0,0,0.08)"; ctx.shadowBlur=6;
+        rr(cx,cy,88,50,6); ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle=card.c; rr(cx,cy,3,50,2); ctx.fill();
+        ctx.fillStyle="#94a3b8"; ctx.font="9px 'DM Sans',sans-serif"; ctx.fillText(card.l,cx+8,cy+14);
+        ctx.fillStyle="#0f172a"; ctx.font="bold 16px 'DM Sans',sans-serif"; ctx.fillText(card.v,cx+8,cy+38);
+      });
+
+      // Logo placeholder area — PROMINENT
+      ctx.fillStyle="rgba(59,130,246,0.08)"; ctx.strokeStyle="rgba(59,130,246,0.4)";
+      ctx.lineWidth=2; ctx.setLineDash([6,4]);
+      rr(422,230,120,72,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="#3b82f6"; ctx.font="600 10px 'DM Sans',sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Logo drops here",482,262);
+      ctx.fillStyle="rgba(59,130,246,0.5)"; ctx.font="9px 'DM Sans',sans-serif";
+      ctx.fillText(al.company,482,276); ctx.textAlign="left";
+    }
+
+    if (step === 2) {
+      // Step 3: Editor with logo placed
+      ctx.fillStyle="#0a1020"; ctx.fillRect(241,88,W-241,H-88);
+      ctx.fillStyle="#fff"; rr(260,100,W-280,H-112,12); ctx.fill();
+
+      // Light panels
+      ctx.fillStyle="#f8fafc"; rr(260,100,W-280,52,12); ctx.fill();
+      ctx.fillStyle="#e2e8f0"; ctx.fillRect(260,150,W-280,1);
+
+      ctx.fillStyle="#0f172a"; ctx.font="bold 13px 'DM Sans',sans-serif";
+      ctx.fillText("Demo — Klarna",275,120);
+      ctx.fillStyle="#64748b"; ctx.font="10px 'DM Sans',sans-serif";
+      ctx.fillText("Hi Emma, here's what Klarna could look like in your workflow",275,137);
+
+      // Sidebar controls
+      ctx.fillStyle="#f8fafc"; rr(260,152,160,H-164,8); ctx.fill();
+      ctx.fillStyle="#e2e8f0"; ctx.fillRect(420,152,1,H-164);
+
+      ["TEXTLAGER","MOTTAGARENS LOGGA","STORLEK"].forEach((label,i) => {
+        const ly = 174+i*60;
+        ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.font="bold 9px 'DM Sans',sans-serif";
+        ctx.fillText(label,272,ly);
+        ctx.fillStyle="rgba(0,0,0,0.06)"; rr(270,ly+6,146,36,6); ctx.fill();
+        ctx.strokeStyle="rgba(0,0,0,0.08)"; ctx.lineWidth=1; ctx.stroke();
+        if(i===0){ ctx.fillStyle="#334155"; ctx.font="11px sans-serif"; ctx.fillText("Hi Emma, see how...",278,ly+28); }
+        if(i===1){ ctx.fillStyle="#1d4ed8"; ctx.font="600 11px sans-serif"; ctx.fillText("Klarna logo ✓",278,ly+28); }
+        if(i===2){
+          ctx.fillStyle="#3b82f6"; rr(270,ly+20,80,8,4); ctx.fill();
+          ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(350,ly+24,5,0,Math.PI*2); ctx.fill();
+        }
+      });
+
+      // Main canvas — demo with logo placed
+      ctx.fillStyle="#f0f4f8"; rr(422,156,W-442,H-168,8); ctx.fill();
+      // Grid
+      ctx.strokeStyle="rgba(59,130,246,0.06)"; ctx.lineWidth=0.5;
+      for(let x=432;x<W-22;x+=32){ ctx.beginPath();ctx.moveTo(x,156);ctx.lineTo(x,H-12);ctx.stroke(); }
+      for(let y=166;y<H-12;y+=32){ ctx.beginPath();ctx.moveTo(422,y);ctx.lineTo(W-22,y);ctx.stroke(); }
+
+      // Stat widgets on canvas
+      [{l:"Shares",v:"22,200",c:"#3b82f6"},{l:"Valuation",v:"42M",c:"#10b981"}].forEach((w,i)=>{
+        const wx=436+i*130, wy=170;
+        ctx.fillStyle="#fff"; ctx.shadowColor="rgba(0,0,0,0.1)"; ctx.shadowBlur=8;
+        rr(wx,wy,120,56,8); ctx.fill(); ctx.shadowBlur=0;
+        ctx.fillStyle=w.c; rr(wx,wy,3,56,2); ctx.fill();
+        ctx.fillStyle="#94a3b8"; ctx.font="9px sans-serif"; ctx.fillText(w.l,wx+9,wy+16);
+        ctx.fillStyle="#0f172a"; ctx.font="bold 18px sans-serif"; ctx.fillText(w.v,wx+9,wy+42);
+      });
+
+      // Logo (Klarna pink placeholder)
+      ctx.fillStyle="rgba(255,20,100,0.12)"; ctx.strokeStyle="rgba(255,20,100,0.4)";
+      ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+      rr(436,238,72,44,8); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="#e0115f"; ctx.font="bold 11px sans-serif";
+      ctx.textAlign="center"; ctx.fillText("Klarna",472,264); ctx.textAlign="left";
+      // Drag handles
+      [[436,238],[508,238],[436,282],[508,282]].forEach(([hx,hy]) => {
+        ctx.fillStyle="#3b82f6"; ctx.fillRect(hx-3,hy-3,6,6);
+      });
+
+      // Text layer
+      ctx.fillStyle="#1e293b"; ctx.font="bold 12px 'DM Sans',sans-serif";
+      ctx.fillText("Hi Emma — see Klarna's data",436,310);
+      ctx.fillStyle="#64748b"; ctx.font="10px 'DM Sans',sans-serif";
+      ctx.fillText("Personalised for emma@klarna.com",436,326);
+    }
+
+    if (step === 3) {
+      // Step 4: Export/Send
+      ctx.fillStyle="#0a1020"; ctx.fillRect(0,88,W,H-88);
+
+      // Generated demos grid
+      const demoCompanies = ["Klarna","Spotify","Bolt","Revolut","Northvolt","Wise","Skyscanner","iZettle"];
+      const cols=4, rows=2, dw=Math.floor((W-32)/cols)-10, dh=Math.floor((H-140)/rows)-10;
+      demoCompanies.slice(0,cols*rows).forEach((co,i) => {
+        const col=i%cols, row=Math.floor(i/cols);
+        const dx=16+col*(dw+10), dy=100+row*(dh+10);
+        ctx.fillStyle="#fff"; ctx.shadowColor="rgba(0,0,0,0.2)"; ctx.shadowBlur=10;
+        rr(dx,dy,dw,dh,8); ctx.fill(); ctx.shadowBlur=0;
+
+        // Mini dashboard inside each
+        ctx.fillStyle="#f0f4f8"; rr(dx,dy,dw,22,8); ctx.fill();
+        ctx.fillStyle="#1e293b"; ctx.font="bold 9px sans-serif";
+        ctx.fillText(`Demo — ${co}`,dx+6,dy+14);
+
+        // Fake logo blob
+        const colors={"Klarna":"#e0115f","Spotify":"#1db954","Bolt":"#34d399","Revolut":"#0666eb","Northvolt":"#f59e0b","Wise":"#9ece6a","Skyscanner":"#00b9f1","iZettle":"#ee3124"};
+        ctx.fillStyle=colors[co]||"#3b82f6"; rr(dx+dw-44,dy+26,36,22,5); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.font="bold 8px sans-serif";
+        ctx.textAlign="center"; ctx.fillText(co.slice(0,3),dx+dw-26,dy+41); ctx.textAlign="left";
+
+        // Mini bars
+        [0.4,0.7,0.5,0.9].forEach((bh,bi) => {
+          ctx.fillStyle="rgba(59,130,246,0.3)";
+          rr(dx+6+bi*14,dy+dh-Math.floor(bh*24)-4,10,Math.floor(bh*24),3); ctx.fill();
+        });
+
+        // Checkmark
+        ctx.fillStyle="#10b981"; ctx.beginPath(); ctx.arc(dx+dw-10,dy+10,7,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle="#fff"; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(dx+dw-13,dy+10); ctx.lineTo(dx+dw-10,dy+13); ctx.lineTo(dx+dw-7,dy+7); ctx.stroke();
+      });
+
+      // Bottom action bar
+      ctx.fillStyle="rgba(20,30,50,0.95)"; ctx.fillRect(0,H-56,W,56);
+      ctx.fillStyle="rgba(255,255,255,0.08)"; ctx.fillRect(0,H-57,W,1);
+
+      ctx.fillStyle="rgba(255,255,255,0.5)"; ctx.font="12px 'DM Sans',sans-serif";
+      ctx.fillText(`${demoCompanies.length} personalised demos ready`,16,H-28);
+
+      [
+        {label:"Download ZIP",color:"rgba(255,255,255,0.1)",tx:"rgba(255,255,255,0.8)",bx:W-380},
+        {label:"Send via Gmail",color:"#1a82ff",tx:"#fff",bx:W-240},
+        {label:"Export slides",color:"rgba(91,79,255,0.8)",tx:"#fff",bx:W-110},
+      ].forEach(({label,color,tx,bx}) => {
+        ctx.fillStyle=color; rr(bx,H-44,120,28,7); ctx.fill();
+        ctx.fillStyle=tx; ctx.font="600 11px 'DM Sans',sans-serif";
+        ctx.textAlign="center"; ctx.fillText(label,bx+60,H-26); ctx.textAlign="left";
+      });
+    }
+
+    ctx.fillStyle="rgba(0,0,0,0)"; // flush
+  }, [step, activeLeadIdx]);
+
+  return <canvas ref={canvasRef} width={860} height={480} style={{display:"block",width:"100%",height:"auto"}} />;
+}
+
+function DemoWalkthrough() {
+  const [step, setStep] = useState(0);
+  const [activeLeadIdx, setActiveLeadIdx] = useState(0);
+  const [ref, vis] = useReveal(0.05);
+  const timerRef = useRef(null);
+
+  // Cycle leads in step 2
+  useEffect(() => {
+    if (step !== 1) return;
+    timerRef.current = setInterval(() => {
+      setActiveLeadIdx(i => (i + 1) % DEMO_STEPS[1].leads.length);
+    }, 900);
+    return () => clearInterval(timerRef.current);
+  }, [step]);
+
+  useEffect(() => { setActiveLeadIdx(0); }, [step]);
+
+  return (
+    <div ref={ref} style={{
+      maxWidth: 1100, margin: "0 auto",
+      transition: "opacity .9s, transform .9s",
+      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(32px)",
+    }}>
+      <div style={{ textAlign: "center", marginBottom: 56 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>How it works</div>
+        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px" }}>
+          From zero to 100 demos<br/>in under a minute.
+        </h2>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+          Click through the steps to see exactly how it works.
+        </p>
+      </div>
+
+      {/* Step tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+        {DEMO_STEPS.map((s, i) => (
+          <button key={i} onClick={() => setStep(i)} style={{
+            padding: "9px 20px", borderRadius: 10, border: "none",
+            background: step===i ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.05)",
+            color: step===i ? "#fff" : "rgba(255,255,255,0.45)",
+            fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            transition: "all .2s",
+            boxShadow: step===i ? "0 4px 20px rgba(26,130,255,0.3)" : "none",
+          }}>
+            <span style={{ opacity: .6, marginRight: 6 }}>{i+1}.</span>{s.title.split(" ").slice(0,3).join(" ")}…
+          </button>
+        ))}
+      </div>
+
+      {/* Canvas */}
+      <div style={{
+        borderRadius: 18, overflow: "hidden",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(26,130,255,0.1)",
+        position: "relative",
+      }}>
+        <DemoCanvas step={step} activeLeadIdx={activeLeadIdx} />
+
+        {/* Overlay caption */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          background: "linear-gradient(to top, rgba(7,11,18,0.95) 0%, transparent 100%)",
+          padding: "48px 32px 24px",
+          pointerEvents: "none",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 6 }}>
+            {DEMO_STEPS[step].tag}
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-.3px", marginBottom: 6 }}>
+            {DEMO_STEPS[step].title}
+          </div>
+          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, maxWidth: 500 }}>
+            {DEMO_STEPS[step].desc}
+          </div>
+        </div>
+
+        {/* Nav arrows */}
+        <div style={{ position:"absolute", top:"50%", transform:"translateY(-50%)", right:16, display:"flex", flexDirection:"column", gap:8 }}>
+          {step > 0 && (
+            <button onClick={() => setStep(s=>s-1)} style={{
+              width:36,height:36,borderRadius:"50%",border:"1px solid rgba(255,255,255,0.15)",
+              background:"rgba(10,16,26,0.8)",backdropFilter:"blur(12px)",
+              color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+          )}
+          {step < DEMO_STEPS.length-1 && (
+            <button onClick={() => setStep(s=>s+1)} style={{
+              width:36,height:36,borderRadius:"50%",border:"none",
+              background:"linear-gradient(135deg,#1a82ff,#5b4fff)",
+              color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 4px 16px rgba(26,130,255,0.4)",
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Dot progress */}
+      <div style={{ display:"flex", gap:8, justifyContent:"center", marginTop:20 }}>
+        {DEMO_STEPS.map((_,i) => (
+          <button key={i} onClick={() => setStep(i)} style={{
+            width: step===i ? 24 : 8, height:8, borderRadius:4, border:"none", cursor:"pointer",
+            background: step===i ? "#1a82ff" : "rgba(255,255,255,0.15)",
+            transition:"all .3s", padding:0,
+          }}/>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function WaitlistForm({ onEnterApp }) {
@@ -1252,24 +1656,9 @@ export default function Landing({ onEnterApp }) {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS — interactive demo walkthrough */}
       <section id="how-it-works" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
-        <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 80 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>How it works</div>
-            <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: 0 }}>
-              From upload to inbox<br/>in under a minute.
-            </h2>
-          </div>
-          <div ref={stepsRef} style={{ display: "flex", flexDirection: "column", gap: 48 }}>
-            {[
-              { icon: Icon.upload, title: "Upload your product screenshot", desc: "Start with any screenshot — a dashboard, feature view or landing page. Supports PNG, JPG, WEBP and HEIC.", delay: 0 },
-              { icon: Icon.users, title: "Paste your prospect list", desc: "Drop in your prospect names and companies. Logoplacers automatically finds each logo and maps it to your template.", delay: 120 },
-              { icon: Icon.move, title: "Position logos and text", desc: "Use the visual editor to drag your prospect's logo onto the perfect spot. Add personalised text with their name or company.", delay: 240 },
-              { icon: Icon.send, title: "Send directly from Gmail", desc: "Hit send. Logoplacers generates a unique image for each prospect and delivers it via Gmail with built-in anti-spam delays.", delay: 360 },
-            ].map((s, i) => <Step key={i} n={i+1} {...s} visible={stepsVis} />)}
-          </div>
-        </div>
+        <DemoWalkthrough />
       </section>
 
       {/* TESTIMONIALS */}
