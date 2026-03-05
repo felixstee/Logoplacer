@@ -357,8 +357,36 @@ function LiveDemo() {
   const [logoPos,  setLogoPos]  = useState({ x: 220, y: 108 });
   const [logoSize, setLogoSize] = useState(64);
   const [dragging, setDragging] = useState(false);
+  const [accentColor, setAccentColor] = useState(null); // dominant color from logo
   const dragOffset = useRef({ ox: 0, oy: 0 });
   const debounceRef = useRef(null);
+
+  // Extract dominant color from logo
+  const extractColor = useCallback((img) => {
+    try {
+      const tmp = document.createElement("canvas");
+      tmp.width = 40; tmp.height = 40;
+      const ctx2 = tmp.getContext("2d");
+      ctx2.drawImage(img, 0, 0, 40, 40);
+      const data = ctx2.getImageData(0, 0, 40, 40).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const a = data[i+3];
+        if (a < 30) continue; // skip transparent
+        const rv = data[i], gv = data[i+1], bv = data[i+2];
+        // Skip near-white and near-black pixels
+        const brightness = (rv + gv + bv) / 3;
+        const saturation = Math.max(rv,gv,bv) - Math.min(rv,gv,bv);
+        if (brightness > 230 || brightness < 25 || saturation < 20) continue;
+        r += rv; g += gv; b += bv; count++;
+      }
+      if (count > 0) {
+        setAccentColor(`rgb(${Math.round(r/count)},${Math.round(g/count)},${Math.round(b/count)})`);
+      } else {
+        setAccentColor(null);
+      }
+    } catch { setAccentColor(null); }
+  }, []);
 
   const W = 660, H = 420;
 
@@ -374,7 +402,10 @@ function LiveDemo() {
 
     // ── Left sidebar (dark navy like Findex) ─────────────────────
     const sbW = 180;
-    ctx.fillStyle = "#1a2744";
+    // Use brand color if available
+    const brand = accentColor || "#1a2744";
+    const brandMid = accentColor || "#1d3a6e";
+    ctx.fillStyle = accentColor ? brand : "#1a2744";
     ctx.fillRect(0, 0, sbW, H);
 
     // Sidebar logo area
@@ -394,10 +425,10 @@ function LiveDemo() {
     navItems.forEach((item, i) => {
       const y = 72 + i * 40;
       if (i === 1) {
-        ctx.fillStyle = "rgba(59,130,246,0.25)";
+        ctx.fillStyle = accentColor ? "rgba(255,255,255,0.15)" : "rgba(59,130,246,0.25)";
         roundRect(ctx, 10, y - 10, sbW - 20, 32, 7);
         ctx.fill();
-        ctx.fillStyle = "#60a5fa";
+        ctx.fillStyle = accentColor ? "rgba(255,255,255,0.9)" : "#60a5fa";
       } else {
         ctx.fillStyle = "rgba(255,255,255,0.38)";
       }
@@ -487,7 +518,7 @@ function LiveDemo() {
       ctx.fill();
       ctx.shadowBlur = 0;
       // Accent bar left
-      ctx.fillStyle = card.accent;
+      ctx.fillStyle = (i===0 && accentColor) ? accentColor : card.accent;
       roundRect(ctx, cx, cardY, 4, 70, 2);
       ctx.fill();
       // Values
@@ -535,7 +566,7 @@ function LiveDemo() {
       roundRect(ctx, bx, panelY + 44, barW2, panelH - 58, 4);
       ctx.fill();
       // Value bar
-      ctx.fillStyle = i === 5 ? "#3b82f6" : "#bfdbfe";
+      ctx.fillStyle = i === 5 ? (accentColor || "#3b82f6") : (accentColor ? accentColor.replace("rgb(","rgba(").replace(")",",0.25)") : "#bfdbfe");
       roundRect(ctx, bx, by, barW2, bh, 4);
       ctx.fill();
     });
@@ -617,26 +648,49 @@ function LiveDemo() {
         ctx.fillStyle = "#3b82f6";
         ctx.fillRect(hx-3, hy-3, 6, 6);
       });
-    } else if (company && fetching) {
-      ctx.fillStyle = "rgba(59,130,246,0.08)";
-      ctx.strokeStyle = "rgba(59,130,246,0.3)";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5, 4]);
-      roundRect(ctx, logoPos.x, logoPos.y, logoSize, logoSize, 8);
-      ctx.fill(); ctx.stroke();
+    } else {
+      // Large white drop zone — always visible as invitation to place logo
+      const zoneSize = 100;
+      const zx = logoPos.x, zy = logoPos.y;
+      // White card
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.shadowColor = "rgba(0,0,0,0.15)";
+      ctx.shadowBlur = 16;
+      roundRect(ctx, zx, zy, zoneSize, zoneSize, 12);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // Border
+      ctx.strokeStyle = fetching ? "rgba(59,130,246,0.6)" : "rgba(59,130,246,0.35)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash(fetching ? [] : [5, 3]);
+      roundRect(ctx, zx, zy, zoneSize, zoneSize, 12);
+      ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "#3b82f6";
-      ctx.font = "10px 'DM Sans',sans-serif";
+      // Icon
+      ctx.strokeStyle = "rgba(59,130,246,0.5)";
+      ctx.lineWidth = 1.5;
+      // Simple logo icon in centre
+      const cx2 = zx + zoneSize/2, cy2 = zy + zoneSize/2 - 8;
+      roundRect(ctx, cx2-14, cy2-14, 28, 28, 6);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(59,130,246,0.1)";
+      ctx.fill();
+      ctx.fillStyle = "rgba(59,130,246,0.6)";
+      ctx.font = "bold 16px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Finding logo…", logoPos.x + logoSize/2, logoPos.y + logoSize/2 + 4);
+      ctx.fillText(company ? company[0].toUpperCase() : "?", cx2, cy2+6);
+      // Label
+      ctx.fillStyle = fetching ? "#3b82f6" : "rgba(30,41,59,0.55)";
+      ctx.font = fetching ? "bold 9px 'DM Sans',sans-serif" : "9px 'DM Sans',sans-serif";
+      ctx.fillText(fetching ? "Fetching logo…" : (company ? company : "Logo here"), cx2, zy + zoneSize - 10);
       ctx.textAlign = "left";
     }
-  }, [company, name, email, logoEl, logoPos, logoSize, fetching, W, H]);
+  }, [company, name, email, logoEl, logoPos, logoSize, fetching, accentColor, W, H]);
 
   // Fetch logo
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!company.trim()) { setLogoEl(null); return; }
+    if (!company.trim()) { setLogoEl(null); setAccentColor(null); return; }
     debounceRef.current = setTimeout(async () => {
       setFetching(true);
       try {
@@ -646,7 +700,7 @@ function LiveDemo() {
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
           const img = new Image();
-          img.onload = () => { setLogoEl(img); setFetching(false); };
+          img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
           img.src = url;
         } else { setLogoEl(null); setFetching(false); }
       } catch { setLogoEl(null); setFetching(false); }
@@ -796,6 +850,15 @@ function LiveDemo() {
             )}
           </div>
 
+          {accentColor && (
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:accentColor, flexShrink:0,
+                border:"1px solid rgba(255,255,255,0.15)", boxShadow:`0 0 16px ${accentColor}55` }} />
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", lineHeight:1.5 }}>
+                Brand colour detected — applied to demo automatically
+              </div>
+            </div>
+          )}
           <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
             Full tool: drag anywhere · add text layers · bulk export · send via Gmail
@@ -884,7 +947,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
     ctx.fillText("Personalised demos", 50, 41);
 
     // Top right buttons
-    const btns = ["Förhandsvisa","Skicka","Ladda ner"];
+    const btns = ["Preview","Send","Download"];
     btns.forEach((b,i) => {
       const bx = W - 260 + i * 90;
       ctx.fillStyle = i===1 ? "#1a82ff" : "rgba(255,255,255,0.07)";
@@ -916,29 +979,29 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
       rr(16,108,210,100,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle="rgba(255,255,255,0.25)"; ctx.font="11px 'DM Sans',sans-serif";
-      ctx.textAlign="center"; ctx.fillText("BASBILD",121,130);
+      ctx.textAlign="center"; ctx.fillText("BASE IMAGE",121,130);
       ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.font="600 12px 'DM Sans',sans-serif";
-      ctx.fillText("Klicka eller dra hit",121,152);
+      ctx.fillText("Click or drag here",121,152);
       ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="10px 'DM Sans',sans-serif";
       ctx.fillText("JPG · PNG · WEBP · HEIC",121,168);
       ctx.textAlign="left";
 
-      // Min logga zone
+      // My logo zone
       ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.strokeStyle="rgba(255,255,255,0.12)";
       ctx.setLineDash([5,4]); rr(16,220,210,80,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="600 12px 'DM Sans',sans-serif";
-      ctx.textAlign="center"; ctx.fillText("MIN LOGGA",121,258);
+      ctx.textAlign="center"; ctx.fillText("MY LOGO",121,258);
       ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="10px 'DM Sans',sans-serif";
-      ctx.fillText("Klicka eller dra hit loggan",121,274); ctx.textAlign="left";
+      ctx.fillText("Click or drag here loggan",121,274); ctx.textAlign="left";
 
       // Main area — empty state
       ctx.fillStyle="#0a1020"; ctx.fillRect(241,88,W-241,H-88);
       ctx.fillStyle="rgba(255,255,255,0.06)";
       rr(320,180,W-400,H-250,16); ctx.fill();
       ctx.fillStyle="rgba(255,255,255,0.15)"; ctx.font="13px 'DM Sans',sans-serif";
-      ctx.textAlign="center"; ctx.fillText("Ingen bild vald",W/2+60,280);
+      ctx.textAlign="center"; ctx.fillText("No image selected",W/2+60,280);
       ctx.fillStyle="rgba(255,255,255,0.3)"; ctx.font="11px 'DM Sans',sans-serif";
-      ctx.fillText("Ladda upp en basbild till vänster",W/2+60,300); ctx.textAlign="left";
+      ctx.fillText("Upload a base image on the left",W/2+60,300); ctx.textAlign="left";
     }
 
     if (step === 1) {
@@ -947,7 +1010,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.strokeStyle="rgba(255,255,255,0.08)"; ctx.lineWidth=1;
       rr(16,108,210,30,6); ctx.fill(); ctx.stroke();
       ctx.fillStyle="#5ba4ff"; ctx.font="600 10px 'DM Sans',sans-serif";
-      ctx.fillText("MOTTAGARENS LOGGA",22,127);
+      ctx.fillText("RECIPIENT LOGO",22,127);
       ctx.fillStyle="#1a82ff"; ctx.font="600 10px 'DM Sans',sans-serif";
       ctx.textAlign="right"; ctx.fillText("+ Ny",226,127); ctx.textAlign="left";
 
@@ -1033,7 +1096,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.fillStyle="#f8fafc"; rr(260,152,160,H-164,8); ctx.fill();
       ctx.fillStyle="#e2e8f0"; ctx.fillRect(420,152,1,H-164);
 
-      ["TEXTLAGER","MOTTAGARENS LOGGA","STORLEK"].forEach((label,i) => {
+      ["TEXT LAYERS","RECIPIENT LOGO","STORLEK"].forEach((label,i) => {
         const ly = 174+i*60;
         ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.font="bold 9px 'DM Sans',sans-serif";
         ctx.fillText(label,272,ly);

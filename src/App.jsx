@@ -605,6 +605,16 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   const ctx = off.getContext("2d");
   if (canvasBg?.enabled) { ctx.fillStyle = canvasBg.color; ctx.fillRect(0, 0, off.width, off.height); }
   ctx.drawImage(baseImg, 0, 0);
+  // Personalised color overlay
+  if (canvasBg?.personalisedColors && canvasBg?.brandColor) {
+    const { r, g, b } = canvasBg.brandColor;
+    ctx.save();
+    ctx.globalCompositeOperation = "color";
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(0, 0, off.width, off.height);
+    ctx.restore();
+  }
   const scaleX = baseImg.width / displayW, scaleY = baseImg.height / displayH;
   const scale = Math.max(scaleX, scaleY);
 
@@ -649,6 +659,29 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   return off;
 }
 
+
+// Extract dominant non-white/non-black color from an image element
+function extractDominantColor(img) {
+  try {
+    const tmp = document.createElement("canvas");
+    tmp.width = 48; tmp.height = 48;
+    const ctx2 = tmp.getContext("2d");
+    ctx2.drawImage(img, 0, 0, 48, 48);
+    const data = ctx2.getImageData(0, 0, 48, 48).data;
+    let r = 0, g = 0, b = 0, count = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i+3]; if (a < 30) continue;
+      const rv = data[i], gv = data[i+1], bv = data[i+2];
+      const brightness = (rv + gv + bv) / 3;
+      const sat = Math.max(rv,gv,bv) - Math.min(rv,gv,bv);
+      if (brightness > 230 || brightness < 25 || sat < 18) continue;
+      r += rv; g += gv; b += bv; count++;
+    }
+    if (count < 10) return null;
+    return { r: Math.round(r/count), g: Math.round(g/count), b: Math.round(b/count) };
+  } catch { return null; }
+}
+
 function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle }) {
   const inputRef = useRef(null);
   const color = LAYER_COLORS[idx % LAYER_COLORS.length];
@@ -681,7 +714,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
           </div>
           <div className="cg">
             <div className="cg-cell">
-              <span className="cg-label">Storlek</span>
+              <span className="cg-label">Size</span>
               <PxInput value={layer.fontSize} onChange={v => onChange({ fontSize: v })} color="var(--t1)" min={1} max={1000} />
             </div>
             <div className="cg-cell">
@@ -731,11 +764,11 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
       {isOpen && (
         <div className="lcard-bd">
           <div className="sl-wrap">
-            <div className="sl-head"><span className="sl-label">Storlek</span><PxInput value={inst.size} onChange={v => onChange({ size: v })} color={color} /></div>
+            <div className="sl-head"><span className="sl-label">Size</span><PxInput value={inst.size} onChange={v => onChange({ size: v })} color={color} /></div>
             <input type="range" min={1} max={1000} value={inst.size} onChange={e => onChange({ size: Number(e.target.value) })} style={{ accentColor: color }} />
           </div>
           <div className="sl-wrap">
-            <div className="sl-head"><span className="sl-label">Opacitet</span>
+            <div className="sl-head"><span className="sl-label">Opacity</span>
             <PxInput value={inst.opacity ?? 100} onChange={v => onChange({ opacity: v })} color={color} suffix="%" min={1} max={100} /></div>
             <input type="range" min={10} max={100} value={inst.opacity ?? 100} onChange={e => onChange({ opacity: Number(e.target.value) })} style={{ accentColor: color }} />
           </div>
@@ -1002,7 +1035,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       <div className="sidebar">
 
         {/* Video upload */}
-        <span className="s-label">Din video</span>
+        <span className="s-label">Your video</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
             <DropZone
@@ -1014,7 +1047,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <label style={{cursor:"pointer",display:"block"}}>
                 <input type="file" accept="video/*" style={{display:"none"}} onChange={e => handleVideoFile(e.target.files[0])} />
                 <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg></div>
-                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Klicka eller dra hit din video</p>}
+                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag here din video</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
@@ -1024,7 +1057,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         </div>
 
         {/* Demo image status */}
-        <span className="s-label">Personlig demobild</span>
+        <span className="s-label">Personal demo image</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
             {renderIngredients?.baseImg ? (
@@ -1040,7 +1073,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div style={{width:8,height:8,borderRadius:"50%",background:"var(--orange)",marginTop:4,flexShrink:0}} />
                 <div>
                   <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Ingen demobild</div>
-                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Gå till Bild-läget och lägg till logga + text. Den renderas automatiskt per bolag.</div>
+                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Gå till Image-läget och lägg till logga + text. Den renderas automatiskt per bolag.</div>
                 </div>
               </div>
             )}
@@ -1048,7 +1081,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         </div>
 
         {/* Overlay text */}
-        <span className="s-label">Introtext (fas 1)</span>
+        <span className="s-label">Intro text (phase 1)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
             <input className="inp" value={overlay.text} placeholder="((name))s framtida IR"
@@ -1060,7 +1093,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             </div>
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Storlek (px)</span>
+                <span className="timing-label">Size (px)</span>
                 <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize}
                   onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
               </div>
@@ -1083,7 +1116,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <div className="timing-cell">
                 <span className="timing-label">Textbakgrund</span>
                 <div className="sl-wrap" style={{marginTop:0}}>
-                  <div className="sl-head"><span className="sl-label">Opacitet</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
+                  <div className="sl-head"><span className="sl-label">Opacity</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
                   <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"var(--blue)"}} />
                 </div>
               </div>
@@ -1096,7 +1129,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         </div>
 
         {/* Timing + order */}
-        <span className="s-label">Timing (sekunder)</span>
+        <span className="s-label">Timing (seconds)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
             <div className="timing-grid">
@@ -1123,7 +1156,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
             {/* Phase order */}
             <div style={{marginTop:12,borderTop:"0.5px solid var(--sep)",paddingTop:12}}>
-              <span style={{fontSize:11,color:"var(--t3)",display:"block",marginBottom:8,letterSpacing:.4,textTransform:"uppercase",fontWeight:600}}>Bildordning</span>
+              <span style={{fontSize:11,color:"var(--t3)",display:"block",marginBottom:8,letterSpacing:.4,textTransform:"uppercase",fontWeight:600}}>Imageordning</span>
               <div style={{display:"flex",gap:6}}>
                 <button
                   onClick={() => setPhaseOrder(["demo","screenshot"])}
@@ -1161,7 +1194,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           {noDemoImg && (
             <span style={{fontSize:12,color:"var(--orange)",display:"flex",alignItems:"center",gap:5}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:"var(--orange)",display:"inline-block"}} />
-              Ingen demobild — gå till Bild-läget
+              Ingen demobild — gå till Image-läget
             </span>
           )}
           <button className="btn-p" style={{marginLeft:"auto",width:"auto",padding:"8px 16px",fontSize:13}}
@@ -1186,7 +1219,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
           {readyCompanies.length === 0 && (
             <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>
-              Lägg till bolag i Bild-läget först
+              Add companies in Image mode first
             </div>
           )}
           {readyCompanies.map(c => (
@@ -1406,7 +1439,7 @@ function LoginPage({ onLogin, loading }) {
           </div>
           <div>
             <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px", lineHeight:1 }}>LogoPlacer</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personaliserade demos</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
           </div>
         </div>
 
@@ -1423,7 +1456,7 @@ function LoginPage({ onLogin, loading }) {
         }}>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>
-              Logga in
+              Sign in
             </div>
             <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>
               Anvand ditt Google-konto for att<br/>fa tillgang till appen.
@@ -1453,11 +1486,11 @@ function LoginPage({ onLogin, loading }) {
               <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
               <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
             </svg>
-            {loading ? "Loggar in..." : "Fortsatt med Google"}
+            {loading ? "Signing in..." : "Continue with Google"}
           </button>
 
           <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center" }}>
-            Endast godkanda anvandare far tillgang
+            Access is by invitation only
           </div>
         </div>
       </div>
@@ -1526,7 +1559,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   const token = sharedToken;
   const [subject, setSubject] = useState("En personlig demo för ((company))");
   const [bodyText, setBodyText] = useState("Hej ((name)),\n\nHär är en personlig demo vi satt ihop speciellt för er på ((company)).\n\nHör gärna av dig!\n\nMvh");
-  const [attachType, setAttachType] = useState("bild"); // "bild" | "video"
+  const [attachType, setAttachType] = useState("image"); // "image" | "video"
   const [selected, setSelected] = useState(null); // Set of ids, init on step change
   const [previews, setPreviews] = useState({});
   const [results, setResults] = useState({});
@@ -1631,17 +1664,17 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-head">
           <div>
             <div className="modal-title">
-              { step === "auth"    && "Skicka e-post" }
+              { step === "auth"    && "Send email" }
               { step === "compose" && "Skriv meddelande" }
               { step === "approve" && `Godkänn utskick — ${selectedContacts.length} mottagare` }
-              { step === "sending" && "Skickar…" }
+              { step === "sending" && "Sending…" }
               { step === "done"    && "Klart!" }
             </div>
             <div className="modal-sub">
-              { step === "auth"    && "Logga in med Google för att skicka via Gmail" }
-              { step === "compose" && "((name)) och ((company)) ersätts per mottagare. Bilden bifogas automatiskt." }
+              { step === "auth"    && "Sign in med Google för att skicka via Gmail" }
+              { step === "compose" && "((name)) och ((company)) ersätts per mottagare. Imageen bifogas automatiskt." }
               { step === "approve" && "Granska nedan och bekräfta innan skickning." }
-              { (step === "sending" || step === "done") && "Skickar personaliserade bilder via Gmail API" }
+              { (step === "sending" || step === "done") && "Sending personalised images via Gmail API" }
             </div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
@@ -1656,23 +1689,23 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               <div className="auth-icon">📧</div>
               <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Anslut Gmail</div>
               <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
-                LogoPlacer skickar e-post via ditt Gmail-konto. Inga meddelanden läses — appen har bara skicka-behörighet.
+                LogoPlacer skickar email(s) via ditt Gmail-konto. Inga meddelanden läses — appen har bara skicka-behörighet.
               </div>
               {withEmail.length === 0 ? (
                 <div style={{fontSize:13,color:"var(--orange)",padding:"10px 16px",background:"hsla(31,92%,58%,.1)",borderRadius:8}}>
-                  Inga kontakter har e-postadress.<br/>
-                  <span style={{fontSize:12,color:"var(--t3)"}}>Klistra in text med e-postadresser, eller lägg till manuellt.</span>
+                  Inga kontakter har email(s)adress.<br/>
+                  <span style={{fontSize:12,color:"var(--t3)"}}>Paste text with email addresses, or add manually.</span>
                 </div>
               ) : (
                 <>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} kontakter med e-post redo</div>
+                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} kontakter med email(s) redo</div>
                   <button className="google-btn" onClick={login}>
                     <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z"/><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z"/></svg>
-                    Fortsätt med Google
+                    Continue with Google
                   </button>
                 </>
               )}
-              {noEmail.length > 0 && <div style={{fontSize:11,color:"var(--t4)"}}>{noEmail.length} kontakter saknar e-post och hoppas över</div>}
+              {noEmail.length > 0 && <div style={{fontSize:11,color:"var(--t4)"}}>{noEmail.length} kontakter saknar email(s) och hoppas över</div>}
             </div>
           )}
 
@@ -1690,7 +1723,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)}
                   placeholder="En personlig demo för ((company))" />
                 <div className="tag-btns" style={{marginTop:1}}>
-                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Lägg till:</span>
+                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((name))")}>+ förnamn</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((fullname))")}>+ fullnamn</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((company))")}>+ bolag</button>
@@ -1702,7 +1735,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 <label className="field-lbl">Meddelande</label>
                 <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
                 <div className="tag-btns" style={{marginTop:1}}>
-                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Lägg till:</span>
+                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((name))")}>+ förnamn</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((fullname))")}>+ fullnamn</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((company))")}>+ bolag</button>
@@ -1713,7 +1746,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               {/* Förhandsvisning för första mottagaren */}
               {selectedContacts.length > 0 && (
                 <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"10px 12px"}}>
-                  <div style={{fontSize:10,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase",color:"var(--t3)",marginBottom:6}}>Förhandsgranskning — {selectedContacts[0].personName || selectedContacts[0].companyName}</div>
+                  <div style={{fontSize:10,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase",color:"var(--t3)",marginBottom:6}}>Preview — {selectedContacts[0].personName || selectedContacts[0].companyName}</div>
                   <div style={{fontSize:12,color:"var(--t2)",marginBottom:3}}>
                     <span style={{color:"var(--t4)"}}>Ämne: </span>
                     {resolveStr(subject, selectedContacts[0]) || <span style={{color:"var(--t4)",fontStyle:"italic"}}>tom</span>}
@@ -1785,7 +1818,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <div className={`send-st ${results[c.id] || ""}`}>
                     {!results[c.id] && <span style={{color:"var(--t4)"}}>väntar</span>}
                     {results[c.id] === "ing" && "skickar…"}
-                    {results[c.id] === "ok"  && "✓ Skickat"}
+                    {results[c.id] === "ok"  && "✓ Sent"}
                     {results[c.id] === "err" && "✕ Fel"}
                   </div>
                 </div>
@@ -1805,7 +1838,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-foot">
           {step === "compose" && (
             <>
-              <button className="btn-s" onClick={onClose}>Avbryt</button>
+              <button className="btn-s" onClick={onClose}>Cancel</button>
               <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
                 disabled={!selectedContacts.length}
                 onClick={() => setStep("approve")}>
@@ -1815,15 +1848,15 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           )}
           {step === "approve" && (
             <>
-              <button className="btn-s" onClick={() => setStep("compose")}>← Tillbaka</button>
+              <button className="btn-s" onClick={() => setStep("compose")}>← Back</button>
               <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}}
                 onClick={sendAll}>
-                ✓ Skicka {selectedContacts.length} e-post
+                ✓ Send {selectedContacts.length} email(s)
               </button>
             </>
           )}
-          {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Stäng</button>}
-          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>Avbryt</button>}
+          {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Close</button>}
+          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>Cancel</button>}
         </div>
       </div>
     </div>
@@ -1842,9 +1875,9 @@ function Paywall() {
     <div style={{minHeight:"100vh",background:"#0d0d0f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",padding:"24px"}}>
       <div style={{textAlign:"center",maxWidth:480}}>
         <h1 style={{color:"#fff",fontSize:30,fontWeight:700,margin:"0 0 12px"}}>LogoPlacer Pro</h1>
-        <p style={{color:"#8e8e93",fontSize:16,lineHeight:1.65,margin:"0 0 36px"}}>Skicka personaliserade demos direkt till dina prospekts inbox.<br/>Mer svar. Fler moten. Mer affar.</p>
+        <p style={{color:"#8e8e93",fontSize:16,lineHeight:1.65,margin:"0 0 36px"}}>Send personaliserade demos direkt till dina prospekts inbox.<br/>Mer svar. Fler moten. Mer affar.</p>
         <a href={STRIPE_PAYMENT_LINK} style={{display:"inline-block",background:"#0a84ff",color:"#fff",fontWeight:600,fontSize:16,padding:"15px 44px",borderRadius:14,textDecoration:"none"}}>Kom igang - 299 kr/man</a>
-        <p style={{color:"#48484a",fontSize:13,marginTop:12}}>Avbryt nar som helst. Ingen bindningstid.</p>
+        <p style={{color:"#48484a",fontSize:13,marginTop:12}}>Cancel nar som helst. Ingen bindningstid.</p>
       </div>
     </div>
   );
@@ -1944,7 +1977,7 @@ function App() {
   // Symbols
   const [symbols, setSymbols] = useState([]);
 
-  const [mode, setMode] = useState("bild"); // "bild" | "video" | "animate"
+  const [mode, setMode] = useState("image"); // "image" | "video" | "animate"
   const [dragging, setDragging] = useState(null);
   const [toast, setToast] = useState(null);
   const [zipping, setZipping] = useState(false);
@@ -1955,6 +1988,8 @@ function App() {
   const containerRef = useRef(null);
   const [canvasZoom, setCanvasZoom] = useState(1);
   const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
+  const [personalisedColors, setPersonalisedColors] = useState(false);
+  const [brandColor, setBrandColor] = useState(null); // { r, g, b }
   const baseImageRef = useRef(null);
   const canvasSizeRef = useRef({ w: 0, h: 0 });
 
@@ -2004,7 +2039,7 @@ function App() {
     const { w, h } = canvasSizeRef.current;
     const first = companies.find(c => c.status === "ok");
     if (!first) { setPersonalImgEl(null); return; }
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl, canvasBg);
+    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl, { ...canvasBg, personalisedColors, brandColor: first.brandColor || null });
     const img = new Image();
     img.onload = () => setPersonalImgEl(img);
     img.src = off.toDataURL();
@@ -2086,7 +2121,7 @@ function App() {
     if (contacts.length === 0) { showToast("Inga kontakter — prova manuellt"); return; }
     contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
     const withEmail = contacts.filter(c => c.email).length;
-    showToast(`${contacts.length} kontakter tillagda${withEmail ? ` · ${withEmail} med e-post` : ""}`);
+    showToast(`${contacts.length} kontakter tillagda${withEmail ? ` · ${withEmail} med email(s)` : ""}`);
     setPasteText("");
   };
 
@@ -2131,9 +2166,9 @@ function App() {
     const previews = [];
     let done = 0;
     targets.forEach((comp, i) => {
-      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, canvasBg);
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, brandColor: comp.brandColor || null });
       off.toBlob(blob => {
-        previews[i] = { name: comp.companyName || "Forhandsgranskning", url: URL.createObjectURL(blob) };
+        previews[i] = { name: comp.companyName || "Preview", url: URL.createObjectURL(blob) };
         done++;
         if (done === targets.length) {
           setAllPreviews(previews);
@@ -2203,7 +2238,7 @@ function App() {
             <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".9"/></svg></div>
             <div>
               <div className="header-name">LogoPlacer</div>
-              <div className="header-sub">Personaliserade demos</div>
+              <div className="header-sub">Personalised demos</div>
             </div>
           </div>
           <div className="header-btns">
@@ -2212,23 +2247,23 @@ function App() {
                 <img src={sessionUser.picture} alt="" style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--sep)"}} />
                 <span style={{fontSize:12,color:"var(--t3)"}}>{sessionUser.name?.split(" ")[0]}</span>
                 <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }}
-                  style={{fontSize:11,padding:"3px 8px"}}>Logga ut</button>
+                  style={{fontSize:11,padding:"3px 8px"}}>Sign out</button>
               </div>
             )}
-            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}><span style={{display:"flex",alignItems:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Förhandsvisa</span></button>
+            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}><span style={{display:"flex",alignItems:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview</span></button>
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-              Skicka
+              Send
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
             <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
-              {zipping ? "Packar..." : `Ladda ner (${readyCount})`}
+              {zipping ? "Packing..." : `Download (${readyCount})`}
             </button>
           </div>
         </div>
 
         <div className="mode-tabs">
-          <button className={`mode-tab${mode === "bild" ? " active" : ""}`} onClick={() => setMode("bild")}>Bild</button>
+          <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>Image</button>
           <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>Video</button>
         </div>
 
@@ -2243,11 +2278,11 @@ function App() {
           } : null}
         />}
 
-        {mode === "bild" && <div className="workspace">
+        {mode === "image" && <div className="workspace">
           <div className="sidebar">
 
             {/* Bas-bild */}
-            <span className="s-label">Basbild</span>
+            <span className="s-label">Base image</span>
             <div className="card"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleFileUpload(e); }} className="upload-zone" style={{}}>
                 <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
@@ -2255,27 +2290,27 @@ function App() {
                   <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
                   {converting && <p className="uz-active">Konverterar...</p>}
                   {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
-                  {!converting && !baseImageName && <p className="uz-text">Klicka eller dra hit</p>}
+                  {!converting && !baseImageName && <p className="uz-text">Click or drag here</p>}
                   <p className="uz-hint">JPG · PNG · WEBP · HEIC · GIF</p>
                 </label>
               </DropZone>
             </div></div>
 
-            {/* Min logga */}
-            <span className="s-label">Min logga</span>
+            {/* My logo */}
+            <span className="s-label">My logo</span>
             <div className="card"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleMyLogoUpload(e); }} className="upload-zone" style={{}}>
                 <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
                   <input type="file" accept="image/*" style={{display:"none"}} onChange={handleMyLogoUpload} />
                   <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01"/></svg></div>
-                  {myLogoName ? <p className="uz-active">{myLogoName}</p> : <p className="uz-text">Klicka eller dra hit loggan</p>}
-                  <p className="uz-hint">PNG med transparent bakgrund</p>
+                  {myLogoName ? <p className="uz-active">{myLogoName}</p> : <p className="uz-text">Click or drag here loggan</p>}
+                  <p className="uz-hint">PNG with transparent background</p>
                 </label>
               </DropZone>
               {myLogoEl && (
                 <div className="sl-wrap">
                   <div className="sl-head">
-                    <span className="sl-label">Storlek</span>
+                    <span className="sl-label">Size</span>
                     <PxInput value={myLogoSize} onChange={v => setMyLogoSize(v)} color="var(--purple)" />
                   </div>
                   <input type="range" min={1} max={1000} value={myLogoSize} onChange={e => setMyLogoSize(Number(e.target.value))} style={{ accentColor: "var(--purple)" }} />
@@ -2286,7 +2321,7 @@ function App() {
             {/* Canvas-bakgrund */}
             <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom: canvasBg.enabled ? 10 : 0}}>
-                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Bakgrundsfärg</span>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Background colour</span>
                 <label style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}>
                   <span style={{fontSize:12,color:"var(--t3)"}}>{canvasBg.enabled ? "På" : "Av"}</span>
                   <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
@@ -2305,9 +2340,29 @@ function App() {
               )}
             </div>
 
-            {/* Mottagarens logga */}
+            {/* Recipient logo */}
             <div className="s-row">
-              <span className="s-label">Mottagarens logga</span>
+              {/* Personalised colours toggle */}
+            <div className="s-row" style={{padding:"8px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"0.5px solid var(--sep)"}}>
+              <div>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Personalised colours</span>
+                <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Tint image with prospect's brand color</div>
+              </div>
+              <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
+                <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)}
+                  style={{opacity:0,width:0,height:0,position:"absolute"}}/>
+                <span style={{
+                  position:"absolute",inset:0,borderRadius:9,
+                  background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s",
+                }}>
+                  <span style={{
+                    position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,
+                    borderRadius:"50%",background:"#fff",transition:"left .2s",
+                  }}/>
+                </span>
+              </label>
+            </div>
+            <span className="s-label">Recipient logo</span>
               <button className="btn-text" onClick={addLogoInst}>+ Ny</button>
             </div>
             <div style={{padding:"0 10px"}}>
@@ -2322,7 +2377,7 @@ function App() {
 
             {/* Text */}
             <div className="s-row">
-              <span className="s-label">Textlager</span>
+              <span className="s-label">Text layers</span>
               <button className="btn-text" onClick={addTextLayer}>+ Ny</button>
             </div>
             <div style={{padding:"0 10px"}}>
@@ -2335,8 +2390,8 @@ function App() {
               ))}
             </div>
 
-            {/* Symboler */}
-            <span className="s-label">Symboler</span>
+            {/* Symbols */}
+            <span className="s-label">Symbols</span>
             <div className="card">
               <div className="sym-grid">
                 {SYMBOL_OPTIONS.map(char => (
@@ -2363,11 +2418,11 @@ function App() {
             </div>
 
             {/* Klistra in */}
-            {/* Kontakter */}
-            <span className="s-label">Kontakter</span>
+            {/* Contacts */}
+            <span className="s-label">Contacts</span>
             <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
-              <textarea className="paste-area" placeholder={"Klistra från Fair/LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nEller: Jordan , Stratton Oakmont"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
-              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extrahera kontakter</button>
+              <textarea className="paste-area" placeholder={"Paste from CRM/LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan , Stratton Oakmont"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
+              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extract contacts</button>
               <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
                 <p style={{fontSize:12,color:"var(--t3)"}}>Eller lägg till manuellt</p>
                 <input className="inp sm" placeholder="Personens namn (valfritt)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
@@ -2441,7 +2496,7 @@ function App() {
                           </div>
                         </div>
                         <div style={{display:"flex", gap:6, justifyContent:"flex-end"}}>
-                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={()=>setEditingContact(null)}>Avbryt</button>
+                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={()=>setEditingContact(null)}>Cancel</button>
                           <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={()=>{
                             setCompanies(cs=>cs.map(x=>x.id===c.id?{...x,personName:editingContact.name,email:editingContact.email||null}:x));
                             setEditingContact(null);
@@ -2466,8 +2521,8 @@ function App() {
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  <p className="empty-title">Ingen bild vald</p>
-                  <p className="empty-sub">Ladda upp en basbild till vänster</p>
+                  <p className="empty-title">No image selected</p>
+                  <p className="empty-sub">Upload en basbild till vänster</p>
                 </div>
               ) : (
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
@@ -2491,7 +2546,7 @@ function App() {
                       {myLogoEl && (
                         <div className="overlay-box"
                           style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
-                          <div className="ov-pill" style={{background:"var(--purple)"}}>Min logga</div>
+                          <div className="ov-pill" style={{background:"var(--purple)"}}>My logo</div>
                           <span style={{fontSize:10,color:"var(--purple)",pointerEvents:"none"}}>▣</span>
                         </div>
                       )}
@@ -2524,7 +2579,7 @@ function App() {
               )}
             </div>
             <div className="canvas-footer">
-              {cw > 0 ? "Dra för att flytta element på bilden" : "Ladda upp en basbild för att komma igång"}
+              {cw > 0 ? "Dra för att flytta element på bilden" : "Upload en basbild för att komma igång"}
               {hasImage && (
                 <div className="zoom-controls">
                   <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z - 0.1).toFixed(2)))} title="Zooma ut">−</button>
@@ -2564,7 +2619,7 @@ function App() {
               {/* Image */}
               <img src={allPreviews[previewIdx]?.url || previewUrl}
                 style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}}
-                alt="Forhandsgranskning" />
+                alt="Preview" />
 
               {/* Thumbnail strip */}
               {allPreviews.length > 1 && (
@@ -2587,10 +2642,10 @@ function App() {
                   <>
                     <button className="btn-s"
                       onClick={() => setPreviewIdx(i => Math.max(i-1,0))}
-                      disabled={previewIdx===0}>Forra</button>
+                      disabled={previewIdx===0}>Prev</button>
                     <button className="btn-s"
                       onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))}
-                      disabled={previewIdx===allPreviews.length-1}>Nasta</button>
+                      disabled={previewIdx===allPreviews.length-1}>Next</button>
                   </>
                 )}
                 <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Stang</button>
@@ -2599,7 +2654,7 @@ function App() {
                   a.href=allPreviews[previewIdx]?.url||previewUrl;
                   a.download=`${allPreviews[previewIdx]?.name||"forhandsvisning"}.png`;
                   a.click();
-                }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Ladda ner</button>
+                }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Download</button>
               </div>
             </div>
           </div>
