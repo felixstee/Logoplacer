@@ -653,7 +653,7 @@ function LiveDemo() {
       const zoneSize = 100;
       const zx = logoPos.x, zy = logoPos.y;
       // White card
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.fillStyle = "#ffffff";
       ctx.shadowColor = "rgba(0,0,0,0.15)";
       ctx.shadowBlur = 16;
       roundRect(ctx, zx, zy, zoneSize, zoneSize, 12);
@@ -820,7 +820,7 @@ function LiveDemo() {
               <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>
                 Logo size — {logoSize}px
               </div>
-              <input type="range" min={36} max={120} value={logoSize} onChange={e => setLogoSize(Number(e.target.value))}
+              <input type="range" min={5} max={120} value={logoSize} onChange={e => setLogoSize(Number(e.target.value))}
                 style={{ width: "100%", accentColor: "#3b82f6" }} />
             </div>
           )}
