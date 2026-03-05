@@ -408,6 +408,314 @@ function useReveal(threshold = 0.1) {
 // ─────────────────────────────────────────────
 // WAITLIST FORM
 // ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// LIVE INTERACTIVE DEMO
+// ─────────────────────────────────────────────
+function LiveDemo() {
+  const canvasRef = useRef(null);
+  const [company, setCompany] = useState("");
+  const [name,    setName]    = useState("");
+  const [email,   setEmail]   = useState("");
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [logoPos,  setLogoPos]  = useState({ x: 48, y: 48 });
+  const [logoSize, setLogoSize] = useState(72);
+  const [logoEl,   setLogoEl]   = useState(null);
+  const debounceRef = useRef(null);
+
+  // Draw demo canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+
+    // Background — dark dashboard mockup
+    ctx.fillStyle = "#0a1020";
+    ctx.fillRect(0, 0, W, H);
+
+    // Top bar
+    ctx.fillStyle = "#0d1628";
+    ctx.fillRect(0, 0, W, 48);
+    ctx.fillStyle = "rgba(26,130,255,0.5)";
+    ctx.fillRect(0, 47, W, 1);
+
+    // Nav dots
+    [16, 28, 40].forEach((x, i) => {
+      ctx.beginPath();
+      ctx.arc(x, 24, 5, 0, Math.PI*2);
+      ctx.fillStyle = ["#ff5f57","#ffbd2e","#28c940"][i];
+      ctx.fill();
+    });
+
+    // URL bar
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    roundRect(ctx, 60, 14, 280, 20, 4);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.font = "11px monospace";
+    ctx.fillText("app.logoplacers.com/demo", 70, 28);
+
+    // Sidebar
+    ctx.fillStyle = "#0d1628";
+    ctx.fillRect(0, 48, 160, H - 48);
+    ctx.fillStyle = "rgba(255,255,255,0.04)";
+    ctx.fillRect(0, 48, 160, H - 48);
+
+    // Sidebar items
+    const sideItems = ["Dashboard", "Prospects", "Templates", "Sent", "Settings"];
+    sideItems.forEach((item, i) => {
+      const y = 80 + i * 38;
+      if (i === 1) {
+        ctx.fillStyle = "rgba(26,130,255,0.15)";
+        roundRect(ctx, 8, y - 12, 144, 28, 6);
+        ctx.fill();
+        ctx.fillStyle = "#5ba4ff";
+      } else {
+        ctx.fillStyle = "rgba(255,255,255,0.25)";
+      }
+      ctx.font = "12px 'DM Sans', sans-serif";
+      ctx.fillText(item, 24, y + 4);
+    });
+
+    // Main content area
+    ctx.fillStyle = "#0a1020";
+    ctx.fillRect(160, 48, W - 160, H - 48);
+
+    // Content header
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "bold 16px 'DM Sans', sans-serif";
+    ctx.fillText("Personalised Demo", 180, 82);
+
+    // Name tag
+    if (name) {
+      ctx.fillStyle = "rgba(26,130,255,0.15)";
+      roundRect(ctx, 180, 92, Math.min(ctx.measureText(`Hi ${name}!`).width + 20, 200), 24, 6);
+      ctx.fill();
+      ctx.fillStyle = "#5ba4ff";
+      ctx.font = "13px 'DM Sans', sans-serif";
+      ctx.fillText(`Hi ${name}!`, 190, 108);
+    }
+
+    // Mock product screenshot area
+    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    roundRect(ctx, 180, 124, W - 200, H - 144, 10);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Grid lines inside
+    ctx.strokeStyle = "rgba(26,130,255,0.07)";
+    ctx.lineWidth = 0.5;
+    for (let x = 180; x < W - 20; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 124); ctx.lineTo(x, H - 20); ctx.stroke();
+    }
+    for (let y = 124; y < H - 20; y += 36) {
+      ctx.beginPath(); ctx.moveTo(180, y); ctx.lineTo(W - 20, y); ctx.stroke();
+    }
+
+    // Mock stat cards
+    const cards = [
+      { x: 200, y: 144, w: 110, h: 64, label: "Reply rate", val: "34%" },
+      { x: 326, y: 144, w: 110, h: 64, label: "Demos sent", val: "247" },
+      { x: 452, y: 144, w: 110, h: 64, label: "Time saved", val: "12h" },
+    ];
+    cards.forEach(card => {
+      ctx.fillStyle = "rgba(255,255,255,0.04)";
+      roundRect(ctx, card.x, card.y, card.w, card.h, 8);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.font = "10px 'DM Sans', sans-serif";
+      ctx.fillText(card.label, card.x + 10, card.y + 20);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 20px 'DM Sans', sans-serif";
+      ctx.fillText(card.val, card.x + 10, card.y + 48);
+    });
+
+    // Company name text
+    if (company) {
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "11px 'DM Sans', sans-serif";
+      ctx.fillText(`Prepared for ${company}`, 200, 232);
+    }
+
+    // Mock chart bars
+    const barData = [0.4, 0.65, 0.5, 0.8, 0.6, 0.9, 0.7];
+    barData.forEach((h, i) => {
+      const bx = 208 + i * 36, bh = h * 80, by = 310 - bh;
+      ctx.fillStyle = i === 5 ? "rgba(26,130,255,0.7)" : "rgba(26,130,255,0.25)";
+      roundRect(ctx, bx, by, 22, bh, 4);
+      ctx.fill();
+    });
+
+    // Email label
+    if (email) {
+      ctx.fillStyle = "rgba(255,255,255,0.18)";
+      ctx.font = "10px monospace";
+      ctx.fillText(`Sending to: ${email}`, 200, H - 36);
+    }
+
+    // Logo overlay
+    if (logoEl) {
+      ctx.save();
+      const ar = logoEl.width / logoEl.height;
+      const lw = ar >= 1 ? logoSize : logoSize * ar;
+      const lh = ar >= 1 ? logoSize / ar : logoSize;
+      // Subtle shadow behind logo
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 12;
+      ctx.drawImage(logoEl, logoPos.x, logoPos.y, lw, lh);
+      ctx.restore();
+      // Badge
+      ctx.fillStyle = "rgba(26,130,255,0.15)";
+      roundRect(ctx, logoPos.x, logoPos.y + lh + 6, Math.min(ctx.measureText(company).width + 16, 140), 18, 4);
+      ctx.fill();
+      ctx.fillStyle = "rgba(26,130,255,0.8)";
+      ctx.font = "10px 'DM Sans', sans-serif";
+      ctx.fillText(company, logoPos.x + 8, logoPos.y + lh + 18);
+    } else if (company && !fetching) {
+      // Placeholder box
+      ctx.fillStyle = "rgba(255,255,255,0.04)";
+      ctx.strokeStyle = "rgba(26,130,255,0.3)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      roundRect(ctx, logoPos.x, logoPos.y, logoSize, logoSize, 8);
+      ctx.fill(); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.font = "11px 'DM Sans', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Searching...", logoPos.x + logoSize/2, logoPos.y + logoSize/2 + 4);
+      ctx.textAlign = "left";
+    }
+
+  }, [company, name, email, logoEl, logoPos, logoSize, fetching]);
+
+  // Fetch logo when company changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!company.trim()) { setLogoEl(null); setLogoUrl(null); return; }
+    debounceRef.current = setTimeout(async () => {
+      setFetching(true);
+      try {
+        const domain = company.toLowerCase().replace(/\s+/g,"")+".com";
+        const res = await fetch(`/.netlify/functions/logo?domain=${encodeURIComponent(domain)}`);
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          setLogoUrl(url);
+          const img = new Image();
+          img.onload = () => setLogoEl(img);
+          img.src = url;
+        } else {
+          setLogoEl(null);
+        }
+      } catch { setLogoEl(null); }
+      setFetching(false);
+    }, 700);
+  }, [company]);
+
+  return (
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", marginBottom: 60 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Live demo</div>
+        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 16px" }}>
+          Try it right now.
+        </h2>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+          Type your prospect's company name and see their logo appear on the demo instantly.
+        </p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 32, alignItems: "start" }}>
+        {/* Canvas */}
+        <div style={{
+          borderRadius: 16, overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(26,130,255,0.1)",
+        }}>
+          <canvas ref={canvasRef} width={600} height={380} style={{ display: "block", width: "100%", height: "auto" }} />
+        </div>
+
+        {/* Controls */}
+        <div style={{
+          background: "rgba(255,255,255,0.02)", backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20,
+          padding: "28px 24px", display: "flex", flexDirection: "column", gap: 16,
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>
+            Personalise the demo
+          </div>
+
+          {[
+            { label: "Company name", placeholder: "e.g. Spotify", val: company, set: setCompany, type: "text" },
+            { label: "Contact name",  placeholder: "e.g. Marcus",  val: name,    set: setName,    type: "text" },
+            { label: "Email",         placeholder: "marcus@company.com", val: email, set: setEmail, type: "email" },
+          ].map(({ label, placeholder, val, set, type }) => (
+            <div key={label}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 7 }}>{label}</div>
+              <input type={type} placeholder={placeholder} value={val} onChange={e => set(e.target.value)}
+                style={{
+                  width: "100%", background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10,
+                  padding: "11px 14px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+                  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+                  transition: "border-color .2s",
+                }}
+                onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.4)"}
+                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
+              />
+            </div>
+          ))}
+
+          {/* Logo size slider */}
+          {logoEl && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: ".5px", textTransform: "uppercase", marginBottom: 7 }}>
+                Logo size — {logoSize}px
+              </div>
+              <input type="range" min={40} max={140} value={logoSize} onChange={e => setLogoSize(Number(e.target.value))}
+                style={{ width: "100%", accentColor: "#1a82ff" }} />
+            </div>
+          )}
+
+          {/* Status */}
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", lineHeight: 1.6, marginTop: 4 }}>
+            {fetching ? "Searching for logo..." :
+             logoEl ? `Logo found for ${company}` :
+             company ? "No logo found — try a different spelling" :
+             "Start typing a company name above"}
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", lineHeight: 1.6 }}>
+            In the real tool you can drag the logo anywhere, resize it, add text layers and send directly from Gmail.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Helper — rounded rect
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 function WaitlistForm({ onEnterApp }) {
   const [email, setEmail] = useState("");
   const [name, setName]   = useState("");
@@ -465,30 +773,32 @@ function WaitlistForm({ onEnterApp }) {
         type="text" name="name" placeholder="Your name"
         value={name} onChange={e => setName(e.target.value)}
         style={{
-          background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 12, padding: "14px 18px", color: "#fff", fontSize: 14,
-          fontFamily: "inherit", outline: "none",
+          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+          fontFamily: "inherit", outline: "none", backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", transition: "border-color .2s",
         }}
-        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.5)"}
-        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.35)"}
+        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
       />
       <input
         type="email" name="email" placeholder="Work email" required
         value={email} onChange={e => setEmail(e.target.value)}
         style={{
-          background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 12, padding: "14px 18px", color: "#fff", fontSize: 14,
-          fontFamily: "inherit", outline: "none",
+          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+          fontFamily: "inherit", outline: "none", backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", transition: "border-color .2s",
         }}
-        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.5)"}
-        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.35)"}
+        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
       />
       <button type="submit" disabled={sending} style={{
         background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
         color: "#fff", border: "none", borderRadius: 12, padding: "15px",
         fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-        boxShadow: "0 8px 32px rgba(26,130,255,0.35)",
-        opacity: sending ? 0.6 : 1, transition: "opacity .2s",
+        boxShadow: "0 4px 20px rgba(26,130,255,0.2)",
+        opacity: sending ? 0.5 : 1, transition: "opacity .2s, box-shadow .2s",
       }}>
         {sending ? "Sending..." : "Request access"}
       </button>
@@ -856,6 +1166,11 @@ export default function Landing({ onEnterApp }) {
         </div>
       </section>
 
+      {/* LIVE DEMO */}
+      <section style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+        <LiveDemo />
+      </section>
+
       {/* WAITLIST */}
       <section id="waitlist" ref={ctaRef} style={{ padding: "140px 48px 160px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 500, background: "radial-gradient(ellipse, rgba(26,130,255,0.1) 0%, transparent 70%)", pointerEvents: "none" }}/>
@@ -876,9 +1191,10 @@ export default function Landing({ onEnterApp }) {
           </p>
 
           <div style={{
-            background: "rgba(10,16,26,0.7)", backdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 36px",
-            boxShadow: "0 40px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+            background: "rgba(255,255,255,0.02)", backdropFilter: "blur(32px)",
+            WebkitBackdropFilter: "blur(32px)",
+            border: "1px solid rgba(255,255,255,0.06)", borderRadius: 24, padding: "36px",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
           }}>
             <WaitlistForm onEnterApp={onEnterApp}/>
           </div>
