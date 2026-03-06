@@ -40,7 +40,7 @@ const style = `
   .header::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(26,130,255,0.45) 30%, rgba(91,79,255,0.45) 70%, transparent); pointer-events: none; }
   .header-brand { display: flex; align-items: center; gap: 10px; }
   .header-icon { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#1a82ff,#5b4fff); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,130,255,0.3); }
-  .header-name { font-size: 16px; font-weight: 600; color: var(--t1); letter-spacing: -.3px; }
+  .header-name { font-size: 16px; font-weight: 700; background: linear-gradient(135deg,#ffffff,#a5c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.3px; }
   .header-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
   .header-btns { display: flex; gap: 8px; }
 
@@ -48,15 +48,15 @@ const style = `
   .mode-tabs { display: flex; background: var(--bg2); border-bottom: 0.5px solid var(--sep); padding: 0 4px; }
   .mode-tab { flex: 1; padding: 11px 0; text-align: center; font-size: 13px; font-weight: 500; color: var(--t3); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; font-family: inherit; }
   .mode-tab:hover { color: var(--t2); }
-  .mode-tab.active { color: #5ba4ff; border-bottom-color: #1a82ff; }
+  .mode-tab.active { color: #7db8ff; border-bottom-color: #1a82ff; text-shadow: 0 0 20px rgba(26,130,255,0.4); }
 
   /* ── Layout ──────────────────────────────────────────── */
   .workspace { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 101px); overflow: hidden; }
-  .sidebar { background: var(--bg2); border-right: 0.5px solid var(--sep); overflow-y: auto; padding-bottom: 40px; }
+  .sidebar { background: linear-gradient(180deg, rgba(26,15,50,0.4) 0%, var(--bg2) 120px); border-right: 0.5px solid rgba(91,79,255,0.12); overflow-y: auto; padding-bottom: 40px; }
   .sidebar::-webkit-scrollbar { width: 0; }
 
   /* ── Section titles ──────────────────────────────────── */
-  .s-label { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--t3); padding: 20px 16px 7px; display: block; }
+  .s-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(167,139,250,0.7); padding: 20px 16px 7px; display: block; }
   .s-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 7px; }
   .s-row .s-label { padding: 0; }
 
@@ -104,8 +104,8 @@ const style = `
 
   /* ── Tag buttons ─────────────────────────────────────── */
   .tag-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-  .tag-btn { background: var(--blue-dim); border: 0.5px solid hsla(211 100% 58% / .25); color: var(--blue); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; }
-  .tag-btn:hover { background: hsla(211 100% 58% / .2); }
+  .tag-btn { background: linear-gradient(135deg,rgba(26,130,255,0.12),rgba(91,79,255,0.12)); border: 0.5px solid rgba(91,79,255,0.35); color: #a78bfa; font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .tag-btn:hover { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
 
   /* ── Controls grid ───────────────────────────────────── */
   .cg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -119,7 +119,7 @@ const style = `
   /* ── Toggle buttons ──────────────────────────────────── */
   .trow { display: flex; gap: 5px; }
   .tbtn { flex: 1; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t3); font-family: inherit; font-size: 12px; padding: 6px; border-radius: 7px; cursor: pointer; transition: all .15s; }
-  .tbtn.on { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+  .tbtn.on { background: linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15)); border-color: rgba(91,79,255,0.5); color: #a78bfa; }
 
   /* ── Font-weight pills ───────────────────────────────── */
   .wrow { display: flex; gap: 4px; }
@@ -164,7 +164,7 @@ const style = `
   .btn-p:hover { opacity: .92; box-shadow: 0 6px 22px rgba(26,130,255,0.38); }
   .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; }
   .btn-s { background: var(--bg4); color: var(--t1); border: 0.5px solid var(--sep); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; }
-  .btn-s:hover { background: hsl(220 8% 24%); }
+  .btn-s:hover { background: rgba(26,130,255,0.1); border-color: rgba(26,130,255,0.3); color: #7db8ff; }
   .btn-s:disabled { opacity: .38; cursor: not-allowed; }
   .btn-text { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--blue); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 3px; }
   .btn-text:hover { opacity: .8; }
@@ -252,7 +252,7 @@ const style = `
   .open-link-btn:hover { opacity: .75; }
   .gen-btn { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
   .gen-btn:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; }
-  .gen-btn.generating { background: var(--orange); }
+  .gen-btn.generating { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
 
 `;
 
@@ -717,7 +717,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
       <div className="lcard-hd" onClick={onToggle}>
         <div className="layer-dot" style={{ background: color }} />
         <span className="lcard-title">Text {idx + 1}</span>
-        <span className="lcard-prev">{layer.template || "tom"}</span>
+        <span className="lcard-prev">{layer.template || "empty"}</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
         {total > 1 && <button className="lrm" onClick={e => { e.stopPropagation(); onRemove(); }}>×</button>}
       </div>
@@ -742,7 +742,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
               </select>
             </div>
             <div style={{gridColumn:"span 2",display:"flex",flexDirection:"column",gap:4}}>
-              <span className="cg-label">Tjocklek</span>
+              <span className="cg-label">Weight</span>
               <div className="wrow">
                 {[["normal","Regular"],["600","Semi-bold"],["bold","Bold"]].map(([val,lbl]) => {
                   const isOn = (layer.fontWeight ?? (layer.bold ? "bold" : "normal")) === val;
@@ -751,11 +751,11 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
               </div>
             </div>
             <div className="trow" style={{gridColumn:"span 2"}}>
-              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{fontStyle:"italic"}} onClick={() => onChange({ italic: !layer.italic })}>Kursiv</button>
-              <button className={`tbtn${layer.enabled ? " on" : ""}`} onClick={() => onChange({ enabled: !layer.enabled })}>{layer.enabled ? "Synlig" : "Dold"}</button>
+              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{fontStyle:"italic"}} onClick={() => onChange({ italic: !layer.italic })}>Italic</button>
+              <button className={`tbtn${layer.enabled ? " on" : ""}`} onClick={() => onChange({ enabled: !layer.enabled })}>{layer.enabled ? "Visible" : "Hidden"}</button>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8,gridColumn:"span 2"}}>
-              <span style={{fontSize:11,color:"var(--t3)"}}>Färg</span>
+              <span style={{fontSize:11,color:"var(--t3)"}}>Colour</span>
               <div className="color-swatch" style={{background:layer.color}}>
                 <input type="color" value={layer.color} onChange={e => onChange({color: e.target.value})} />
               </div>
@@ -1145,7 +1145,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <span className="timing-label">Text background</span>
                 <div className="sl-wrap" style={{marginTop:0}}>
                   <div className="sl-head"><span className="sl-label">Opacity</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
-                  <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"var(--blue)"}} />
+                  <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"#1a82ff"}} />
                 </div>
               </div>
             </div>
@@ -1793,7 +1793,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                     <label key={c.id} className="rcpt-row" style={{cursor:"pointer"}}>
                       <input type="checkbox" checked={selected?.has(c.id) || false}
                         onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(c.id) : n.delete(c.id); return n; })}
-                        style={{accentColor:"var(--blue)",width:14,height:14,flexShrink:0}} />
+                        style={{accentColor:"#1a82ff",width:14,height:14,flexShrink:0}} />
                       <div style={{width:26,height:26,background:"#fff",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
                         {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"contain",padding:2}} /> : <span style={{fontSize:11,color:"#888"}}>{c.companyName[0]}</span>}
                       </div>
@@ -2650,7 +2650,7 @@ function App() {
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
                   <p className="empty-title">No image selected</p>
-                  <p className="empty-sub">Upload en basbild till vänster</p>
+                  <p className="empty-sub">Upload a base image on the left</p>
                 </div>
               ) : (
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
@@ -2707,7 +2707,7 @@ function App() {
               )}
             </div>
             <div className="canvas-footer">
-              {cw > 0 ? "Dra för att flytta element på bilden" : "Upload en basbild för att komma igång"}
+              {cw > 0 ? "Drag to move elements on the image" : "Upload a base image to get started"}
               {hasImage && (
                 <div className="zoom-controls">
                   <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z - 0.1).toFixed(2)))} title="Zooma ut">−</button>

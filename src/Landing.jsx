@@ -687,27 +687,26 @@ function LiveDemo() {
       ctx.fill();
       ctx.shadowBlur = 0;
       // Border
-      ctx.strokeStyle = fetching ? "rgba(59,130,246,0.6)" : "rgba(59,130,246,0.35)";
+      ctx.strokeStyle = "rgba(180,190,210,0.6)";
       ctx.lineWidth = 2;
       ctx.setLineDash(fetching ? [] : [5, 3]);
       roundRect(ctx, zx, zy, zoneSize, zoneSize, 12);
       ctx.stroke();
       ctx.setLineDash([]);
       // Icon
-      ctx.strokeStyle = "rgba(59,130,246,0.5)";
+      ctx.strokeStyle = "rgba(150,165,190,0.5)";
       ctx.lineWidth = 1.5;
-      // Simple logo icon in centre
       const cx2 = zx + zoneSize/2, cy2 = zy + zoneSize/2 - 8;
       roundRect(ctx, cx2-14, cy2-14, 28, 28, 6);
       ctx.stroke();
-      ctx.fillStyle = "rgba(59,130,246,0.1)";
+      ctx.fillStyle = "rgba(26,130,255,0.06)";
       ctx.fill();
-      ctx.fillStyle = "rgba(59,130,246,0.6)";
+      ctx.fillStyle = "rgba(100,130,180,0.8)";
       ctx.font = "bold 16px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(company ? company[0].toUpperCase() : "?", cx2, cy2+6);
       // Label
-      ctx.fillStyle = fetching ? "#3b82f6" : "rgba(30,41,59,0.55)";
+      ctx.fillStyle = fetching ? "#1a82ff" : "rgba(80,100,140,0.7)";
       ctx.font = fetching ? "bold 9px 'DM Sans',sans-serif" : "9px 'DM Sans',sans-serif";
       ctx.fillText(fetching ? "Fetching logo…" : (company ? company : "Logo here"), cx2, zy + zoneSize - 10);
       ctx.textAlign = "left";
@@ -807,7 +806,7 @@ function LiveDemo() {
         <div style={{
           borderRadius: 16, overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.1)",
-          boxShadow: "0 40px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(59,130,246,0.15)",
+          boxShadow: "0 40px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(91,79,255,0.2)",
           cursor: dragging ? "grabbing" : logoEl ? "grab" : "default",
         }}>
           <canvas ref={canvasRef} width={W} height={H}
@@ -869,9 +868,9 @@ function LiveDemo() {
 
           {/* Logo drop zone */}
           <div style={{
-            border: `2px dashed ${logoEl ? "rgba(59,130,246,0.4)" : "rgba(255,255,255,0.18)"}`,
+            border: `1.5px dashed rgba(180,190,210,0.5)`,
             borderRadius: 14, padding: "18px 14px", textAlign: "center",
-            background: logoEl ? "rgba(59,130,246,0.06)" : "rgba(255,255,255,0.03)",
+            background: "rgba(255,255,255,0.04)",
             transition: "all .2s",
           }}>
             {logoEl ? (
@@ -1033,13 +1032,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
       ctx.fillText("JPG · PNG · WEBP · HEIC",121,168);
       ctx.textAlign="left";
 
-      // My logo zone
-      ctx.fillStyle="rgba(255,255,255,0.04)"; ctx.strokeStyle="rgba(255,255,255,0.12)";
-      ctx.setLineDash([5,4]); rr(16,220,210,80,10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="600 12px 'DM Sans',sans-serif";
-      ctx.textAlign="center"; ctx.fillText("MY LOGO",121,258);
-      ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.font="10px 'DM Sans',sans-serif";
-      ctx.fillText("Click or drag here loggan",121,274); ctx.textAlign="left";
+      // My logo section removed
 
       // Main area — empty state
       ctx.fillStyle="#0a1020"; ctx.fillRect(241,88,W-241,H-88);
