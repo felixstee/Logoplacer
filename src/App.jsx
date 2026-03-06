@@ -283,7 +283,6 @@ const FONT_OPTIONS = [
 
 const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "", "~"];
 
-// Layer colors cycling
 const LAYER_COLORS = ["#c8f04c","#60a5fa","#f87171","#a78bfa","#fbbf24","#34d399","#f97316","#e879f9"];
 
 function domainToCompanyName(domain) {
@@ -292,7 +291,6 @@ function domainToCompanyName(domain) {
   return cleanCompanyName(name);
 }
 
-// Strip common Swedish/English corporate suffixes
 function cleanCompanyName(name) {
   return name
     .replace(/\s+(AB|Aktiebolag|Publ|AB\.|Inc\.?|LLC|Ltd\.?|GmbH|BV|AS|ApS|Oy|SAS|SRL|Corp\.?|Co\.?)$/i, "")
@@ -301,40 +299,20 @@ function cleanCompanyName(name) {
 
 function guessDomain(input, email = null) {
   let s = input.trim().toLowerCase();
-  // If already a URL/domain, return it cleaned
   if (s.includes(".")) return s.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
-  // Strip corporate suffixes before building domain
   s = s.replace(/\s+(ab|aktiebolag|publ|inc\.?|llc|ltd\.?|gmbh|bv|as|aps|oy|sas|srl|corp\.?|co\.?)$/i, "").trim();
-  s = s.replace(/\s+/g, ""); // collapse spaces
+  s = s.replace(/\s+/g, "");
   const known = { google:"google.com", apple:"apple.com", microsoft:"microsoft.com", amazon:"amazon.com", meta:"meta.com", facebook:"facebook.com", netflix:"netflix.com", spotify:"spotify.com", uber:"uber.com", tesla:"tesla.com", ikea:"ikea.com", volvo:"volvo.com", klarna:"klarna.com" };
   if (known[s]) return known[s];
-  // Use TLD from email if available (e.g. caroline@wint.se → .se)
   if (email) {
     const emailDomain = email.split("@")[1];
     if (emailDomain) {
-      const tld = emailDomain.slice(emailDomain.lastIndexOf(".")) ; // ".se" / ".com" / ".ai"
+      const tld = emailDomain.slice(emailDomain.lastIndexOf("."));
       return s + tld;
     }
   }
   return s + ".com";
 }
-
-// Junk lines to always skip
-const SKIP_LINE = [
-  /^request phone/i, /^click to/i, /^access /i, /^fair\d/i,
-  /^\+\d/, /^[A-Z]$/, /^\d+$/, /^\d+,/.test,
-  /^sweden$/i, /^gothenburg/i, /^stockholm/i, /^saevsjoe/i, /^malmoe/i,
-  /^financial services/i, /^accounting/i, /^retail$/i, /^investments/i,
-  /^outdoor equipment/i, /^information technology/i, /^software$/i,
-  /^health/i, /^medical/i, /^telecommunications/i, /^packaging/i,
-  /^maskin/i, /^entrepren/i, /^foerpackning/i,
-];
-
-const ROLE_WORDS = [
-  "ceo","cfo","coo","cto","cpo","vp","vice","chief","officer",
-  "founder","co-founder","director","manager","head","president",
-  "partner","lead","controller","advisor",
-];
 
 const SKIP_RE = new RegExp(
   "^(request|click to|access |fair\\d|\\+\\d|sweden|gothenburg|stockholm|" +
@@ -344,10 +322,15 @@ const SKIP_RE = new RegExp(
   "manager|head|president|partner|controller|advisor|\\d+)", "i"
 );
 
+const ROLE_WORDS = [
+  "ceo","cfo","coo","cto","cpo","vp","vice","chief","officer",
+  "founder","co-founder","director","manager","head","president",
+  "partner","lead","controller","advisor",
+];
+
 function isSkipLine(line) {
   if (!line || line.length < 2) return true;
   if (SKIP_RE.test(line.trim())) return true;
-  // Single-character lines like "G", "C", "J"
   if (/^[A-Z]$/.test(line.trim())) return true;
   return false;
 }
@@ -357,7 +340,6 @@ function looksLikeName(line) {
   if (words.length < 1 || words.length > 4) return false;
   if (/\d/.test(line) || /@/.test(line) || /,/.test(line)) return false;
   if (isSkipLine(line)) return false;
-  // Each word starts with capital, followed by at least one lowercase
   return words.every(w => /^[A-ZÅÄÖ][a-zåäö]{1,}/.test(w));
 }
 
@@ -366,9 +348,7 @@ function looksLikeCompany(line) {
   if (/^\d+$/.test(line) || /@/.test(line) || /http/i.test(line)) return false;
   if (isSkipLine(line)) return false;
   const lower = line.toLowerCase().trim();
-  // Pure role title = skip
   if (ROLE_WORDS.some(w => lower === w)) return false;
-  // Starts with a role word followed by space and more = title, not company
   if (ROLE_WORDS.some(w => lower.startsWith(w + " ") && lower.length < 30)) return false;
   return true;
 }
@@ -378,17 +358,6 @@ function extractContacts(raw) {
   const lines = raw.split("\n").map(l => l.trim());
   const EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
-  // ── Strategy A: Email-anchor scan (handles Fair export format) ──────────────
-  // Pattern:
-  //   [single initial letter]          ← skip
-  //   [Full Name]
-  //   [Title / role]                   ← skip
-  //   (blank lines)
-  //   [Company Name]
-  //   [email@domain.com]
-  //   "Request phone number" + junk    ← skip
-  //
-  // Approach: find every email line, then scan ±10 lines to collect name & company.
   const emailIdxs = lines.reduce((a, l, i) => { if (EMAIL_RE.test(l)) a.push(i); return a; }, []);
 
   if (emailIdxs.length > 0) {
@@ -396,37 +365,22 @@ function extractContacts(raw) {
       const email = lines[ei].toLowerCase();
       let personName = "", companyName = "";
 
-      // Scan BACKWARDS from email line
       for (let back = 1; back <= 12; back++) {
         const c = (lines[ei - back] || "").trim();
         if (!c) continue;
-        // Skip obvious junk
         if (/^request phone/i.test(c)) continue;
         if (/^\+\d/.test(c)) continue;
         if (/^\d+$/.test(c)) continue;
         if (/^(click to|access |fair\d|sweden|gothenburg|stockholm|malmoe|saevsjoe)/i.test(c)) continue;
         if (/^(financial services|accounting|retail|investments|outdoor|information tech|software|health|medical|telecom|packaging|renewables|defense|hospital|marketing|food|research)/i.test(c)) continue;
-        if (/^[A-Z]$/.test(c)) continue; // single initial letter
-
-        if (EMAIL_RE.test(c)) break; // hit previous contact's email — stop
-
-        // Company: the line immediately before the email (distance 1) that isn't a skip/role
-        if (back === 1 && !isSkipLine(c) && looksLikeCompany(c)) {
-          companyName = c; continue;
-        }
-        // Company fallback: distance 2 if distance-1 was empty or junk
-        if (back === 2 && !companyName && !isSkipLine(c) && looksLikeCompany(c)) {
-          companyName = c; continue;
-        }
-        // Name: first proper name we find further up
-        if (!personName && looksLikeName(c)) {
-          personName = c;
-        }
-        // Once we have both, stop early
+        if (/^[A-Z]$/.test(c)) continue;
+        if (EMAIL_RE.test(c)) break;
+        if (back === 1 && !isSkipLine(c) && looksLikeCompany(c)) { companyName = c; continue; }
+        if (back === 2 && !companyName && !isSkipLine(c) && looksLikeCompany(c)) { companyName = c; continue; }
+        if (!personName && looksLikeName(c)) { personName = c; }
         if (personName && companyName) break;
       }
 
-      // Scan FORWARD a couple lines in case email came before company
       if (!companyName) {
         for (let fwd = 1; fwd <= 3; fwd++) {
           const c = (lines[ei + fwd] || "").trim();
@@ -442,7 +396,6 @@ function extractContacts(raw) {
     if (results.length > 0) return results;
   }
 
-  // ── Strategy B: __Company__ bold markers (older Fair format) ────────────────
   const companyIdxs = lines.reduce((acc, l, i) => {
     if (/^__[^_]{1,80}__$/.test(l)) acc.push(i);
     return acc;
@@ -468,7 +421,6 @@ function extractContacts(raw) {
     return results;
   }
 
-  // ── Strategy C: __Name__ __Company__ bold token pairs ───────────────────────
   const clean = raw.replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/__([^_]+)__/g, (_, m) => `§§§${m.trim()}§§§`);
   const boldTokens = [...clean.matchAll(/§§§([^§]+)§§§/g)].map(m => m[1].trim());
@@ -482,7 +434,6 @@ function extractContacts(raw) {
   }
   if (results.length > 0) return results;
 
-  // ── Strategy D: blank-line-separated blocks ──────────────────────────────────
   const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
   for (const block of blocks) {
     const bLines = block.split("\n").map(l => l.trim()).filter(Boolean);
@@ -499,7 +450,6 @@ function extractContacts(raw) {
   }
   if (results.length > 0) return results;
 
-  // ── Strategy E: simple "Name, Company" or "Name Company" lines ──────────────
   for (const line of lines) {
     const cm = line.match(/^([A-Za-zÅÄÖåäö]+)\s*,\s*(.+)$/);
     if (cm && looksLikeCompany(cm[2].trim())) {
@@ -516,33 +466,8 @@ function extractContacts(raw) {
   return results;
 }
 
-async function fetchAsDataURL(url) {
-  const proxies = [
-    url,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    `https://thingproxy.freeboard.io/fetch/${url}`,
-  ];
-  for (const src of proxies) {
-    try {
-      const res = await fetch(src, { signal: AbortSignal.timeout(5000) });
-      if (!res.ok) continue;
-      const blob = await res.blob();
-      if (blob.size < 50) continue; // skip empty/placeholder responses
-      return await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = reject;
-        r.readAsDataURL(blob);
-      });
-    } catch { continue; }
-  }
-  throw new Error("failed");
-}
-
 async function fetchLogoDataURL(domain) {
   const d = domain.replace(/^www\./, "");
-  // Use our own Netlify proxy to avoid CORS issues
   const proxyUrl = `/.netlify/functions/logo?domain=${encodeURIComponent(d)}`;
   try {
     const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
@@ -555,7 +480,6 @@ async function fetchLogoDataURL(domain) {
           r.onerror = reject;
           r.readAsDataURL(blob);
         });
-        // Validate not a placeholder
         await new Promise((res, rej) => {
           const img = new Image();
           img.onload = () => img.width <= 2 && img.height <= 2 ? rej() : res();
@@ -571,7 +495,6 @@ async function fetchLogoDataURL(domain) {
 
 function resolveTemplate(template, personName, companyName) {
   const firstName = (personName || "").split(" ")[0];
-  // ((name))s → smart possessive: "Lars" stays "Lars", "Kasper" → "Kaspers"
   const possessive = /[sxzSXZ]$/.test(firstName) ? firstName : firstName + "s";
   return template
     .replace(/\(\(name\)\)s/gi, possessive)
@@ -580,7 +503,6 @@ function resolveTemplate(template, personName, companyName) {
     .replace(/\(\(company\)\)/gi, companyName || "");
 }
 
-// Inline-editable number value — click to type
 function PxInput({ value, onChange, color, suffix = "px", min = 1, max = 2000 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value));
@@ -610,11 +532,9 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   const ctx = off.getContext("2d");
   if (canvasBg?.enabled) { ctx.fillStyle = canvasBg.color; ctx.fillRect(0, 0, off.width, off.height); }
   ctx.drawImage(baseImg, 0, 0);
-  // Personalised colour replacement — replace target colour with brand colour
   if (canvasBg?.personalisedColors && canvasBg?.brandColor && canvasBg?.colorToReplace) {
     try {
       const { r: br, g: bg2, b: bb } = canvasBg.brandColor;
-      // Parse hex target colour
       const hex = canvasBg.colorToReplace.replace("#","");
       const tr = parseInt(hex.slice(0,2),16), tg = parseInt(hex.slice(2,4),16), tb = parseInt(hex.slice(4,6),16);
       const imgData = ctx.getImageData(0, 0, off.width, off.height);
@@ -623,7 +543,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
       for (let i = 0; i < d.length; i += 4) {
         const dr2 = Math.abs(d[i]-tr), dg2 = Math.abs(d[i+1]-tg), db2 = Math.abs(d[i+2]-tb);
         if (dr2 < tolerance && dg2 < tolerance && db2 < tolerance) {
-          // Blend: how close to target determines blend strength
           const strength = 1 - Math.sqrt(dr2*dr2+dg2*dg2+db2*db2) / (tolerance * Math.sqrt(3));
           d[i]   = Math.round(d[i]   * (1-strength) + br * strength);
           d[i+1] = Math.round(d[i+1] * (1-strength) + bg2 * strength);
@@ -636,7 +555,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   const scaleX = baseImg.width / displayW, scaleY = baseImg.height / displayH;
   const scale = Math.max(scaleX, scaleY);
 
-  // Draw each logo instance (company logo at different sizes/positions)
   logoInstances.forEach(inst => {
     if (!companyLogoEl) return;
     const x = inst.pos.x * scaleX, y = inst.pos.y * scaleY;
@@ -645,7 +563,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     ctx.drawImage(companyLogoEl, x, y, ar >= 1 ? s : s * ar, ar >= 1 ? s / ar : s);
   });
 
-  // My logo
   if (myLogoEl) {
     const x = myLogoPos.x * scaleX, y = myLogoPos.y * scaleY;
     const s = myLogoSize * scale;
@@ -653,7 +570,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     ctx.drawImage(myLogoEl, x, y, ar >= 1 ? s : s * ar, ar >= 1 ? s / ar : s);
   }
 
-  // Text layers
   textLayers.forEach(cfg => {
     if (!cfg.enabled || !cfg.template.trim()) return;
     const resolved = resolveTemplate(cfg.template, personName, companyName);
@@ -666,7 +582,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     resolved.split("\n").forEach((line, i) => ctx.fillText(line, x, y + i * fontSize * 1.4));
   });
 
-  // Symbols
   symbols.forEach(sym => {
     const fontSize = sym.size * scale;
     ctx.font = `bold ${fontSize}px Arial`;
@@ -677,8 +592,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   return off;
 }
 
-
-// Extract dominant non-white/non-black color from an image element
 function extractDominantColor(img) {
   try {
     const tmp = document.createElement("canvas");
@@ -796,7 +709,6 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
   );
 }
 
-
 const DEFAULT_VIDEO_OVERLAY = {
   text: "((name))'s future IR",
   fontSize: 28,
@@ -807,7 +719,6 @@ const DEFAULT_VIDEO_OVERLAY = {
   bold: false,
 };
 
-// Drag-and-drop upload helper
 function DropZone({ accept, onFile, children, className, style }) {
   const [over, setOver] = useState(false);
   const handleDrop = e => {
@@ -832,9 +743,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const [myVideo, setMyVideo] = useState(null);
   const [myVideoName, setMyVideoName] = useState(null);
   const [overlay, setOverlay] = useState(DEFAULT_VIDEO_OVERLAY);
-  // timings: how long demo-image and screenshot each show (seconds)
   const [timings, setTimings] = useState({ demoImg: 7, screenshot: 8 });
-  // phaseOrder: ["demo","screenshot"] or ["screenshot","demo"]
   const [phaseOrder, setPhaseOrder] = useState(["demo", "screenshot"]);
   const [screenshots, setScreenshots] = useState({});
   const [generating, setGenerating] = useState(null);
@@ -849,7 +758,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const handleVideoFile = file => {
     if (!file || !file.type.startsWith("video/")) return;
     setMyVideoName(file.name);
-    setMyVideo(file); // store the File object, not a blob URL
+    setMyVideo(file);
   };
 
   const handleScreenshotFile = (companyId, file) => {
@@ -861,7 +770,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
   const previewC = readyCompanies[0];
   const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Jordan", previewC?.companyName || "Stratton Oakmont");
-  const totalSec = timings.demoImg + timings.screenshot; // overlay is on top of first image, not extra time
+  const totalSec = timings.demoImg + timings.screenshot;
 
   const noDemoImg = !renderIngredients?.baseImg;
 
@@ -869,13 +778,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     if (!myVideo) return;
     setGenerating(company.id);
 
-    // ── Snapshot everything NOW so concurrent/sequential runs never bleed ──
     const ovSnap  = { ...overlay };
     const phSnap  = [...phaseOrder];
     const tmSnap  = { ...timings };
     const ssImg = screenshots[company.id] || null;
 
-    // Render demo image for THIS specific company (logo, text, etc. personalized)
     let demoImg = null;
     if (renderIngredients && renderIngredients.baseImg) {
       const { baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols } = renderIngredients;
@@ -888,15 +795,12 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
     const resolvedText = resolveTemplateFn(ovSnap.text, company.personName, company.companyName);
 
-    // Read the video File into an ArrayBuffer once — then create fresh URLs per element
-    // This is the only reliable way to give each isolated <video> its own src
     const videoArrayBuffer = await myVideo.arrayBuffer();
     const videoBlob = new Blob([videoArrayBuffer], { type: myVideo.type || "video/mp4" });
     const videoUrl  = URL.createObjectURL(videoBlob);
 
-    // ── Isolated <video> with its own fresh blob URL ───────────────────────
     const vid = document.createElement("video");
-    vid.loop  = false;   // never loop — video plays once and holds last frame
+    vid.loop  = false;
     vid.muted = true;
     vid.src   = videoUrl;
     vid.load();
@@ -910,17 +814,15 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     const VH = vid.videoHeight || 720;
     const vidDurMs = (vid.duration && isFinite(vid.duration)) ? vid.duration * 1000 : 999999;
 
-    // ── Isolated canvas ────────────────────────────────────────────────────
     const canvas = document.createElement("canvas");
     canvas.width = VW; canvas.height = VH;
     const ctx = canvas.getContext("2d");
     const stream = canvas.captureStream(30);
 
-    // ── Audio: decode from the same ArrayBuffer ────────────────────────────
     let audioRes = null;
     try {
       const actx  = new AudioContext();
-      const abuf  = await actx.decodeAudioData(videoArrayBuffer.slice(0)); // slice = copy
+      const abuf  = await actx.decodeAudioData(videoArrayBuffer.slice(0));
       const dest  = actx.createMediaStreamDestination();
       const anode = actx.createBufferSource();
       anode.buffer = abuf;
@@ -938,14 +840,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-    // Fix 1: overlay text shows ON TOP of first image — not extra time
-    // So total = dur2 + dur3. dur1 is just how long text is visible within dur2.
-    const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000); // text overlay capped to phase 2
+    const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000);
     const dur2 = tmSnap.demoImg    * 1000;
     const dur3 = tmSnap.screenshot * 1000;
-    const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000); // cap at 30s
+    const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000);
 
-    // PiP geometry
     const pipW = Math.round(VW * 0.22);
     const pipH = Math.round(pipW * (VH / VW));
     const pipX = VW - pipW - 20;
@@ -1006,7 +905,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     vid.currentTime = 0;
     await vid.play().catch(()=>{});
 
-    // Use performance.now() for accurate timing — setInterval drifts significantly
     const blob = await new Promise(resolve => {
       const t0 = performance.now();
       let done = false;
@@ -1016,10 +914,9 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         const el = performance.now() - t0;
 
         ctx.clearRect(0, 0, VW, VH);
-        // Phase logic: text overlay sits ON TOP of imgA for first dur1 ms
         if (el < dur2) {
           drawImg(imgA);
-          if (el < dur1) drawText(); // overlay visible during intro period only
+          if (el < dur1) drawText();
           drawPip();
         } else if (el < total) {
           drawImg(imgB);
@@ -1038,7 +935,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
       recorder.start(200);
       const timerId = setInterval(drawFrame, 1000 / 30);
-      // Hard safety timeout — never hang longer than total + 8s
       setTimeout(() => {
         if (!done) {
           done = true;
@@ -1050,28 +946,19 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       }, total + 8000);
     });
 
-    URL.revokeObjectURL(videoUrl); // free video src memory
+    URL.revokeObjectURL(videoUrl);
     const url = URL.createObjectURL(blob);
-    // Fix 2: don't auto-download — store URL so user can preview/download manually
     setGenerated(g => ({ ...g, [company.id]: url }));
     setGenerating(null);
   };
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "calc(100vh - 101px)", overflow: "hidden" }}>
-      {/* Sidebar */}
       <div className="sidebar">
-
-        {/* Video upload */}
         <span className="s-label">Your video</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
-            <DropZone
-              accept="video/*"
-              onFile={handleVideoFile}
-              className="upload-zone"
-              style={{}}
-            >
+            <DropZone accept="video/*" onFile={handleVideoFile} className="upload-zone" style={{}}>
               <label style={{cursor:"pointer",display:"block"}}>
                 <input type="file" accept="video/*" style={{display:"none"}} onChange={e => handleVideoFile(e.target.files[0])} />
                 <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg></div>
@@ -1084,7 +971,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </div>
         </div>
 
-        {/* Demo image status */}
         <span className="s-label">Personal demo image</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
@@ -1108,7 +994,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </div>
         </div>
 
-        {/* Overlay text */}
         <span className="s-label">Intro text (phase 1)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1156,7 +1041,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </div>
         </div>
 
-        {/* Timing + order */}
         <span className="s-label">Timing (seconds)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
@@ -1181,28 +1065,22 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",padding:"6px 0"}}>{totalSec}s</div>
               </div>
             </div>
-
-            {/* Phase order */}
             <div style={{marginTop:12,borderTop:"0.5px solid var(--sep)",paddingTop:12}}>
               <span style={{fontSize:11,color:"var(--t3)",display:"block",marginBottom:8,letterSpacing:.4,textTransform:"uppercase",fontWeight:600}}>Imageordning</span>
               <div style={{display:"flex",gap:6}}>
-                <button
-                  onClick={() => setPhaseOrder(["demo","screenshot"])}
+                <button onClick={() => setPhaseOrder(["demo","screenshot"])}
                   style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
                     background: phaseOrder[0]==="demo" ? "var(--blue-dim)" : "var(--bg4)",
                     borderColor: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--t2)"
-                  }}>
+                    color: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--t2)"}}>
                   <div style={{fontWeight:600,marginBottom:2}}>Demo → Hemsida</div>
                   <div style={{fontSize:10,opacity:.7}}>Personlig bild först</div>
                 </button>
-                <button
-                  onClick={() => setPhaseOrder(["screenshot","demo"])}
+                <button onClick={() => setPhaseOrder(["screenshot","demo"])}
                   style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
                     background: phaseOrder[0]==="screenshot" ? "var(--blue-dim)" : "var(--bg4)",
                     borderColor: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--t2)"
-                  }}>
+                    color: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--t2)"}}>
                   <div style={{fontWeight:600,marginBottom:2}}>Hemsida → Demo</div>
                   <div style={{fontSize:10,opacity:.7}}>Hemsida först</div>
                 </button>
@@ -1210,13 +1088,9 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Right panel */}
       <div style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
-
-        {/* Toolbar */}
         <div style={{padding:"10px 18px",borderBottom:"0.5px solid var(--sep)",background:"var(--bg2)",display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} companies ready</span>
           {noDemoImg && (
@@ -1232,7 +1106,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </button>
         </div>
 
-        {/* Preview strip */}
         <div style={{padding:"12px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",position:"relative",minHeight:56,display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"5px 14px",borderRadius:100,maxWidth:"60%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
             {previewText}
@@ -1243,7 +1116,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           <span style={{fontSize:11,color:"var(--blue)",fontWeight:600}}>{totalSec}s totalt</span>
         </div>
 
-        {/* Contact list */}
         <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
           {readyCompanies.length === 0 && (
             <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>
@@ -1263,12 +1135,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {c.domain}
               </button>
-              {/* Screenshot — click or drop */}
-              <DropZone
-                accept="image/*"
-                onFile={file => handleScreenshotFile(c.id, file)}
-                style={{cursor:"pointer"}}
-              >
+              <DropZone accept="image/*" onFile={file => handleScreenshotFile(c.id, file)} style={{cursor:"pointer"}}>
                 <label style={{cursor:"pointer"}}>
                   <input type="file" accept="image/*" style={{display:"none"}} onChange={e => handleScreenshotFile(c.id, e.target.files[0])} />
                   {screenshots[c.id]
@@ -1310,292 +1177,56 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   );
 }
 
-
-// ── Gmail helpers ─────────────────────────────────────────────────────────────
-
-// ── 3D Login Page — Space ─────────────────────────────────────────
-function LoginPage({ onLogin, loading }) {
-  const canvasRef = useRef(null);
-  const [hovered, setHovered] = useState(false);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
-    let raf;
-
-    const onResize = () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", onResize);
-
-    // ── Particles ──────────────────────────────────────────────
-    const COUNT = 260;
-    const particles = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      z: Math.random() * 3 + 0.2,      // depth 0.2–3.2
-      vx: (Math.random() - 0.5) * 0.22,
-      vy: (Math.random() - 0.5) * 0.22,
-      r: Math.random() * 1.8 + 0.3,
-      alpha: Math.random() * 0.6 + 0.15,
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.008 + Math.random() * 0.022,
-      color: Math.random() > 0.8
-        ? `rgba(91,79,255,`     // purple accent ~20%
-        : Math.random() > 0.5
-          ? `rgba(26,130,255,`  // blue ~40%
-          : `rgba(180,210,255,` // white-blue ~40%
-    }));
-
-    // ── Occasional large glowing orbs ──────────────────────────
-    const orbs = Array.from({ length: 5 }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: 60 + Math.random() * 120,
-      vx: (Math.random() - 0.5) * 0.09,
-      vy: (Math.random() - 0.5) * 0.09,
-      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255",
-      alpha: 0.025 + Math.random() * 0.035,
-    }));
-
-    let t = 0;
-    const draw = () => {
-      raf = requestAnimationFrame(draw);
-      t++;
-
-      // Deep space background
-      ctx.fillStyle = "#070b12";
-      ctx.fillRect(0, 0, W, H);
-
-      // Orbs
-      orbs.forEach(o => {
-        o.x += o.vx; o.y += o.vy;
-        if (o.x < -o.r) o.x = W + o.r;
-        if (o.x > W + o.r) o.x = -o.r;
-        if (o.y < -o.r) o.y = H + o.r;
-        if (o.y > H + o.r) o.y = -o.r;
-        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
-        g.addColorStop(0, `rgba(${o.color},${o.alpha})`);
-        g.addColorStop(1, `rgba(${o.color},0)`);
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
-      });
-
-      // Particles
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        p.pulse += p.pulseSpeed;
-        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-
-        const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
-        const r = p.r / p.z;
-
-        // Glow
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
-        g.addColorStop(0, `${p.color}${a})`);
-        g.addColorStop(1, `${p.color}0)`);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
-
-        // Core dot
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`;
-        ctx.fill();
-      });
-
-      // Subtle connection lines between close particles
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const a = particles[i], b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < 90) {
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
-      }
-    };
-    draw();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
-  }, []);
-
-  return (
-    <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
-      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
-
-      {/* Vignette */}
-      <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
-        background:"radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, rgba(7,11,18,0.5) 100%)" }} />
-
-      {/* Content */}
-      <div style={{
-        position:"absolute", inset:0, zIndex:10,
-        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24,
-      }}>
-        {/* Logo */}
-        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52, animation:"fadeUp .9s ease both" }}>
-          <div style={{
-            width:50, height:50, borderRadius:15,
-            background:"linear-gradient(135deg,#1a82ff,#5b4fff)",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            boxShadow:"0 0 48px rgba(26,130,255,0.45), 0 8px 24px rgba(0,0,0,0.5)",
-          }}>
-            <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
-              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
-              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-            </svg>
-          </div>
-          <div>
-            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px", lineHeight:1 }}>LogoPlacer</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
-          </div>
-        </div>
-
-        {/* Card */}
-        <div style={{
-          background:"rgba(10,16,26,0.8)",
-          backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)",
-          border:"1px solid rgba(255,255,255,0.07)",
-          borderRadius:24, padding:"40px 44px",
-          width:"100%", maxWidth:390,
-          display:"flex", flexDirection:"column", alignItems:"center", gap:26,
-          boxShadow:"0 48px 96px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05)",
-          animation:"fadeUp .9s .12s ease both",
-        }}>
-          <div style={{ textAlign:"center" }}>
-            <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>
-              Sign in
-            </div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>
-              Anvand ditt Google-konto for att<br/>fa tillgang till appen.
-            </div>
-          </div>
-
-          <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
-
-          <button
-            onClick={onLogin}
-            disabled={loading}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-              width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12,
-              padding:"13px 20px", borderRadius:12, border:"none",
-              background: hovered ? "#fff" : "rgba(255,255,255,0.93)",
-              color:"#111827", fontSize:14, fontWeight:600, fontFamily:"inherit",
-              cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1,
-              transition:"all .18s",
-              boxShadow: hovered ? "0 8px 32px rgba(26,130,255,0.3)" : "0 4px 16px rgba(0,0,0,0.4)",
-              transform: hovered ? "translateY(-1px) scale(1.01)" : "none",
-            }}>
-            <svg width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
-            </svg>
-            {loading ? "Signing in..." : "Continue with Google"}
-          </button>
-
-          <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center" }}>
-            Access is by invitation only
-          </div>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(24px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com";
-
-function loadGIS() {
-  return new Promise(resolve => {
-    if (window.google?.accounts?.oauth2) { resolve(); return; }
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.onload = resolve; s.onerror = resolve;
-    document.head.appendChild(s);
+function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
+  return new Promise(async (resolve) => {
+    const boundary = "MP_" + Math.random().toString(36).slice(2);
+    const subjB64 = btoa(unescape(encodeURIComponent(subject)));
+    const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
+    const attB64 = await new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
+      r.readAsDataURL(attachBlob);
+    });
+    const raw = [
+      `To: ${to}`,
+      `Subject: =?UTF-8?B?${subjB64}?=`,
+      "MIME-Version: 1.0",
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      "",
+      `--${boundary}`,
+      "Content-Type: text/html; charset=UTF-8",
+      "Content-Transfer-Encoding: base64",
+      "",
+      ...chunk76(bodyB64),
+      "",
+      `--${boundary}`,
+      `Content-Type: image/png; name="${filename}"`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${filename}"`,
+      "",
+      ...chunk76(attB64),
+      "",
+      `--${boundary}--`,
+    ].join("\r\n");
+    resolve(btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
   });
-}
-
-async function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
-  const boundary = "MP_" + Math.random().toString(36).slice(2);
-  const subjB64 = btoa(unescape(encodeURIComponent(subject)));
-  const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
-  const attB64 = await new Promise((res, rej) => {
-    const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
-    r.readAsDataURL(attachBlob);
-  });
-  const raw = [
-    `To: ${to}`,
-    `Subject: =?UTF-8?B?${subjB64}?=`,
-    "MIME-Version: 1.0",
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    "",
-    `--${boundary}`,
-    "Content-Type: text/html; charset=UTF-8",
-    "Content-Transfer-Encoding: base64",
-    "",
-    ...chunk76(bodyB64),
-    "",
-    `--${boundary}`,
-    `Content-Type: image/png; name="${filename}"`,
-    "Content-Transfer-Encoding: base64",
-    `Content-Disposition: attachment; filename="${filename}"`,
-    "",
-    ...chunk76(attB64),
-    "",
-    `--${boundary}--`,
-  ].join("\r\n");
-  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 function chunk76(s) {
   const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r;
 }
 
-// ── SendModal ─────────────────────────────────────────────────────────────────
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired }) {
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
   const token = sharedToken;
   const [subject, setSubject] = useState("En personlig demo för ((company))");
   const [bodyText, setBodyText] = useState("Hej ((name)),\n\nHär är en personlig demo vi satt ihop speciellt för er på ((company)).\n\nHör gärna av dig!\n\nMvh");
-  const [attachType, setAttachType] = useState("image"); // "image" | "video"
-  const [selected, setSelected] = useState(null); // Set of ids, init on step change
+  const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
   const [results, setResults] = useState({});
 
   const withEmail = companies.filter(c => c.status === "ok" && c.email);
   const noEmail   = companies.filter(c => c.status === "ok" && !c.email);
 
-  // Init selection on mount
   useEffect(() => {
     const sel = new Set(withEmail.map(c => c.id));
     setSelected(sel);
@@ -1603,7 +1234,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
   useEffect(() => { loadGIS(); }, []);
 
-  // Load preview thumbnails when reaching approve/sending/done
   useEffect(() => {
     if (step !== "approve" && step !== "sending" && step !== "done") return;
     for (const c of withEmail.filter(c => selected?.has(c.id))) {
@@ -1632,9 +1262,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   };
 
   const selectedContacts = withEmail.filter(c => selected?.has(c.id));
-
   const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
-
   const [countdown, setCountdown] = useState(null);
 
   const sendAll = async () => {
@@ -1642,7 +1270,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
       if (si > 0) {
-        const delay = Math.floor(Math.random() * 31) + 15; // 15-45s
+        const delay = Math.floor(Math.random() * 31) + 15;
         for (let s = delay; s > 0; s--) {
           setCountdown(s);
           await new Promise(r => setTimeout(r, 1000));
@@ -1688,7 +1316,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-box">
-        {/* Head */}
         <div className="modal-head">
           <div>
             <div className="modal-title">
@@ -1708,10 +1335,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        {/* Body */}
         <div className="modal-body">
-
-          {/* AUTH */}
           {step === "auth" && (
             <div className="auth-center">
               <div className="auth-icon">📧</div>
@@ -1737,15 +1361,12 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             </div>
           )}
 
-          {/* COMPOSE */}
           {step === "compose" && (
             <>
               <div style={{fontSize:13,color:"var(--green)",display:"flex",alignItems:"center",gap:6,fontWeight:500}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 Gmail ansluten
               </div>
-
-              {/* Ämne */}
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 <label className="field-lbl">Ämnesrad</label>
                 <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)}
@@ -1757,8 +1378,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((company))")}>+ company</button>
                 </div>
               </div>
-
-              {/* Meddelande */}
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 <label className="field-lbl">Meddelande</label>
                 <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
@@ -1770,8 +1389,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 </div>
                 <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personaliserad bild bifogas automatiskt som .png-bilaga per mottagare.</p>
               </div>
-
-              {/* Förhandsvisning för första mottagaren */}
               {selectedContacts.length > 0 && (
                 <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"10px 12px"}}>
                   <div style={{fontSize:10,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase",color:"var(--t3)",marginBottom:6}}>Preview — {selectedContacts[0].personName || selectedContacts[0].companyName}</div>
@@ -1784,8 +1401,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   </div>
                 </div>
               )}
-
-              {/* Mottagare */}
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 <label className="field-lbl">Mottagare ({selectedContacts.length}/{withEmail.length} valda)</label>
                 <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
@@ -1808,7 +1423,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             </>
           )}
 
-          {/* APPROVE */}
           {step === "approve" && (
             <>
               <p style={{fontSize:13,color:"var(--t2)"}}>Varje person får sin personaliserade bild bifogad. Granska nedan:</p>
@@ -1818,16 +1432,13 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <div className="send-info">
                     <div className="send-name">{c.personName || c.companyName}</div>
                     <div className="send-detail">{c.email}</div>
-                    <div className="send-detail" style={{color:"var(--t2)"}}>
-                      <strong>{resolveStr(subject, c)}</strong>
-                    </div>
+                    <div className="send-detail" style={{color:"var(--t2)"}}><strong>{resolveStr(subject, c)}</strong></div>
                   </div>
                 </div>
               ))}
             </>
           )}
 
-          {/* SENDING / DONE */}
           {(step === "sending" || step === "done") && (
             <>
               {step === "sending" && countdown !== null && (
@@ -1862,7 +1473,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           )}
         </div>
 
-        {/* Footer */}
         <div className="modal-foot">
           {step === "compose" && (
             <>
@@ -1891,24 +1501,143 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   );
 }
 
+function LoginPage({ onLogin, loading }) {
+  const canvasRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
 
-// MONETIZATION
-// 1. npm install @clerk/clerk-react
-// 2. <ClerkProvider publishableKey="pk_live_XXXX"> i main.jsx
-// 3. Byt STRIPE_PAYMENT_LINK nedan
-// import { useUser, UserButton } from "@clerk/clerk-react";
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/YOUR_LINK_HERE";
-function Paywall() {
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    let raf;
+
+    const onResize = () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
+
+    const COUNT = 260;
+    const particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      z: Math.random() * 3 + 0.2,
+      vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+      r: Math.random() * 1.8 + 0.3,
+      alpha: Math.random() * 0.6 + 0.15,
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.008 + Math.random() * 0.022,
+      color: Math.random() > 0.8 ? `rgba(91,79,255,` : Math.random() > 0.5 ? `rgba(26,130,255,` : `rgba(180,210,255,`
+    }));
+
+    const orbs = Array.from({ length: 5 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: 60 + Math.random() * 120,
+      vx: (Math.random() - 0.5) * 0.09, vy: (Math.random() - 0.5) * 0.09,
+      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255",
+      alpha: 0.025 + Math.random() * 0.035,
+    }));
+
+    let t = 0;
+    const draw = () => {
+      raf = requestAnimationFrame(draw); t++;
+      ctx.fillStyle = "#070b12"; ctx.fillRect(0, 0, W, H);
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if (o.x < -o.r) o.x = W + o.r; if (o.x > W + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = H + o.r; if (o.y > H + o.r) o.y = -o.r;
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, `rgba(${o.color},${o.alpha})`);
+        g.addColorStop(1, `rgba(${o.color},0)`);
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      });
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
+        const r = p.r / p.z;
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
+        g.addColorStop(0, `${p.color}${a})`);
+        g.addColorStop(1, `${p.color}0)`);
+        ctx.beginPath(); ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`; ctx.fill();
+      });
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 90) {
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`;
+            ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      }
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
+  }, []);
+
   return (
-    <div style={{minHeight:"100vh",background:"#0d0d0f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"system-ui,sans-serif",padding:"24px"}}>
-      <div style={{textAlign:"center",maxWidth:480}}>
-        <h1 style={{color:"#fff",fontSize:30,fontWeight:700,margin:"0 0 12px"}}>LogoPlacer Pro</h1>
-        <p style={{color:"#8e8e93",fontSize:16,lineHeight:1.65,margin:"0 0 36px"}}>Send personaliserade demos direkt till dina prospekts inbox.<br/>Mer svar. Fler moten. Mer affar.</p>
-        <a href={STRIPE_PAYMENT_LINK} style={{display:"inline-block",background:"#0a84ff",color:"#fff",fontWeight:600,fontSize:16,padding:"15px 44px",borderRadius:14,textDecoration:"none"}}>Kom igang - 299 kr/man</a>
-        <p style={{color:"#48484a",fontSize:13,marginTop:12}}>Cancel nar som helst. Ingen bindningstid.</p>
+    <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
+      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
+      <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
+        background:"radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, rgba(7,11,18,0.5) 100%)" }} />
+      <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52, animation:"fadeUp .9s ease both" }}>
+          <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45), 0 8px 24px rgba(0,0,0,0.5)" }}>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
+              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
+              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
+              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            </svg>
+          </div>
+          <div>
+            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px", lineHeight:1 }}>LogoPlacer</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
+          </div>
+        </div>
+        <div style={{ background:"rgba(10,16,26,0.8)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:24, padding:"40px 44px", width:"100%", maxWidth:390, display:"flex", flexDirection:"column", alignItems:"center", gap:26, boxShadow:"0 48px 96px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05)", animation:"fadeUp .9s .12s ease both" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>Sign in</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>Anvand ditt Google-konto for att<br/>fa tillgang till appen.</div>
+          </div>
+          <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
+          <button onClick={onLogin} disabled={loading}
+            onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 20px", borderRadius:12, border:"none", background: hovered ? "#fff" : "rgba(255,255,255,0.93)", color:"#111827", fontSize:14, fontWeight:600, fontFamily:"inherit", cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition:"all .18s", boxShadow: hovered ? "0 8px 32px rgba(26,130,255,0.3)" : "0 4px 16px rgba(0,0,0,0.4)", transform: hovered ? "translateY(-1px) scale(1.01)" : "none" }}>
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
+            </svg>
+            {loading ? "Signing in..." : "Continue with Google"}
+          </button>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center" }}>Access is by invitation only</div>
+        </div>
       </div>
+      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   );
+}
+
+const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com";
+
+function loadGIS() {
+  return new Promise(resolve => {
+    if (window.google?.accounts?.oauth2) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.onload = resolve; s.onerror = resolve;
+    document.head.appendChild(s);
+  });
 }
 
 let idCounter = 1;
@@ -1928,10 +1657,10 @@ function App() {
       await new Promise((resolve, reject) => {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          scope: "openid email profile",
+          // ── FIX: Gmail send scope added here ──────────────────────────
+          scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
           callback: (resp) => {
             if (resp.error) { reject(resp.error); return; }
-            // Verify the token and get user info
             fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
               headers: { Authorization: `Bearer ${resp.access_token}` }
             })
@@ -1965,7 +1694,6 @@ function App() {
       const saved = localStorage.getItem("lp_companies");
       if (!saved) return [];
       const parsed = JSON.parse(saved);
-      // Restore logoEl from logoDataUrl (HTMLImageElement can't be serialised)
       return parsed.map(c => {
         if (c.logoDataUrl && c.status === "ok") {
           const img = new Image(); img.src = c.logoDataUrl;
@@ -1977,35 +1705,26 @@ function App() {
   });
   const [pasteText, setPasteText] = useState("");
 
-  // Persist companies to localStorage (strip non-serialisable logoEl)
   useEffect(() => {
     try {
       const toSave = companies.map(({ logoEl, ...rest }) => rest);
       localStorage.setItem("lp_companies", JSON.stringify(toSave));
     } catch {}
   }, [companies]);
+
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
-
-  // Multiple logo instances for company logo
   const [logoInstances, setLogoInstances] = useState([{ id: uid(), size: 120, opacity: 100, pos: { x: 50, y: 50 } }]);
   const [openLogoId, setOpenLogoId] = useState(logoInstances[0].id);
-
-  // My logo
   const [myLogoEl, setMyLogoEl] = useState(null);
   const [myLogoName, setMyLogoName] = useState(null);
   const [myLogoSize, setMyLogoSize] = useState(100);
   const [myLogoPos, setMyLogoPos] = useState({ x: 200, y: 50 });
   const [myLogoOpen, setMyLogoOpen] = useState(false);
-
-  // Multiple text layers
   const [textLayers, setTextLayers] = useState([defaultText()]);
   const [openTextId, setOpenTextId] = useState(textLayers[0].id);
-
-  // Symbols
   const [symbols, setSymbols] = useState([]);
-
-  const [mode, setMode] = useState("image"); // "image" | "video" | "animate"
+  const [mode, setMode] = useState("image");
   const [dragging, setDragging] = useState(null);
   const [toast, setToast] = useState(null);
   const [zipping, setZipping] = useState(false);
@@ -2017,11 +1736,10 @@ function App() {
   const [canvasZoom, setCanvasZoom] = useState(1);
   const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
   const [personalisedColors, setPersonalisedColors] = useState(false);
-  const [brandColor, setBrandColor] = useState(null); // { r, g, b }
-  const [colorToReplace, setColorToReplace] = useState("#ffffff"); // colour in base image to replace
-  const [pickingColor, setPickingColor] = useState(false); // eyedropper mode
+  const [brandColor, setBrandColor] = useState(null);
+  const [colorToReplace, setColorToReplace] = useState("#ffffff");
+  const [pickingColor, setPickingColor] = useState(false);
 
-  // ── Template save/load (localStorage) ─────────────────────────
   const [templates, setTemplates] = useState(() => {
     try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; }
   });
@@ -2030,12 +1748,8 @@ function App() {
 
   const saveTemplate = () => {
     const name = templateName.trim() || `Template ${templates.length + 1}`;
-    const tpl = {
-      id: uid(), name, savedAt: Date.now(),
-      logoInstances, textLayers, symbols,
-      canvasBg, personalisedColors, colorToReplace,
-    };
-    const updated = [tpl, ...templates].slice(0, 20); // keep last 20
+    const tpl = { id: uid(), name, savedAt: Date.now(), logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace };
+    const updated = [tpl, ...templates].slice(0, 20);
     setTemplates(updated);
     localStorage.setItem("lp_templates", JSON.stringify(updated));
     setTemplateName("");
@@ -2058,22 +1772,16 @@ function App() {
     setTemplates(updated);
     localStorage.setItem("lp_templates", JSON.stringify(updated));
   };
+
   const baseImageRef = useRef(null);
   const canvasSizeRef = useRef({ w: 0, h: 0 });
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  // Logo instance helpers
   const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
-  // Eyedropper: pick colour from base image at click position
+
   const pickColorFromImage = () => {
     if (!baseImageRef.current) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = baseImageRef.current.width;
-    canvas.height = baseImageRef.current.height;
-    const ctx2 = canvas.getContext("2d");
-    ctx2.drawImage(baseImageRef.current, 0, 0);
-    // Show a temp overlay on the main canvas asking user to click
     setPickingColor(true);
   };
 
@@ -2085,17 +1793,14 @@ function App() {
   };
   const removeLogoInst = (id) => { setLogoInstances(ls => ls.filter(l => l.id !== id)); };
 
-  // Text layer helpers
   const updateTextLayer = (id, patch) => setTextLayers(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
   const addTextLayer = () => {
-    const { w, h } = canvasSizeRef.current;
     const t = { ...defaultText(), pos: { x: 50, y: 180 + textLayers.length * 50 } };
     setTextLayers(ls => [...ls, t]);
     setOpenTextId(t.id);
   };
   const removeTextLayer = (id) => { setTextLayers(ls => ls.filter(l => l.id !== id)); };
 
-  // Symbol helpers
   const addSymbol = (char) => {
     const { w, h } = canvasSizeRef.current;
     setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
@@ -2113,7 +1818,6 @@ function App() {
     setHasImage(true);
   };
 
-  // Re-render personal image for video mode whenever canvas state changes
   useEffect(() => {
     if (!hasImage || !baseImageRef.current) return;
     const { w, h } = canvasSizeRef.current;
@@ -2133,12 +1837,8 @@ function App() {
     canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
   };
 
-  useEffect(() => {
-    if (!hasImage) return;
-    redrawBaseCanvas();
-  }, [hasImage]);
+  useEffect(() => { if (!hasImage) return; redrawBaseCanvas(); }, [hasImage]);
 
-  // Re-draw when tab becomes visible again (browser discards canvas on hide)
   useEffect(() => {
     const onVisible = () => { if (!document.hidden) redrawBaseCanvas(); };
     document.addEventListener("visibilitychange", onVisible);
@@ -2224,12 +1924,12 @@ function App() {
   };
 
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [allPreviews, setAllPreviews] = useState([]); // [{name, url}]
+  const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
-  const [editingDomain, setEditingDomain] = useState({}); // { [id]: draftString }
-  const [editingContact, setEditingContact] = useState(null); // { id, name, email }
+  const [editingDomain, setEditingDomain] = useState({});
+  const [editingContact, setEditingContact] = useState(null);
 
   const getImageBlob = async (company) => {
     if (!baseImageRef.current) throw new Error("no base image");
@@ -2262,26 +1962,20 @@ function App() {
   const onMouseDown = (e) => {
     if (!baseImageRef.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    // Divide by zoom: rect is the scaled size, but pos values are in unscaled canvas space
     const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
-
-    // Symbols
     for (const sym of symbols) {
       if (mx >= sym.pos.x && mx <= sym.pos.x + sym.size && my >= sym.pos.y && my <= sym.pos.y + sym.size) {
         setDragging({ target: "symbol", id: sym.id, ox: mx - sym.pos.x, oy: my - sym.pos.y }); e.preventDefault(); return;
       }
     }
-    // My logo
     if (myLogoEl && mx >= myLogoPos.x && mx <= myLogoPos.x + myLogoSize && my >= myLogoPos.y && my <= myLogoPos.y + myLogoSize) {
       setDragging({ target: "mylogo", ox: mx - myLogoPos.x, oy: my - myLogoPos.y }); e.preventDefault(); return;
     }
-    // Logo instances
     for (const inst of logoInstances) {
       if (mx >= inst.pos.x && mx <= inst.pos.x + inst.size && my >= inst.pos.y && my <= inst.pos.y + inst.size) {
         setDragging({ target: "logo", id: inst.id, ox: mx - inst.pos.x, oy: my - inst.pos.y }); e.preventDefault(); return;
       }
     }
-    // Text layers
     for (const layer of textLayers) {
       if (layer.enabled && layer.template) {
         if (mx >= layer.pos.x && mx <= layer.pos.x + 300 && my >= layer.pos.y && my <= layer.pos.y + 70) {
@@ -2330,13 +2024,19 @@ function App() {
                   style={{fontSize:11,padding:"3px 8px"}}>Sign out</button>
               </div>
             )}
-            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}><span style={{display:"flex",alignItems:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview</span></button>
+            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}>
+              <span style={{display:"flex",alignItems:"center",gap:6}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview
+              </span>
+            </button>
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
               Send
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
-            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13,letterSpacing:"-.1px"}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
+            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13,letterSpacing:"-.1px"}}
+              disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? "Packing..." : `Download (${readyCount})`}
             </button>
           </div>
@@ -2360,8 +2060,6 @@ function App() {
 
         {mode === "image" && <div className="workspace">
           <div className="sidebar">
-
-            {/* Bas-bild */}
             <span className="s-label">Base image</span>
             <div className="card"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleFileUpload(e); }} className="upload-zone" style={{}}>
@@ -2376,9 +2074,6 @@ function App() {
               </DropZone>
             </div></div>
 
-{/* My logo hidden — kept in state for future use */}
-
-            {/* Canvas-bakgrund */}
             <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom: canvasBg.enabled ? 10 : 0}}>
                 <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Background colour</span>
@@ -2400,7 +2095,6 @@ function App() {
               )}
             </div>
 
-            {/* Personalised colours — colour replace picker */}
             <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                 <div>
@@ -2434,7 +2128,6 @@ function App() {
               )}
             </div>
 
-            {/* Recipient logo */}
             <div className="s-row">
               <span className="s-label">Recipient logo</span>
               <button className="btn-text" onClick={addLogoInst}>+ New</button>
@@ -2449,7 +2142,6 @@ function App() {
               ))}
             </div>
 
-            {/* Text */}
             <div className="s-row">
               <span className="s-label">Text layers</span>
               <button className="btn-text" onClick={addTextLayer}>+ New</button>
@@ -2464,59 +2156,38 @@ function App() {
               ))}
             </div>
 
-            {/* Symbols */}
-            {/* Templates */}
             <div style={{margin:"0 10px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span className="s-label" style={{padding:0,marginBottom:0}}>Templates</span>
               <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>
                 {showTemplates ? "Hide" : `Saved (${templates.length})`}
               </button>
             </div>
-
-            {/* Save row */}
             <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
-              <input
-                value={templateName} onChange={e => setTemplateName(e.target.value)}
-                placeholder="Template name…"
-                onKeyDown={e => e.key==="Enter" && saveTemplate()}
-                style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,
-                  padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}}
-              />
+              <input value={templateName} onChange={e => setTemplateName(e.target.value)}
+                placeholder="Template name…" onKeyDown={e => e.key==="Enter" && saveTemplate()}
+                style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}} />
               <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0,
                 background:"linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15))",
                 border:"0.5px solid rgba(26,130,255,0.3)",color:"#5ba4ff"}}>
                 Save
               </button>
             </div>
-
-            {/* Template list */}
             {showTemplates && templates.length > 0 && (
               <div style={{margin:"0 10px 8px",display:"flex",flexDirection:"column",gap:4,maxHeight:220,overflowY:"auto"}}>
                 {templates.map(tpl => (
-                  <div key={tpl.id} style={{display:"flex",alignItems:"center",gap:6,background:"var(--bg3)",
-                    border:"0.5px solid var(--sep)",borderRadius:8,padding:"7px 10px"}}>
+                  <div key={tpl.id} style={{display:"flex",alignItems:"center",gap:6,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"7px 10px"}}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:12,fontWeight:600,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tpl.name}</div>
                       <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onClick={() => loadTemplate(tpl)}
-                      style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",
-                        background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      Load
-                    </button>
-                    <button onClick={() => deleteTemplate(tpl.id)}
-                      style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",
-                        background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
-                      ✕
-                    </button>
+                    <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Load</button>
+                    <button onClick={() => deleteTemplate(tpl.id)} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>✕</button>
                   </div>
                 ))}
               </div>
             )}
             {showTemplates && templates.length === 0 && (
-              <div style={{margin:"0 10px 8px",fontSize:12,color:"var(--t4)",textAlign:"center",padding:"12px 0"}}>
-                No templates saved yet
-              </div>
+              <div style={{margin:"0 10px 8px",fontSize:12,color:"var(--t4)",textAlign:"center",padding:"12px 0"}}>No templates saved yet</div>
             )}
 
             <span className="s-label">Symbols</span>
@@ -2545,8 +2216,6 @@ function App() {
               )}
             </div>
 
-            {/* Klistra in */}
-            {/* Contacts */}
             <span className="s-label">Contacts</span>
             <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
               <textarea className="paste-area" placeholder={"Paste from CRM/LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan , Stratton Oakmont"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
@@ -2638,14 +2307,11 @@ function App() {
             </>)}
           </div>
 
-          {/* Canvas */}
           <div className="canvas-area">
-
-
             <div className="canvas-wrapper" onWheel={e => {
-                e.preventDefault();
-                setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001)));
-              }}>
+              e.preventDefault();
+              setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001)));
+            }}>
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
@@ -2658,7 +2324,6 @@ function App() {
                   <canvas ref={canvasRef} />
                   {cw > 0 && (
                     <>
-                      {/* Logo instances */}
                       {logoInstances.map((inst, idx) => {
                         const color = LAYER_COLORS[(idx + 4) % LAYER_COLORS.length];
                         return (
@@ -2669,8 +2334,6 @@ function App() {
                           </div>
                         );
                       })}
-
-                      {/* My logo */}
                       {myLogoEl && (
                         <div className="overlay-box"
                           style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
@@ -2678,8 +2341,6 @@ function App() {
                           <span style={{fontSize:10,color:"var(--purple)",pointerEvents:"none"}}>▣</span>
                         </div>
                       )}
-
-                      {/* Text layers */}
                       {textLayers.map((layer, idx) => {
                         const color = LAYER_COLORS[idx % LAYER_COLORS.length];
                         const preview = layer.template ? resolveTemplate(layer.template, previewPerson, previewCompany) : "";
@@ -2692,8 +2353,6 @@ function App() {
                           </div>
                         );
                       })}
-
-                      {/* Symbols */}
                       {symbols.map(sym => (
                         <div key={sym.id} className="overlay-box"
                           style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
@@ -2722,7 +2381,6 @@ function App() {
 
         {toast && <div className="toast">{toast}</div>}
 
-        {/* Preview gallery modal */}
         {previewUrl && (
           <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} style={{
             position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,
@@ -2732,48 +2390,30 @@ function App() {
               display:"flex",flexDirection:"column",alignItems:"center",gap:14,
               maxWidth:"92vw", maxHeight:"96vh",
             }}>
-              {/* Company name + counter */}
               <div style={{display:"flex",alignItems:"center",gap:16}}>
-                <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>
-                  {allPreviews[previewIdx]?.name}
-                </span>
+                <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{allPreviews[previewIdx]?.name}</span>
                 {allPreviews.length > 1 && (
-                  <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>
-                    {previewIdx+1} / {allPreviews.length}
-                  </span>
+                  <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{previewIdx+1} / {allPreviews.length}</span>
                 )}
               </div>
-
-              {/* Image */}
               <img src={allPreviews[previewIdx]?.url || previewUrl}
                 style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}}
                 alt="Preview" />
-
-              {/* Thumbnail strip */}
               {allPreviews.length > 1 && (
                 <div style={{display:"flex",gap:8,overflowX:"auto",maxWidth:"88vw",padding:"4px 0"}}>
                   {allPreviews.map((p,i) => (
-                    <img key={i} src={p.url} alt={p.name}
-                      onClick={() => setPreviewIdx(i)}
-                      style={{
-                        width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",
+                    <img key={i} src={p.url} alt={p.name} onClick={() => setPreviewIdx(i)}
+                      style={{ width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",
                         border: i===previewIdx ? "2px solid var(--blue)" : "2px solid transparent",
-                        opacity: i===previewIdx ? 1 : 0.55, transition:"all .15s",
-                      }} />
+                        opacity: i===previewIdx ? 1 : 0.55, transition:"all .15s" }} />
                   ))}
                 </div>
               )}
-
-              {/* Buttons */}
               <div style={{display:"flex",gap:8}}>
                 {allPreviews.length > 1 && (
                   <>
-                    <button className="btn-s"
-                      onClick={() => setPreviewIdx(i => Math.max(i-1,0))}
-                      disabled={previewIdx===0}>Prev</button>
-                    <button className="btn-s"
-                      onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))}
-                      disabled={previewIdx===allPreviews.length-1}>Next</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i-1,0))} disabled={previewIdx===0}>Prev</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>Next</button>
                   </>
                 )}
                 <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Stang</button>
@@ -2802,7 +2442,6 @@ function App() {
   );
 }
 
-// ── Hash-based router — "/" = landing, "#app" = tool ──────────────
 export default function AppRouter() {
   const [view, setView] = useState(() => window.location.hash === "#app" ? "app" : "landing");
 
@@ -2817,4 +2456,3 @@ export default function AppRouter() {
   if (view === "landing") return <Landing onEnterApp={goToApp} />;
   return <App />;
 }
-
