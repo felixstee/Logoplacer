@@ -36,9 +36,10 @@ const style = `
   .app { min-height: 100vh; width: 100vw; max-width: 100vw; overflow-x: hidden; background: var(--bg); display: grid; grid-template-rows: auto auto 1fr; }
 
   /* ── Header ─────────────────────────────────────────── */
-  .header { padding: 12px 20px; background: var(--bg2); border-bottom: 0.5px solid var(--sep); display: flex; align-items: center; justify-content: space-between; }
+  .header { padding: 12px 20px; background: var(--bg2); border-bottom: 0.5px solid var(--sep); display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .header::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(26,130,255,0.45) 30%, rgba(91,79,255,0.45) 70%, transparent); pointer-events: none; }
   .header-brand { display: flex; align-items: center; gap: 10px; }
-  .header-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .header-icon { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#1a82ff,#5b4fff); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,130,255,0.3); }
   .header-name { font-size: 16px; font-weight: 600; color: var(--t1); letter-spacing: -.3px; }
   .header-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
   .header-btns { display: flex; gap: 8px; }
@@ -47,7 +48,7 @@ const style = `
   .mode-tabs { display: flex; background: var(--bg2); border-bottom: 0.5px solid var(--sep); padding: 0 4px; }
   .mode-tab { flex: 1; padding: 11px 0; text-align: center; font-size: 13px; font-weight: 500; color: var(--t3); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; font-family: inherit; }
   .mode-tab:hover { color: var(--t2); }
-  .mode-tab.active { color: var(--t1); border-bottom-color: var(--blue); }
+  .mode-tab.active { color: #5ba4ff; border-bottom-color: #1a82ff; }
 
   /* ── Layout ──────────────────────────────────────────── */
   .workspace { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 101px); overflow: hidden; }
@@ -159,8 +160,8 @@ const style = `
   .email-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
 
   /* ── Primary / secondary buttons ────────────────────── */
-  .btn-p { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s; }
-  .btn-p:hover { opacity: .88; }
+  .btn-p { background: linear-gradient(135deg, #1a82ff, #5b4fff); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s; box-shadow: 0 4px 16px rgba(26,130,255,0.25); }
+  .btn-p:hover { opacity: .92; box-shadow: 0 6px 22px rgba(26,130,255,0.38); }
   .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; }
   .btn-s { background: var(--bg4); color: var(--t1); border: 0.5px solid var(--sep); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; }
   .btn-s:hover { background: hsl(220 8% 24%); }
@@ -609,15 +610,28 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   const ctx = off.getContext("2d");
   if (canvasBg?.enabled) { ctx.fillStyle = canvasBg.color; ctx.fillRect(0, 0, off.width, off.height); }
   ctx.drawImage(baseImg, 0, 0);
-  // Personalised color overlay
-  if (canvasBg?.personalisedColors && canvasBg?.brandColor) {
-    const { r, g, b } = canvasBg.brandColor;
-    ctx.save();
-    ctx.globalCompositeOperation = "color";
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(0, 0, off.width, off.height);
-    ctx.restore();
+  // Personalised colour replacement — replace target colour with brand colour
+  if (canvasBg?.personalisedColors && canvasBg?.brandColor && canvasBg?.colorToReplace) {
+    try {
+      const { r: br, g: bg2, b: bb } = canvasBg.brandColor;
+      // Parse hex target colour
+      const hex = canvasBg.colorToReplace.replace("#","");
+      const tr = parseInt(hex.slice(0,2),16), tg = parseInt(hex.slice(2,4),16), tb = parseInt(hex.slice(4,6),16);
+      const imgData = ctx.getImageData(0, 0, off.width, off.height);
+      const d = imgData.data;
+      const tolerance = 60;
+      for (let i = 0; i < d.length; i += 4) {
+        const dr2 = Math.abs(d[i]-tr), dg2 = Math.abs(d[i+1]-tg), db2 = Math.abs(d[i+2]-tb);
+        if (dr2 < tolerance && dg2 < tolerance && db2 < tolerance) {
+          // Blend: how close to target determines blend strength
+          const strength = 1 - Math.sqrt(dr2*dr2+dg2*dg2+db2*db2) / (tolerance * Math.sqrt(3));
+          d[i]   = Math.round(d[i]   * (1-strength) + br * strength);
+          d[i+1] = Math.round(d[i+1] * (1-strength) + bg2 * strength);
+          d[i+2] = Math.round(d[i+2] * (1-strength) + bb * strength);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch(e) { console.warn("Colour replace failed:", e); }
   }
   const scaleX = baseImg.width / displayW, scaleY = baseImg.height / displayH;
   const scale = Math.max(scaleX, scaleY);
@@ -929,7 +943,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000); // text overlay capped to phase 2
     const dur2 = tmSnap.demoImg    * 1000;
     const dur3 = tmSnap.screenshot * 1000;
-    const total = Math.min(dur2 + dur3, vidDurMs); // Fix 5: never exceed original video length
+    const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000); // cap at 30s
 
     // PiP geometry
     const pipW = Math.round(VW * 0.22);
@@ -1024,6 +1038,16 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
       recorder.start(200);
       const timerId = setInterval(drawFrame, 1000 / 30);
+      // Hard safety timeout — never hang longer than total + 8s
+      setTimeout(() => {
+        if (!done) {
+          done = true;
+          clearInterval(timerId);
+          try { recorder.stop(); } catch(_) {}
+          vid.pause();
+          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
+        }
+      }, total + 8000);
     });
 
     URL.revokeObjectURL(videoUrl); // free video src memory
@@ -1271,7 +1295,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                   className={`gen-btn${generating === c.id ? " generating" : ""}`}
                   disabled={!myVideo || generating !== null}
                   onClick={() => generateVideo(c)}>
-                  {generating === c.id ? "Arbetar..." : generated[c.id] ? "Gör om" : "Skapa"}
+                  {generating === c.id ? "Creating…" : generated[c.id] ? "Redo" : "Create"}
                 </button>
               </div>
             </div>
@@ -1994,6 +2018,46 @@ function App() {
   const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
   const [personalisedColors, setPersonalisedColors] = useState(false);
   const [brandColor, setBrandColor] = useState(null); // { r, g, b }
+  const [colorToReplace, setColorToReplace] = useState("#ffffff"); // colour in base image to replace
+  const [pickingColor, setPickingColor] = useState(false); // eyedropper mode
+
+  // ── Template save/load (localStorage) ─────────────────────────
+  const [templates, setTemplates] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; }
+  });
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+
+  const saveTemplate = () => {
+    const name = templateName.trim() || `Template ${templates.length + 1}`;
+    const tpl = {
+      id: uid(), name, savedAt: Date.now(),
+      logoInstances, textLayers, symbols,
+      canvasBg, personalisedColors, colorToReplace,
+    };
+    const updated = [tpl, ...templates].slice(0, 20); // keep last 20
+    setTemplates(updated);
+    localStorage.setItem("lp_templates", JSON.stringify(updated));
+    setTemplateName("");
+    showToast(`Template "${name}" saved`);
+  };
+
+  const loadTemplate = (tpl) => {
+    if (tpl.logoInstances) setLogoInstances(tpl.logoInstances);
+    if (tpl.textLayers)    setTextLayers(tpl.textLayers);
+    if (tpl.symbols)       setSymbols(tpl.symbols);
+    if (tpl.canvasBg)      setCanvasBg(tpl.canvasBg);
+    if (tpl.personalisedColors !== undefined) setPersonalisedColors(tpl.personalisedColors);
+    if (tpl.colorToReplace)  setColorToReplace(tpl.colorToReplace);
+    setShowTemplates(false);
+    showToast(`Template "${tpl.name}" loaded`);
+  };
+
+  const deleteTemplate = (id) => {
+    const updated = templates.filter(t => t.id !== id);
+    setTemplates(updated);
+    localStorage.setItem("lp_templates", JSON.stringify(updated));
+  };
   const baseImageRef = useRef(null);
   const canvasSizeRef = useRef({ w: 0, h: 0 });
 
@@ -2001,6 +2065,18 @@ function App() {
 
   // Logo instance helpers
   const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
+  // Eyedropper: pick colour from base image at click position
+  const pickColorFromImage = () => {
+    if (!baseImageRef.current) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = baseImageRef.current.width;
+    canvas.height = baseImageRef.current.height;
+    const ctx2 = canvas.getContext("2d");
+    ctx2.drawImage(baseImageRef.current, 0, 0);
+    // Show a temp overlay on the main canvas asking user to click
+    setPickingColor(true);
+  };
+
   const addLogoInst = () => {
     const { w, h } = canvasSizeRef.current;
     const inst = { id: uid(), size: 80, opacity: 100, pos: { x: Math.min(50 + logoInstances.length * 40, w - 100), y: 100 } };
@@ -2043,7 +2119,7 @@ function App() {
     const { w, h } = canvasSizeRef.current;
     const first = companies.find(c => c.status === "ok");
     if (!first) { setPersonalImgEl(null); return; }
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl, { ...canvasBg, personalisedColors, brandColor: first.brandColor || null });
+    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl, { ...canvasBg, personalisedColors, colorToReplace, brandColor: first.brandColor || null });
     const img = new Image();
     img.onload = () => setPersonalImgEl(img);
     img.src = off.toDataURL();
@@ -2134,7 +2210,7 @@ function App() {
   const downloadZip = async () => {
     const ready = companies.filter(c => c.status === "ok");
     if (!ready.length || !baseImageRef.current) return;
-    setZipping(true); showToast("Skapar zip-fil...");
+    setZipping(true); showToast("Creating zip…");
     const zip = new JSZip(); const folder = zip.folder("loggor");
     const { w, h } = canvasSizeRef.current;
     for (const c of ready) {
@@ -2170,7 +2246,7 @@ function App() {
     const previews = [];
     let done = 0;
     targets.forEach((comp, i) => {
-      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, brandColor: comp.brandColor || null });
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null });
       off.toBlob(blob => {
         previews[i] = { name: comp.companyName || "Preview", url: URL.createObjectURL(blob) };
         done++;
@@ -2260,7 +2336,7 @@ function App() {
               Send
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
-            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
+            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13,letterSpacing:"-.1px"}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? "Packing..." : `Download (${readyCount})`}
             </button>
           </div>
@@ -2300,34 +2376,14 @@ function App() {
               </DropZone>
             </div></div>
 
-            {/* My logo */}
-            <span className="s-label">My logo</span>
-            <div className="card"><div className="card-pad">
-              <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleMyLogoUpload(e); }} className="upload-zone" style={{}}>
-                <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
-                  <input type="file" accept="image/*" style={{display:"none"}} onChange={handleMyLogoUpload} />
-                  <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01"/></svg></div>
-                  {myLogoName ? <p className="uz-active">{myLogoName}</p> : <p className="uz-text">Click or drag here loggan</p>}
-                  <p className="uz-hint">PNG with transparent background</p>
-                </label>
-              </DropZone>
-              {myLogoEl && (
-                <div className="sl-wrap">
-                  <div className="sl-head">
-                    <span className="sl-label">Size</span>
-                    <PxInput value={myLogoSize} onChange={v => setMyLogoSize(v)} color="var(--purple)" />
-                  </div>
-                  <input type="range" min={1} max={1000} value={myLogoSize} onChange={e => setMyLogoSize(Number(e.target.value))} style={{ accentColor: "var(--purple)" }} />
-                </div>
-              )}
-            </div></div>
+{/* My logo hidden — kept in state for future use */}
 
             {/* Canvas-bakgrund */}
             <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom: canvasBg.enabled ? 10 : 0}}>
                 <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Background colour</span>
                 <label style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}>
-                  <span style={{fontSize:12,color:"var(--t3)"}}>{canvasBg.enabled ? "På" : "Av"}</span>
+                  <span style={{fontSize:12,color:"var(--t3)"}}>{canvasBg.enabled ? "On" : "Off"}</span>
                   <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
                     onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
                     <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
@@ -2339,35 +2395,49 @@ function App() {
                   <input type="color" value={canvasBg.color} onChange={e => setCanvasBg(bg => ({ ...bg, color: e.target.value }))}
                     style={{width:32,height:32,borderRadius:8,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none"}} />
                   <span style={{fontSize:12,color:"var(--t3)",fontFamily:"monospace"}}>{canvasBg.color}</span>
-                  <span style={{fontSize:11,color:"var(--t4)"}}>Fylls bakom bilden</span>
+                  <span style={{fontSize:11,color:"var(--t4)"}}>Fills behind image</span>
+                </div>
+              )}
+            </div>
+
+            {/* Personalised colours — colour replace picker */}
+            <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                <div>
+                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Match brand colour</span>
+                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Replace a colour in your image with recipient's brand</div>
+                </div>
+                <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
+                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)}
+                    style={{opacity:0,width:0,height:0,position:"absolute"}}/>
+                  <span style={{position:"absolute",inset:0,borderRadius:9,background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s"}}>
+                    <span style={{position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+                  </span>
+                </label>
+              </div>
+              {personalisedColors && (
+                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
+                  <div style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>Replace:</div>
+                  <input type="color" value={colorToReplace} onChange={e => setColorToReplace(e.target.value)}
+                    style={{width:32,height:28,borderRadius:6,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none",flexShrink:0}} />
+                  <div style={{fontSize:10,color:"var(--t4)",fontFamily:"monospace"}}>{colorToReplace}</div>
+                  <button onClick={pickColorFromImage}
+                    style={{fontSize:10,padding:"4px 8px",borderRadius:6,border:"0.5px solid var(--sep)",background:"var(--bg4)",color:"var(--t2)",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+                    Pick from image
+                  </button>
+                </div>
+              )}
+              {personalisedColors && (
+                <div style={{fontSize:10,color:"var(--t4)",marginTop:6,lineHeight:1.5}}>
+                  The selected colour will be replaced with each recipient's brand colour automatically.
                 </div>
               )}
             </div>
 
             {/* Recipient logo */}
             <div className="s-row">
-              {/* Personalised colours toggle */}
-            <div className="s-row" style={{padding:"8px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"0.5px solid var(--sep)"}}>
-              <div>
-                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Personalised colours</span>
-                <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Tint image with prospect's brand color</div>
-              </div>
-              <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
-                <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)}
-                  style={{opacity:0,width:0,height:0,position:"absolute"}}/>
-                <span style={{
-                  position:"absolute",inset:0,borderRadius:9,
-                  background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s",
-                }}>
-                  <span style={{
-                    position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,
-                    borderRadius:"50%",background:"#fff",transition:"left .2s",
-                  }}/>
-                </span>
-              </label>
-            </div>
-            <span className="s-label">Recipient logo</span>
-              <button className="btn-text" onClick={addLogoInst}>+ Ny</button>
+              <span className="s-label">Recipient logo</span>
+              <button className="btn-text" onClick={addLogoInst}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
               {logoInstances.map((inst, idx) => (
@@ -2382,7 +2452,7 @@ function App() {
             {/* Text */}
             <div className="s-row">
               <span className="s-label">Text layers</span>
-              <button className="btn-text" onClick={addTextLayer}>+ Ny</button>
+              <button className="btn-text" onClick={addTextLayer}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
               {textLayers.map((layer, idx) => (
@@ -2395,6 +2465,60 @@ function App() {
             </div>
 
             {/* Symbols */}
+            {/* Templates */}
+            <div style={{margin:"0 10px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span className="s-label" style={{padding:0,marginBottom:0}}>Templates</span>
+              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>
+                {showTemplates ? "Hide" : `Saved (${templates.length})`}
+              </button>
+            </div>
+
+            {/* Save row */}
+            <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
+              <input
+                value={templateName} onChange={e => setTemplateName(e.target.value)}
+                placeholder="Template name…"
+                onKeyDown={e => e.key==="Enter" && saveTemplate()}
+                style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,
+                  padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}}
+              />
+              <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0,
+                background:"linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15))",
+                border:"0.5px solid rgba(26,130,255,0.3)",color:"#5ba4ff"}}>
+                Save
+              </button>
+            </div>
+
+            {/* Template list */}
+            {showTemplates && templates.length > 0 && (
+              <div style={{margin:"0 10px 8px",display:"flex",flexDirection:"column",gap:4,maxHeight:220,overflowY:"auto"}}>
+                {templates.map(tpl => (
+                  <div key={tpl.id} style={{display:"flex",alignItems:"center",gap:6,background:"var(--bg3)",
+                    border:"0.5px solid var(--sep)",borderRadius:8,padding:"7px 10px"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:600,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tpl.name}</div>
+                      <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
+                    </div>
+                    <button onClick={() => loadTemplate(tpl)}
+                      style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",
+                        background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      Load
+                    </button>
+                    <button onClick={() => deleteTemplate(tpl.id)}
+                      style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",
+                        background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {showTemplates && templates.length === 0 && (
+              <div style={{margin:"0 10px 8px",fontSize:12,color:"var(--t4)",textAlign:"center",padding:"12px 0"}}>
+                No templates saved yet
+              </div>
+            )}
+
             <span className="s-label">Symbols</span>
             <div className="card">
               <div className="sym-grid">
@@ -2530,7 +2654,7 @@ function App() {
                 </div>
               ) : (
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                  style={{ width: cw || "auto", height: ch || "auto", cursor: dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "center center" }}>
+                  style={{ width: cw || "auto", height: ch || "auto", cursor: pickingColor ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "center center" }}>
                   <canvas ref={canvasRef} />
                   {cw > 0 && (
                     <>

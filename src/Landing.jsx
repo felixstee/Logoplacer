@@ -128,19 +128,19 @@ function HeroScene() {
     const pl2 = new THREE.PointLight(0xccddff, 3, 50); pl2.position.set(-8, -6, -4); scene.add(pl2);
     const pl3 = new THREE.PointLight(0xffffff, 2, 30); pl3.position.set(0, -8, 10); scene.add(pl3);
 
-    const glassMat = (opacity = 0.18) => new THREE.MeshPhongMaterial({
-      color: 0xddeeff, emissive: 0x0a1a3a, emissiveIntensity: 0.04,
-      specular: 0xffffff, shininess: 180,
+    const glassMat = (opacity = 0.06) => new THREE.MeshPhongMaterial({
+      color: 0xeef6ff, emissive: 0x081428, emissiveIntensity: 0.02,
+      specular: 0xffffff, shininess: 240,
       transparent: true, opacity, side: THREE.DoubleSide,
     });
-    const wireMat = () => new THREE.LineBasicMaterial({ color: 0x99bbdd, transparent: true, opacity: 0.5 });
+    const wireMat = () => new THREE.LineBasicMaterial({ color: 0xc8dcf8, transparent: true, opacity: 0.85 });
 
     // ── Email envelope function ───────────────────────────────────
     const makeEnvelope = (size = 1) => {
       const group = new THREE.Group();
       // Body — flat box
       const bodyGeo = new THREE.BoxGeometry(size * 1.4, size, size * 0.12);
-      const body = new THREE.Mesh(bodyGeo, glassMat(0.2));
+      const body = new THREE.Mesh(bodyGeo, glassMat(0.05));
       body.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo), wireMat()));
       group.add(body);
       // Flap — two triangles forming a V on front face
@@ -193,7 +193,7 @@ function HeroScene() {
 
     // Orbit ring
     const ringGeo = new THREE.TorusGeometry(7.5, 0.02, 6, 80);
-    const ring = new THREE.Mesh(ringGeo, glassMat(0.2));
+    const ring = new THREE.Mesh(ringGeo, glassMat(0.1));
     ring.rotation.x = Math.PI / 3.5;
     scene.add(ring);
 
@@ -427,7 +427,7 @@ function LiveDemo() {
     ctx.fillStyle = "#f0f4f8";
     ctx.fillRect(0, 0, W, H);
 
-    // ── Left sidebar (dark navy like Findex) ─────────────────────
+    // ── Left sidebar (dark navy like [Your product]) ─────────────────────
     const sbW = 180;
     // Use brand color if available
     const brand = accentColor || "#1a2744";
@@ -527,7 +527,7 @@ function LiveDemo() {
       ctx.fillText(`Prepared especially for ${company} — ${new Date().toLocaleDateString("en-GB")}`, mx, my + 30);
     }
 
-    // ── Light stat cards (2 prominent ones like Findex) ──────────
+    // ── Light stat cards (2 prominent ones like [Your product]) ──────────
     const cardY = my + 46;
     const cardData = [
       { label: "Reply Rate",  val: "34%",    sub: "+12% this week", accent: "#3b82f6" },
@@ -1878,7 +1878,7 @@ export default function Landing({ onEnterApp }) {
             }}
               onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 14px 48px rgba(26,130,255,0.55)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(26,130,255,0.4)"; }}>
-              Use the tool free
+              Use the tool
             </button>
             <a href="#waitlist" style={{
               color: "rgba(255,255,255,0.55)", textDecoration: "none",
