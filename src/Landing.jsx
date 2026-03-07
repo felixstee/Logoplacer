@@ -431,6 +431,7 @@ function LiveDemo() {
     const sbW = 180;
     // Use brand color if available
     const brand = accentColor || "#1a2744";
+    const brandMid = accentColor || "#1d3a6e";
     ctx.fillStyle = accentColor ? brand : "#1a2744";
     ctx.fillRect(0, 0, sbW, H);
 
@@ -710,7 +711,7 @@ function LiveDemo() {
       ctx.fillText(fetching ? "Fetching logo…" : (company ? company : "Logo here"), cx2, zy + zoneSize - 10);
       ctx.textAlign = "left";
     }
-  }, [company, name, email, logoEl, logoPos, logoSize, fetching, accentColor]);
+  }, [company, name, email, logoEl, logoPos, logoSize, fetching, accentColor, W, H]);
 
   // Fetch logo
   useEffect(() => {
@@ -754,7 +755,7 @@ function LiveDemo() {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-  }, []);
+  }, [W, H]);
 
   const onMouseDown = useCallback((e) => {
     if (!logoEl) return;
@@ -1753,6 +1754,8 @@ function TestimonialCarousel() {
     return () => clearInterval(t);
   }, [current, go]);
 
+  const t = TESTIMONIALS[current];
+  const cols = 3;
   const visible3 = [0,1,2].map(i => TESTIMONIALS[(current + i) % TESTIMONIALS.length]);
 
   return (
@@ -2199,6 +2202,118 @@ function BlogPostPage({ slug, onBack }) {
           Get started free →
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL PROOF TICKER
+// ─────────────────────────────────────────────
+const TICKER_EVENTS = [
+  "Marcus at Klarna just sent 47 personalised demos",
+  "Sofia at Stripe booked 3 meetings from one sequence",
+  "Erik's reply rate hit 38% this week",
+  "Anna at HubSpot generated 60 demos in under 2 minutes",
+  "Liam just closed a deal after a personalised follow-up",
+  "Julia booked a VP meeting on the first email",
+  "Tom hit 41% open rate with visual personalisation",
+  "Emma sent 80 personalised demos before lunch",
+];
+
+function SocialProofTicker() {
+  const [idx, setIdx] = useState(0);
+  const [vis, setVis] = useState(true);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVis(false);
+      setTimeout(() => { setIdx(i => (i + 1) % TICKER_EVENTS.length); setVis(true); }, 350);
+    }, 4200);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div style={{
+      position: "fixed", bottom: 24, left: 24, zIndex: 300,
+      background: "rgba(7,11,18,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "10px 16px",
+      display: "flex", alignItems: "center", gap: 10, maxWidth: 320,
+      transition: "opacity .35s, transform .35s",
+      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(6px)",
+      pointerEvents: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+    }}>
+      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", flexShrink: 0, boxShadow: "0 0 8px rgba(34,197,94,0.7)" }}/>
+      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.45 }}>{TICKER_EVENTS[idx]}</span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// EXIT-INTENT POPUP
+// ─────────────────────────────────────────────
+function ExitIntentPopup({ onEnterApp }) {
+  const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    if (dismissed) return;
+    const handler = (e) => {
+      if (e.clientY <= 8 && !dismissed) { setShow(true); }
+    };
+    document.addEventListener("mouseleave", handler);
+    return () => document.removeEventListener("mouseleave", handler);
+  }, [dismissed]);
+  if (!show || dismissed) return null;
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 500,
+      background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+      animation: "fadeIn .25s ease",
+    }} onClick={e => { if (e.target === e.currentTarget) { setShow(false); setDismissed(true); } }}>
+      <div style={{
+        background: "linear-gradient(135deg, rgba(13,18,30,0.98), rgba(7,11,18,0.98))",
+        border: "1px solid rgba(26,130,255,0.25)", borderRadius: 28, padding: "52px 48px",
+        maxWidth: 480, width: "100%", textAlign: "center", position: "relative",
+        boxShadow: "0 40px 120px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.1)",
+        animation: "popIn .3s cubic-bezier(.34,1.56,.64,1) both",
+      }}>
+        <button onClick={() => { setShow(false); setDismissed(true); }} style={{
+          position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.06)", border: "none",
+          color: "rgba(255,255,255,0.4)", width: 32, height: 32, borderRadius: "50%",
+          cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "background .15s",
+        }}
+          onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.12)"}
+          onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.06)"}>×</button>
+
+        {/* Glow blob */}
+        <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, background: "radial-gradient(ellipse, rgba(26,130,255,0.15), transparent 70%)", pointerEvents: "none" }}/>
+
+        <div style={{ fontSize: 48, marginBottom: 16 }}>✋</div>
+        <h3 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-1px", margin: "0 0 12px", lineHeight: 1.2 }}>
+          Wait — before you go.
+        </h3>
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.48)", lineHeight: 1.7, margin: "0 0 32px" }}>
+          Personalise your first demo in 30 seconds — no credit card, no setup. Just upload a screenshot and see the difference.
+        </p>
+        <div style={{ display: "flex", gap: 12, flexDirection: "column" }}>
+          <button onClick={() => { onEnterApp(); setDismissed(true); }} style={{
+            background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
+            borderRadius: 14, padding: "16px", fontSize: 15, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit", boxShadow: "0 8px 32px rgba(26,130,255,0.35)",
+            transition: "transform .15s",
+          }}
+            onMouseEnter={e => e.currentTarget.style.transform="translateY(-1px)"}
+            onMouseLeave={e => e.currentTarget.style.transform="none"}>
+            Try for free — takes 30 seconds
+          </button>
+          <button onClick={() => { setShow(false); setDismissed(true); }} style={{
+            background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 12,
+            cursor: "pointer", fontFamily: "inherit", padding: "4px",
+          }}>
+            No thanks, I'll keep building demos manually
+          </button>
+        </div>
+      </div>
+      <style>{`@keyframes popIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} } @keyframes fadeIn { from{opacity:0} to{opacity:1} }`}</style>
     </div>
   );
 }
