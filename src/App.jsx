@@ -112,7 +112,7 @@ const style = `
   .cg-cell { display: flex; flex-direction: column; gap: 3px; }
   .cg-label { font-size: 11px; color: var(--t3); }
 
-  /* ── Colour picker (hidden, triggered by swatch) ─────── */
+  /* ── Colour picker ───────────────────────────────────── */
   .color-swatch { width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--sep); cursor: pointer; padding: 0; flex-shrink: 0; position: relative; overflow: hidden; }
   .color-swatch input[type=color] { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
@@ -159,7 +159,7 @@ const style = `
   .auth-icon { width:52px; height:52px; border-radius:14px; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:24px; }
   .email-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
 
-  /* ── Primary / secondary buttons ────────────────────── */
+  /* ── Buttons ─────────────────────────────────────────── */
   .btn-p { background: linear-gradient(135deg, #1a82ff, #5b4fff); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s; box-shadow: 0 4px 16px rgba(26,130,255,0.25); }
   .btn-p:hover { opacity: .92; box-shadow: 0 6px 22px rgba(26,130,255,0.38); }
   .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; }
@@ -171,7 +171,7 @@ const style = `
   .btn-text-red { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--red); cursor: pointer; padding: 0; }
   .btn-text-red:hover { opacity: .8; }
 
-  /* ── Paste textarea ──────────────────────────────────── */
+  /* ── Paste area ──────────────────────────────────────── */
   .paste-area { width: 100%; height: 100px; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-size: 12px; padding: 9px 11px; border-radius: var(--r-sm); resize: none; outline: none; line-height: 1.6; font-family: "SF Mono", "Fira Code", monospace; }
   .paste-area:focus { border-color: var(--blue); }
   .paste-area::placeholder { color: var(--t4); }
@@ -241,7 +241,6 @@ const style = `
   .font-select { appearance: none; -webkit-appearance: none; background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 12px; padding: 7px 28px 7px 10px; border-radius: var(--r-sm); outline: none; cursor: pointer; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color .15s; }
   .font-select:focus { border-color: var(--blue); }
   .font-select option { background: var(--bg2); color: var(--t1); }
-  .timing-input:focus { border-color: var(--blue); }
   .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--sep); }
   .contact-row:last-child { border-bottom: none; }
   .contact-row-name { flex: 1; font-size: 13px; color: var(--t1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -252,8 +251,80 @@ const style = `
   .open-link-btn:hover { opacity: .75; }
   .gen-btn { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
   .gen-btn:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; }
-  .gen-btn.generating { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
+  .gen-btn.generating { background: linear-gradient(135deg,#1a82ff,#5b4fff); }
 
+  /* ─────────────────────────────────────────────────────
+     MOBILE RESPONSIVE  (max-width: 768px)
+  ───────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    /* Header */
+    .header { padding: 10px 12px; }
+    .header-sub { display: none; }
+    .header-name { font-size: 14px; }
+    .header-icon { width: 28px; height: 28px; font-size: 14px; }
+    .header-btns { gap: 4px; }
+    .header-btns .btn-s { display: none; }
+    .header-btns .btn-p { font-size: 11px; padding: 6px 10px; white-space: nowrap; }
+
+    /* Mode tabs */
+    .mode-tab { font-size: 12px; padding: 9px 0; }
+
+    /* Main workspace: stack vertically */
+    .workspace {
+      grid-template-columns: 1fr !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .sidebar {
+      max-height: 40vh;
+      border-right: none;
+      border-bottom: 0.5px solid var(--sep);
+      overflow-y: auto;
+    }
+    .canvas-area { height: 52vh; }
+    .canvas-wrapper { padding: 14px; }
+    .canvas-footer { font-size: 11px; padding: 7px 12px; }
+    .zoom-controls { bottom: 8px; right: 8px; padding: 4px 6px; }
+
+    /* Modal */
+    .modal-overlay { padding: 10px; }
+    .modal-box { max-height: 95vh; }
+    .modal-head { padding: 12px 14px; }
+    .modal-body { padding: 12px 14px; gap: 10px; }
+    .modal-foot { padding: 10px 14px; gap: 6px; }
+    .modal-title { font-size: 14px; }
+
+    /* Sidebar cards */
+    .card { margin: 0 8px; }
+    .lcard { margin: 0 8px 6px; }
+    .co-list-wrap { margin: 0 8px; }
+    .s-label { padding: 14px 14px 6px; }
+    .s-row { padding: 14px 14px 6px; }
+    .cg { grid-template-columns: 1fr 1fr; }
+    .upload-zone { padding: 14px 10px; }
+
+    /* Toast */
+    .toast {
+      font-size: 12px;
+      padding: 8px 14px;
+      white-space: normal;
+      text-align: center;
+      max-width: 88vw;
+    }
+
+    /* Video mode */
+    .video-workspace {
+      grid-template-columns: 1fr !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .video-workspace .sidebar {
+      max-height: 38vh;
+      border-right: none;
+      border-bottom: 0.5px solid var(--sep);
+    }
+    .video-workspace > div:last-child { height: 52vh; overflow: hidden; }
+  }
 `;
 
 const COLOR_PRESETS = [
@@ -281,8 +352,7 @@ const FONT_OPTIONS = [
   { label: "Verdana", value: "Verdana" },
 ];
 
-const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "", "~"];
-
+const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "~"];
 const LAYER_COLORS = ["#c8f04c","#60a5fa","#f87171","#a78bfa","#fbbf24","#34d399","#f97316","#e879f9"];
 
 function domainToCompanyName(domain) {
@@ -364,7 +434,6 @@ function extractContacts(raw) {
     for (const ei of emailIdxs) {
       const email = lines[ei].toLowerCase();
       let personName = "", companyName = "";
-
       for (let back = 1; back <= 12; back++) {
         const c = (lines[ei - back] || "").trim();
         if (!c) continue;
@@ -380,7 +449,6 @@ function extractContacts(raw) {
         if (!personName && looksLikeName(c)) { personName = c; }
         if (personName && companyName) break;
       }
-
       if (!companyName) {
         for (let fwd = 1; fwd <= 3; fwd++) {
           const c = (lines[ei + fwd] || "").trim();
@@ -388,51 +456,12 @@ function extractContacts(raw) {
           if (!isSkipLine(c) && looksLikeCompany(c)) { companyName = c; break; }
         }
       }
-
       if (!companyName) continue;
       const key = companyName.toLowerCase();
       if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email }); }
     }
     if (results.length > 0) return results;
   }
-
-  const companyIdxs = lines.reduce((acc, l, i) => {
-    if (/^__[^_]{1,80}__$/.test(l)) acc.push(i);
-    return acc;
-  }, []);
-  if (companyIdxs.length > 0) {
-    for (const ci of companyIdxs) {
-      const companyName = cleanCompanyName(lines[ci].replace(/^__|__$/g, "").trim());
-      if (!looksLikeCompany(companyName)) continue;
-      let personName = "", email = null;
-      for (let back = 1; back <= 12; back++) {
-        const candidate = (lines[ci - back] || "").trim();
-        if (!candidate) continue;
-        if (!email && EMAIL_RE.test(candidate)) { email = candidate.toLowerCase(); continue; }
-        if (!personName && looksLikeName(candidate) && !isSkipLine(candidate)) { personName = candidate; }
-      }
-      for (let fwd = 1; fwd <= 4; fwd++) {
-        const c = (lines[ci + fwd] || "").trim();
-        if (!email && EMAIL_RE.test(c)) { email = c.toLowerCase(); }
-      }
-      const key = companyName.toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email }); }
-    }
-    return results;
-  }
-
-  const clean = raw.replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/__([^_]+)__/g, (_, m) => `§§§${m.trim()}§§§`);
-  const boldTokens = [...clean.matchAll(/§§§([^§]+)§§§/g)].map(m => m[1].trim());
-  for (let i = 0; i < boldTokens.length - 1; i++) {
-    const a = boldTokens[i], b = boldTokens[i + 1];
-    if (looksLikeName(a) && looksLikeCompany(b)) {
-      const key = b.toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: a, companyName: b, email: null }); }
-      i++;
-    }
-  }
-  if (results.length > 0) return results;
 
   const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
   for (const block of blocks) {
@@ -446,21 +475,6 @@ function extractContacts(raw) {
     if (companyName) {
       const key = companyName.toLowerCase();
       if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email }); }
-    }
-  }
-  if (results.length > 0) return results;
-
-  for (const line of lines) {
-    const cm = line.match(/^([A-Za-zÅÄÖåäö]+)\s*,\s*(.+)$/);
-    if (cm && looksLikeCompany(cm[2].trim())) {
-      const key = cm[2].trim().toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: cm[1].trim(), companyName: cm[2].trim(), email: null }); }
-      continue;
-    }
-    const parts = line.split(/\s+/);
-    if (parts.length === 2 && looksLikeName(parts[0]) && looksLikeCompany(parts[1])) {
-      const key = parts[1].toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: parts[0], companyName: parts[1], email: null }); }
     }
   }
   return results;
@@ -520,7 +534,7 @@ function PxInput({ value, onChange, color, suffix = "px", min = 1, max = 2000 })
   );
   return (
     <span className="sl-val" style={{ color, cursor: "pointer", textDecoration: "underline dotted", textUnderlineOffset: 2 }}
-      title="Klicka för att redigera" onClick={() => { setDraft(String(value)); setEditing(true); }}>
+      title="Click to edit" onClick={() => { setDraft(String(value)); setEditing(true); }}>
       {value}{suffix}
     </span>
   );
@@ -628,7 +642,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div className="layer-dot" style={{ background: color }} />
+        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
         <span className="lcard-title">Text {idx + 1}</span>
         <span className="lcard-prev">{layer.template || "empty"}</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
@@ -636,7 +650,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
       </div>
       {isOpen && (
         <div className="lcard-bd">
-          <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hej ((name)) på ((company))!"
+          <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hi ((name)) at ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
             <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
@@ -657,7 +671,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
             <div style={{gridColumn:"span 2",display:"flex",flexDirection:"column",gap:4}}>
               <span className="cg-label">Weight</span>
               <div className="wrow">
-                {[["normal","Regular"],["600","Semi-bold"],["bold","Bold"]].map(([val,lbl]) => {
+                {[["normal","Regular"],["600","Semi"],["bold","Bold"]].map(([val,lbl]) => {
                   const isOn = (layer.fontWeight ?? (layer.bold ? "bold" : "normal")) === val;
                   return <button key={val} className={`wbtn${isOn?" on":""}`} style={{fontWeight:val}} onClick={() => onChange({ fontWeight: val, bold: val==="bold" })}>{lbl}</button>;
                 })}
@@ -686,7 +700,7 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div className="layer-dot" style={{ background: color }} />
+        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
         <span className="lcard-title">Logo {idx + 1}</span>
         <span className="lcard-prev">{inst.size}px</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
@@ -719,21 +733,13 @@ const DEFAULT_VIDEO_OVERLAY = {
   bold: false,
 };
 
-function DropZone({ accept, onFile, children, className, style }) {
+function DropZone({ accept, onFile, children, className, style: styleProp }) {
   const [over, setOver] = useState(false);
-  const handleDrop = e => {
-    e.preventDefault(); setOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) onFile(file);
-  };
   return (
-    <div
-      className={className}
-      style={{ ...style, borderColor: over ? "var(--blue)" : undefined, background: over ? "var(--blue-dim)" : undefined }}
+    <div className={className} style={{ ...styleProp, borderColor: over ? "var(--blue)" : undefined, background: over ? "var(--blue-dim)" : undefined }}
       onDragOver={e => { e.preventDefault(); setOver(true); }}
       onDragLeave={() => setOver(false)}
-      onDrop={handleDrop}
-    >
+      onDrop={e => { e.preventDefault(); setOver(false); const file = e.dataTransfer.files[0]; if (file) onFile(file); }}>
       {children}
     </div>
   );
@@ -748,18 +754,10 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const [screenshots, setScreenshots] = useState({});
   const [generating, setGenerating] = useState(null);
   const [generated, setGenerated] = useState({});
-
   const videoRef = useRef(null);
-  const offCanvasRef = useRef(null);
 
   const updateOverlay = p => setOverlay(o => ({ ...o, ...p }));
   const readyCompanies = companies.filter(c => c.status === "ok");
-
-  const handleVideoFile = file => {
-    if (!file || !file.type.startsWith("video/")) return;
-    setMyVideoName(file.name);
-    setMyVideo(file);
-  };
 
   const handleScreenshotFile = (companyId, file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -769,48 +767,37 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   };
 
   const previewC = readyCompanies[0];
-  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Jordan", previewC?.companyName || "Stratton Oakmont");
+  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Jordan", previewC?.companyName || "Acme Corp");
   const totalSec = timings.demoImg + timings.screenshot;
-
-  const noDemoImg = !renderIngredients?.baseImg;
 
   const generateVideo = async (company) => {
     if (!myVideo) return;
     setGenerating(company.id);
-
-    const ovSnap  = { ...overlay };
-    const phSnap  = [...phaseOrder];
-    const tmSnap  = { ...timings };
+    const ovSnap = { ...overlay };
+    const phSnap = [...phaseOrder];
+    const tmSnap = { ...timings };
     const ssImg = screenshots[company.id] || null;
 
     let demoImg = null;
-    if (renderIngredients && renderIngredients.baseImg) {
+    if (renderIngredients?.baseImg) {
       const { baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols } = renderIngredients;
       const off = renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, null);
       demoImg = await new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = off.toDataURL(); });
     }
 
     const imgA = phSnap[0] === "demo" ? demoImg : ssImg;
-    const imgB = phSnap[0] === "demo" ? ssImg   : demoImg;
-
+    const imgB = phSnap[0] === "demo" ? ssImg : demoImg;
     const resolvedText = resolveTemplateFn(ovSnap.text, company.personName, company.companyName);
 
     const videoArrayBuffer = await myVideo.arrayBuffer();
     const videoBlob = new Blob([videoArrayBuffer], { type: myVideo.type || "video/mp4" });
-    const videoUrl  = URL.createObjectURL(videoBlob);
+    const videoUrl = URL.createObjectURL(videoBlob);
 
     const vid = document.createElement("video");
-    vid.loop  = false;
-    vid.muted = true;
-    vid.src   = videoUrl;
-    vid.load();
-    await new Promise(r => {
-      vid.onloadedmetadata = () => r();
-      vid.onerror = () => r();
-      setTimeout(r, 8000);
-    });
+    vid.loop = false; vid.muted = true; vid.src = videoUrl; vid.load();
+    await new Promise(r => { vid.onloadedmetadata = () => r(); vid.onerror = () => r(); setTimeout(r, 8000); });
 
-    const VW = vid.videoWidth  || 1280;
+    const VW = vid.videoWidth || 1280;
     const VH = vid.videoHeight || 720;
     const vidDurMs = (vid.duration && isFinite(vid.duration)) ? vid.duration * 1000 : 999999;
 
@@ -821,27 +808,23 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
     let audioRes = null;
     try {
-      const actx  = new AudioContext();
-      const abuf  = await actx.decodeAudioData(videoArrayBuffer.slice(0));
-      const dest  = actx.createMediaStreamDestination();
+      const actx = new AudioContext();
+      const abuf = await actx.decodeAudioData(videoArrayBuffer.slice(0));
+      const dest = actx.createMediaStreamDestination();
       const anode = actx.createBufferSource();
-      anode.buffer = abuf;
-      anode.loop   = true;
-      anode.connect(dest);
-      anode.connect(actx.destination);
-      anode.start(0);
+      anode.buffer = abuf; anode.loop = true;
+      anode.connect(dest); anode.connect(actx.destination); anode.start(0);
       dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
       audioRes = { actx, anode };
-    } catch (e) { console.warn("Audio skipped:", e.message); }
+    } catch(e) { console.warn("Audio skipped:", e.message); }
 
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9" : "video/webm";
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     const recorder = new MediaRecorder(stream, { mimeType });
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
     const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000);
-    const dur2 = tmSnap.demoImg    * 1000;
+    const dur2 = tmSnap.demoImg * 1000;
     const dur3 = tmSnap.screenshot * 1000;
     const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000);
 
@@ -849,19 +832,14 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     const pipH = Math.round(pipW * (VH / VW));
     const pipX = VW - pipW - 20;
     const pipY = VH - pipH - 20;
-    const R    = 12;
+    const R = 12;
 
     const rrect = (x, y, w, h, r) => {
       ctx.beginPath();
-      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-      ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-      ctx.lineTo(x+w,y+h-r);
-      ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-      ctx.lineTo(x+r,y+h);
-      ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-      ctx.lineTo(x,y+r);
-      ctx.quadraticCurveTo(x,y,x+r,y);
-      ctx.closePath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
     };
 
     const drawPip = () => {
@@ -874,24 +852,18 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     };
 
     const drawText = () => {
-      const fs   = Math.round(ovSnap.fontSize * (VW / 760));
+      const fs = Math.round(ovSnap.fontSize * (VW / 760));
       const font = `${ovSnap.bold?"bold ":""}${fs}px "${ovSnap.fontFamily}", sans-serif`;
       const maxW = VW * 0.72;
       ctx.font = font;
-      const tw   = Math.min(ctx.measureText(resolvedText).width, maxW);
-      const pw   = tw + 44;
-      const ph   = fs + 24;
-      const px   = (VW - pw) / 2;
-      const py   = VH * 0.038;
-      ctx.save();
-      ctx.globalAlpha = Math.min(ovSnap.bgOpacity / 100, 0.88);
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      rrect(px,py,pw,ph,ph/2); ctx.fill();
-      ctx.restore();
+      const tw = Math.min(ctx.measureText(resolvedText).width, maxW);
+      const pw = tw + 44; const ph = fs + 24;
+      const px = (VW - pw) / 2; const py = VH * 0.038;
+      ctx.save(); ctx.globalAlpha = Math.min(ovSnap.bgOpacity / 100, 0.88);
+      ctx.fillStyle = "rgba(0,0,0,0.85)"; rrect(px,py,pw,ph,ph/2); ctx.fill(); ctx.restore();
       ctx.save(); ctx.font=font; ctx.fillStyle=ovSnap.color;
       ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText(resolvedText, VW/2, py+ph/2, maxW);
-      ctx.restore();
+      ctx.fillText(resolvedText, VW/2, py+ph/2, maxW); ctx.restore();
     };
 
     const drawImg = (img) => {
@@ -906,41 +878,25 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     await vid.play().catch(()=>{});
 
     const blob = await new Promise(resolve => {
-      const t0 = performance.now();
-      let done = false;
-
+      const t0 = performance.now(); let done = false;
       const drawFrame = () => {
         if (done) return;
         const el = performance.now() - t0;
-
         ctx.clearRect(0, 0, VW, VH);
-        if (el < dur2) {
-          drawImg(imgA);
-          if (el < dur1) drawText();
-          drawPip();
-        } else if (el < total) {
-          drawImg(imgB);
-          drawPip();
-        }
-
+        if (el < dur2) { drawImg(imgA); if (el < dur1) drawText(); drawPip(); }
+        else if (el < total) { drawImg(imgB); drawPip(); }
         if (el >= total && !done) {
-          done = true;
-          clearInterval(timerId);
-          recorder.stop();
-          vid.pause();
+          done = true; clearInterval(timerId); recorder.stop(); vid.pause();
           if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
         }
       };
-
       recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
       recorder.start(200);
       const timerId = setInterval(drawFrame, 1000 / 30);
       setTimeout(() => {
         if (!done) {
-          done = true;
-          clearInterval(timerId);
-          try { recorder.stop(); } catch(_) {}
-          vid.pause();
+          done = true; clearInterval(timerId);
+          try { recorder.stop(); } catch(_) {} vid.pause();
           if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
         }
       }, total + 8000);
@@ -953,67 +909,42 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "calc(100vh - 101px)", overflow: "hidden" }}>
+    <div className="video-workspace" style={{ display:"grid", gridTemplateColumns:"320px 1fr", height:"calc(100vh - 101px)", overflow:"hidden" }}>
       <div className="sidebar">
         <span className="s-label">Your video</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
-            <DropZone accept="video/*" onFile={handleVideoFile} className="upload-zone" style={{}}>
+            <DropZone accept="video/*" onFile={f => { if (f.type.startsWith("video/")) { setMyVideoName(f.name); setMyVideo(f); } }} className="upload-zone" style={{}}>
               <label style={{cursor:"pointer",display:"block"}}>
-                <input type="file" accept="video/*" style={{display:"none"}} onChange={e => handleVideoFile(e.target.files[0])} />
-                <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg></div>
-                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag your video here</p>}
+                <input type="file" accept="video/*" style={{display:"none"}} onChange={e => { const f=e.target.files[0]; if(f){setMyVideoName(f.name);setMyVideo(f);} }} />
+                <div className="uz-icon" style={{color:"var(--t3)"}}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg>
+                </div>
+                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag video here</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
             <video ref={videoRef} style={{display:"none"}} playsInline muted={false} />
-            <canvas ref={offCanvasRef} style={{display:"none"}} />
           </div>
         </div>
 
-        <span className="s-label">Personal demo image</span>
-        <div className="card" style={{margin:"0 10px"}}>
-          <div className="card-pad">
-            {renderIngredients?.baseImg ? (
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0"}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"var(--green)",flexShrink:0}} />
-                <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Demo image ready</div>
-                  <div style={{fontSize:11,color:"var(--t3)"}}>Rendered uniquely per company on export</div>
-                </div>
-              </div>
-            ) : (
-              <div style={{padding:"10px 0",display:"flex",alignItems:"flex-start",gap:10}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"var(--orange)",marginTop:4,flexShrink:0}} />
-                <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>No demo image</div>
-                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Go to Image mode and add logo + text. It renders automatically per company.</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <span className="s-label">Intro text (phase 1)</span>
+        <span className="s-label">Intro text overlay</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
             <input className="inp" value={overlay.text} placeholder="((name))'s future IR"
               onChange={e => updateOverlay({ text: e.target.value })} />
             <div className="tag-btns">
               <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ first name</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((fullname))" })}>+ full name</button>
               <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ company</button>
             </div>
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Size (px)</span>
-                <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize}
-                  onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
+                <span className="timing-label">Font size</span>
+                <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize} onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Font</span>
-                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })}
-                  style={{background:"var(--bg4)",color:"var(--t1)"}}>
+                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })} style={{background:"var(--bg4)"}}>
                   {["Inter","Syne","Montserrat","Oswald","Bebas Neue","Raleway","Arial"].map(f => <option key={f}>{f}</option>)}
                 </select>
               </div>
@@ -1027,16 +958,9 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 </div>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Text background</span>
-                <div className="sl-wrap" style={{marginTop:0}}>
-                  <div className="sl-head"><span className="sl-label">Opacity</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
-                  <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"#1a82ff"}} />
-                </div>
+                <span className="timing-label">BG opacity</span>
+                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"#1a82ff"}} />
               </div>
-            </div>
-            <div className="trow">
-              <button className={`tbtn${overlay.bold ? " on" : ""}`} onClick={() => updateOverlay({bold:!overlay.bold})}>B  Bold</button>
-              <button className="tbtn" style={{color:"var(--t3)",cursor:"default",pointerEvents:"none"}}>Duration below</button>
             </div>
           </div>
         </div>
@@ -1046,44 +970,20 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           <div className="card-pad">
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Intro (text overlay)</span>
-                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration}
-                  onChange={e => updateOverlay({duration:Number(e.target.value)})} />
+                <span className="timing-label">Intro text duration</span>
+                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({duration:Number(e.target.value)})} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">{phaseOrder[0] === "demo" ? "Demobild" : "Hemsida"} (fas 2)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg}
-                  onChange={e => setTimings(t => ({...t, demoImg: Number(e.target.value)}))} />
+                <span className="timing-label">Phase 2 (demo)</span>
+                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg} onChange={e => setTimings(t => ({...t, demoImg: Number(e.target.value)}))} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">{phaseOrder[0] === "demo" ? "Hemsida" : "Demobild"} (fas 3)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot}
-                  onChange={e => setTimings(t => ({...t, screenshot: Number(e.target.value)}))} />
+                <span className="timing-label">Phase 3 (website)</span>
+                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot} onChange={e => setTimings(t => ({...t, screenshot: Number(e.target.value)}))} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Totalt</span>
+                <span className="timing-label">Total</span>
                 <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",padding:"6px 0"}}>{totalSec}s</div>
-              </div>
-            </div>
-            <div style={{marginTop:12,borderTop:"0.5px solid var(--sep)",paddingTop:12}}>
-              <span style={{fontSize:11,color:"var(--t3)",display:"block",marginBottom:8,letterSpacing:.4,textTransform:"uppercase",fontWeight:600}}>Imageordning</span>
-              <div style={{display:"flex",gap:6}}>
-                <button onClick={() => setPhaseOrder(["demo","screenshot"])}
-                  style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
-                    background: phaseOrder[0]==="demo" ? "var(--blue-dim)" : "var(--bg4)",
-                    borderColor: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--t2)"}}>
-                  <div style={{fontWeight:600,marginBottom:2}}>Demo → Hemsida</div>
-                  <div style={{fontSize:10,opacity:.7}}>Personlig bild först</div>
-                </button>
-                <button onClick={() => setPhaseOrder(["screenshot","demo"])}
-                  style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
-                    background: phaseOrder[0]==="screenshot" ? "var(--blue-dim)" : "var(--bg4)",
-                    borderColor: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--t2)"}}>
-                  <div style={{fontWeight:600,marginBottom:2}}>Hemsida → Demo</div>
-                  <div style={{fontSize:10,opacity:.7}}>Hemsida först</div>
-                </button>
               </div>
             </div>
           </div>
@@ -1093,12 +993,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       <div style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
         <div style={{padding:"10px 18px",borderBottom:"0.5px solid var(--sep)",background:"var(--bg2)",display:"flex",alignItems:"center",gap:10}}>
           <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} companies ready</span>
-          {noDemoImg && (
-            <span style={{fontSize:12,color:"var(--orange)",display:"flex",alignItems:"center",gap:5}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:"var(--orange)",display:"inline-block"}} />
-              No demo image — gå till Image-läget
-            </span>
-          )}
           <button className="btn-p" style={{marginLeft:"auto",width:"auto",padding:"8px 16px",fontSize:13}}
             disabled={readyCompanies.length===0||!myVideo||generating!==null}
             onClick={async()=>{for(const c of readyCompanies)await generateVideo(c);}}>
@@ -1106,21 +1000,16 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </button>
         </div>
 
-        <div style={{padding:"12px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",position:"relative",minHeight:56,display:"flex",alignItems:"center",gap:12}}>
-          <div style={{flex:1,fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"5px 14px",borderRadius:100,maxWidth:"60%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+        <div style={{padding:"10px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",display:"flex",alignItems:"center",gap:12,minHeight:48}}>
+          <div style={{fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"4px 14px",borderRadius:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"60%"}}>
             {previewText}
           </div>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--blue)",display:"inline-block"}}/>{overlay.duration}s intro</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--purple)",display:"inline-block"}}/>{timings.demoImg}s {phaseOrder[0]==="demo"?"demo":"website"}</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--green)",display:"inline-block"}}/>{timings.screenshot}s {phaseOrder[0]==="demo"?"website":"demo"}</span>
-          <span style={{fontSize:11,color:"var(--blue)",fontWeight:600}}>{totalSec}s totalt</span>
+          <span style={{fontSize:11,color:"var(--t3)",marginLeft:"auto"}}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{color:"var(--blue)"}}>{totalSec}s</strong></span>
         </div>
 
         <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
           {readyCompanies.length === 0 && (
-            <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>
-              Add companies in Image mode first
-            </div>
+            <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>Add companies in Image mode first</div>
           )}
           {readyCompanies.map(c => (
             <div key={c.id} className="contact-row">
@@ -1131,7 +1020,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div className="contact-row-name">{c.personName || "—"}</div>
                 <div className="contact-row-company">{c.companyName}</div>
               </div>
-              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")} title="Open website">
+              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {c.domain}
               </button>
@@ -1148,18 +1037,19 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <div style={{display:"flex",gap:5,alignItems:"center"}}>
                 {generated[c.id] && (
                   <>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}}
-                      onClick={() => { const v=document.createElement("video");v.src=generated[c.id];v.controls=true;v.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";const ov=document.createElement("div");ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";ov.onclick=()=>{ov.remove();v.remove();};document.body.append(ov,v); }}>
-                      Spela
-                    </button>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}}
-                      onClick={() => { const a=document.createElement("a");a.href=generated[c.id];a.download=c.companyName.toLowerCase().replace(/\s+/g,"_")+"_video.webm";a.click(); }}>
-                      Spara
-                    </button>
+                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
+                      const v=document.createElement("video"); v.src=generated[c.id]; v.controls=true;
+                      v.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
+                      const ov=document.createElement("div"); ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
+                      ov.onclick=()=>{ov.remove();v.remove();}; document.body.append(ov,v);
+                    }}>Play</button>
+                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
+                      const a=document.createElement("a"); a.href=generated[c.id];
+                      a.download=c.companyName.toLowerCase().replace(/\s+/g,"_")+"_video.webm"; a.click();
+                    }}>Save</button>
                   </>
                 )}
-                <button
-                  className={`gen-btn${generating === c.id ? " generating" : ""}`}
+                <button className={`gen-btn${generating === c.id ? " generating" : ""}`}
                   disabled={!myVideo || generating !== null}
                   onClick={() => generateVideo(c)}>
                   {generating === c.id ? "Creating…" : generated[c.id] ? "Redo" : "Create"}
@@ -1168,10 +1058,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             </div>
           ))}
         </div>
-
-        <div className="canvas-footer">
-          Click or drag a website screenshot here · Generate creates a .webm video per company
-        </div>
+        <div className="canvas-footer">Click or drag a screenshot · Creates .webm per company</div>
       </div>
     </div>
   );
@@ -1186,57 +1073,56 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
       const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
       r.readAsDataURL(attachBlob);
     });
+    const chunk76 = s => { const r=[]; for (let i=0;i<s.length;i+=76) r.push(s.slice(i,i+76)); return r; };
     const raw = [
-      `To: ${to}`,
-      `Subject: =?UTF-8?B?${subjB64}?=`,
-      "MIME-Version: 1.0",
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
-      "",
-      `--${boundary}`,
-      "Content-Type: text/html; charset=UTF-8",
-      "Content-Transfer-Encoding: base64",
-      "",
-      ...chunk76(bodyB64),
-      "",
-      `--${boundary}`,
-      `Content-Type: image/png; name="${filename}"`,
-      "Content-Transfer-Encoding: base64",
-      `Content-Disposition: attachment; filename="${filename}"`,
-      "",
-      ...chunk76(attB64),
-      "",
+      `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
+      "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
+      `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
+      ...chunk76(bodyB64), "",
+      `--${boundary}`, `Content-Type: image/png; name="${filename}"`, "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${filename}"`, "", ...chunk76(attB64), "",
       `--${boundary}--`,
     ].join("\r\n");
     resolve(btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
   });
 }
 
-function chunk76(s) {
-  const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r;
-}
-
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired }) {
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
   const token = sharedToken;
-  const [subject, setSubject] = useState("En personlig demo för ((company))");
-  const [bodyText, setBodyText] = useState("Hej ((name)),\n\nHär är en personlig demo vi satt ihop speciellt för er på ((company)).\n\nHör gärna av dig!\n\nMvh");
+  const [subject, setSubject] = useState("A personal demo for ((company))");
+  const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
   const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
   const [results, setResults] = useState({});
+  const [countdown, setCountdown] = useState(null);
+  const subjectRef = useRef(null);
+  const bodyRef = useRef(null);
 
   const withEmail = companies.filter(c => c.status === "ok" && c.email);
-  const noEmail   = companies.filter(c => c.status === "ok" && !c.email);
 
-  useEffect(() => {
-    const sel = new Set(withEmail.map(c => c.id));
-    setSelected(sel);
-  }, []);
-
+  useEffect(() => { setSelected(new Set(withEmail.map(c => c.id))); }, []);
   useEffect(() => { loadGIS(); }, []);
+
+  const login = async () => {
+    await loadGIS();
+    if (!window.google?.accounts?.oauth2) { alert("Google Sign-In failed to load. Check popup blockers."); return; }
+    window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "https://www.googleapis.com/auth/gmail.send",
+      callback: (r) => {
+        if (r.access_token) { onTokenAcquired(r.access_token); setStep("compose"); }
+        else alert("Login failed: " + (r.error || "unknown"));
+      },
+    }).requestAccessToken();
+  };
+
+  const selectedContacts = withEmail.filter(c => selected?.has(c.id));
+  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
 
   useEffect(() => {
     if (step !== "approve" && step !== "sending" && step !== "done") return;
-    for (const c of withEmail.filter(c => selected?.has(c.id))) {
+    for (const c of selectedContacts) {
       if (previews[c.id]) continue;
       getImageBlob(c).then(blob => {
         const url = URL.createObjectURL(blob);
@@ -1245,25 +1131,15 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     }
   }, [step]);
 
-  const login = async () => {
-    await loadGIS();
-    if (!window.google?.accounts?.oauth2) {
-      alert("Google Sign-In kunde inte laddas. Kontrollera att popup-blockerare är av och försök igen.");
-      return;
-    }
-    window.google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/gmail.send",
-      callback: (r) => {
-        if (r.access_token) { onTokenAcquired(r.access_token); setStep("compose"); }
-        else alert("Inloggning misslyckades: " + (r.error || "okänt fel"));
-      },
-    }).requestAccessToken();
+  const insertAtCursor = (ref, setter, tag) => {
+    const el = ref?.current;
+    if (!el) { setter(v => v + tag); return; }
+    const s = el.selectionStart ?? el.value.length;
+    const e = el.selectionEnd ?? el.value.length;
+    const next = el.value.slice(0, s) + tag + el.value.slice(e);
+    setter(next);
+    setTimeout(() => { el.focus(); el.setSelectionRange(s+tag.length, s+tag.length); }, 0);
   };
-
-  const selectedContacts = withEmail.filter(c => selected?.has(c.id));
-  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
-  const [countdown, setCountdown] = useState(null);
 
   const sendAll = async () => {
     setStep("sending");
@@ -1271,10 +1147,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       const c = selectedContacts[si];
       if (si > 0) {
         const delay = Math.floor(Math.random() * 31) + 15;
-        for (let s = delay; s > 0; s--) {
-          setCountdown(s);
-          await new Promise(r => setTimeout(r, 1000));
-        }
+        for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
         setCountdown(null);
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
@@ -1290,28 +1163,13 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           body: JSON.stringify({ raw }),
         });
         setResults(r => ({ ...r, [c.id]: res.ok ? "ok" : "err" }));
-      } catch {
-        setResults(r => ({ ...r, [c.id]: "err" }));
-      }
+      } catch { setResults(r => ({ ...r, [c.id]: "err" })); }
     }
-    setCountdown(null);
-    setStep("done");
+    setCountdown(null); setStep("done");
   };
 
-  const doneOk  = Object.values(results).filter(v => v === "ok").length;
+  const doneOk = Object.values(results).filter(v => v === "ok").length;
   const doneErr = Object.values(results).filter(v => v === "err").length;
-
-  const subjectRef = useRef(null);
-  const bodyRef = useRef(null);
-  const insertAtCursor = (ref, setter, tag) => {
-    const el = ref?.current;
-    if (!el) { setter(v => v + tag); return; }
-    const s = el.selectionStart ?? el.value.length;
-    const e = el.selectionEnd ?? el.value.length;
-    const next = el.value.slice(0, s) + tag + el.value.slice(e);
-    setter(next);
-    setTimeout(() => { el.focus(); el.setSelectionRange(s+tag.length, s+tag.length); }, 0);
-  };
 
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -1319,17 +1177,12 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-head">
           <div>
             <div className="modal-title">
-              { step === "auth"    && "Send email" }
-              { step === "compose" && "Skriv meddelande" }
-              { step === "approve" && `Godkänn utskick — ${selectedContacts.length} mottagare` }
-              { step === "sending" && "Sending…" }
-              { step === "done"    && "Klart!" }
+              {step === "auth" && "Send email"}{step === "compose" && "Compose message"}
+              {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
+              {step === "sending" && "Sending…"}{step === "done" && "Done!"}
             </div>
             <div className="modal-sub">
-              { step === "auth"    && "Sign in med Google för att skicka via Gmail" }
-              { step === "compose" && "((name)) och ((company)) ersätts per mottagare. Imageen bifogas automatiskt." }
-              { step === "approve" && "Granska nedan och bekräfta innan skickning." }
-              { (step === "sending" || step === "done") && "Sending personalised images via Gmail API" }
+              {step === "compose" && "((name)) and ((company)) are replaced per recipient. Image attached automatically."}
             </div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
@@ -1339,25 +1192,23 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {step === "auth" && (
             <div className="auth-center">
               <div className="auth-icon">📧</div>
-              <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Anslut Gmail</div>
+              <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Connect Gmail</div>
               <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
-                LogoPlacer skickar email(s) via ditt Gmail-konto. Inga meddelanden läses — appen har bara skicka-behörighet.
+                LogoPlacer sends emails via your Gmail account. Send-only access.
               </div>
               {withEmail.length === 0 ? (
                 <div style={{fontSize:13,color:"var(--orange)",padding:"10px 16px",background:"hsla(31,92%,58%,.1)",borderRadius:8}}>
-                  Inga kontakter har email(s)adress.<br/>
-                  <span style={{fontSize:12,color:"var(--t3)"}}>Paste text with email addresses, or add manually.</span>
+                  No contacts have email addresses. Add them first.
                 </div>
               ) : (
                 <>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} kontakter med email(s) redo</div>
+                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} contacts with email ready</div>
                   <button className="google-btn" onClick={login}>
                     <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z"/><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z"/></svg>
                     Continue with Google
                   </button>
                 </>
               )}
-              {noEmail.length > 0 && <div style={{fontSize:11,color:"var(--t4)"}}>{noEmail.length} kontakter saknar email(s) och hoppas över</div>}
             </div>
           )}
 
@@ -1365,44 +1216,28 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             <>
               <div style={{fontSize:13,color:"var(--green)",display:"flex",alignItems:"center",gap:6,fontWeight:500}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Gmail ansluten
+                Gmail connected
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                <label className="field-lbl">Ämnesrad</label>
-                <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)}
-                  placeholder="En personlig demo för ((company))" />
-                <div className="tag-btns" style={{marginTop:1}}>
-                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((name))")}>+ first name</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((fullname))")}>+ full name</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject,"((company))")}>+ company</button>
+                <label className="field-lbl">Subject</label>
+                <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)} />
+                <div className="tag-btns">
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((name))")}>+ name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((company))")}>+ company</button>
                 </div>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                <label className="field-lbl">Meddelande</label>
+                <label className="field-lbl">Message body</label>
                 <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
-                <div className="tag-btns" style={{marginTop:1}}>
-                  <span style={{fontSize:10,color:"var(--t4)",alignSelf:"center",marginRight:2}}>Add:</span>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((name))")}>+ first name</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((fullname))")}>+ full name</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText,"((company))")}>+ company</button>
+                <div className="tag-btns">
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((name))")}>+ name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
                 </div>
-                <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personaliserad bild bifogas automatiskt som .png-bilaga per mottagare.</p>
+                <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personalised image attached automatically as .png per recipient.</p>
               </div>
-              {selectedContacts.length > 0 && (
-                <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"10px 12px"}}>
-                  <div style={{fontSize:10,fontWeight:600,letterSpacing:".5px",textTransform:"uppercase",color:"var(--t3)",marginBottom:6}}>Preview — {selectedContacts[0].personName || selectedContacts[0].companyName}</div>
-                  <div style={{fontSize:12,color:"var(--t2)",marginBottom:3}}>
-                    <span style={{color:"var(--t4)"}}>Ämne: </span>
-                    {resolveStr(subject, selectedContacts[0]) || <span style={{color:"var(--t4)",fontStyle:"italic"}}>tom</span>}
-                  </div>
-                  <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"pre-wrap",lineHeight:1.5,maxHeight:80,overflow:"hidden"}}>
-                    {resolveStr(bodyText, selectedContacts[0]) || <span style={{color:"var(--t4)",fontStyle:"italic"}}>tomt</span>}
-                  </div>
-                </div>
-              )}
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                <label className="field-lbl">Mottagare ({selectedContacts.length}/{withEmail.length} valda)</label>
+                <label className="field-lbl">Recipients ({selectedContacts.length}/{withEmail.length})</label>
                 <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
                   {withEmail.map(c => (
                     <label key={c.id} className="rcpt-row" style={{cursor:"pointer"}}>
@@ -1414,7 +1249,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:13,fontWeight:500,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.personName || c.companyName}</div>
-                        <div style={{fontSize:11,color:"var(--t3)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.email}</div>
+                        <div style={{fontSize:11,color:"var(--t3)"}}>{c.email}</div>
                       </div>
                     </label>
                   ))}
@@ -1425,7 +1260,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
           {step === "approve" && (
             <>
-              <p style={{fontSize:13,color:"var(--t2)"}}>Varje person får sin personaliserade bild bifogad. Granska nedan:</p>
+              <p style={{fontSize:13,color:"var(--t2)"}}>Each person gets their personalised image attached. Review below:</p>
               {selectedContacts.map(c => (
                 <div key={c.id} className="send-row">
                   {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
@@ -1444,29 +1279,26 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               {step === "sending" && countdown !== null && (
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"hsla(31,92%,58%,.1)",border:"0.5px solid hsla(31,92%,58%,.35)",borderRadius:"var(--r-sm)"}}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span style={{fontSize:13,color:"var(--orange)",flex:1}}>Väntar {countdown}s innan nästa utskick — skyddar mot spamfilter</span>
+                  <span style={{fontSize:13,color:"var(--orange)"}}>Waiting {countdown}s before next send — anti-spam protection</span>
                 </div>
               )}
               {selectedContacts.map(c => (
                 <div key={c.id} className="send-row">
                   {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
-                  <div className="send-info">
-                    <div className="send-name">{c.personName || c.companyName}</div>
-                    <div className="send-detail">{c.email}</div>
-                  </div>
+                  <div className="send-info"><div className="send-name">{c.personName || c.companyName}</div><div className="send-detail">{c.email}</div></div>
                   <div className={`send-st ${results[c.id] || ""}`}>
-                    {!results[c.id] && <span style={{color:"var(--t4)"}}>väntar</span>}
-                    {results[c.id] === "ing" && "skickar…"}
-                    {results[c.id] === "ok"  && "✓ Sent"}
-                    {results[c.id] === "err" && "✕ Fel"}
+                    {!results[c.id] && <span style={{color:"var(--t4)"}}>waiting</span>}
+                    {results[c.id] === "ing" && "sending…"}
+                    {results[c.id] === "ok" && "✓ Sent"}
+                    {results[c.id] === "err" && "✕ Error"}
                   </div>
                 </div>
               ))}
               {step === "done" && (
                 <div style={{textAlign:"center",padding:"12px 0"}}>
                   <div style={{fontSize:28}}>{doneErr === 0 ? "🎉" : "⚠️"}</div>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} av {selectedContacts.length} skickade</div>
-                  {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} misslyckades — kontrollera att token inte gått ut</div>}
+                  <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} of {selectedContacts.length} sent</div>
+                  {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed — check token expiry</div>}
                 </div>
               )}
             </>
@@ -1478,18 +1310,16 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             <>
               <button className="btn-s" onClick={onClose}>Cancel</button>
               <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
-                disabled={!selectedContacts.length}
-                onClick={() => setStep("approve")}>
-                Förhandsgranska ({selectedContacts.length}) →
+                disabled={!selectedContacts.length} onClick={() => setStep("approve")}>
+                Preview ({selectedContacts.length}) →
               </button>
             </>
           )}
           {step === "approve" && (
             <>
               <button className="btn-s" onClick={() => setStep("compose")}>← Back</button>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}}
-                onClick={sendAll}>
-                ✓ Send {selectedContacts.length} email(s)
+              <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={sendAll}>
+                ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
               </button>
             </>
           )}
@@ -1511,70 +1341,52 @@ function LoginPage({ onLogin, loading }) {
     let W = canvas.width = window.innerWidth;
     let H = canvas.height = window.innerHeight;
     let raf;
-
-    const onResize = () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    };
+    const onResize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
     window.addEventListener("resize", onResize);
 
     const COUNT = 260;
     const particles = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      z: Math.random() * 3 + 0.2,
+      x: Math.random() * W, y: Math.random() * H, z: Math.random() * 3 + 0.2,
       vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
-      r: Math.random() * 1.8 + 0.3,
-      alpha: Math.random() * 0.6 + 0.15,
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.008 + Math.random() * 0.022,
-      color: Math.random() > 0.8 ? `rgba(91,79,255,` : Math.random() > 0.5 ? `rgba(26,130,255,` : `rgba(180,210,255,`
+      r: Math.random() * 1.8 + 0.3, alpha: Math.random() * 0.6 + 0.15,
+      pulse: Math.random() * Math.PI * 2, pulseSpeed: 0.008 + Math.random() * 0.022,
+      color: Math.random() > 0.8 ? "rgba(91,79,255," : Math.random() > 0.5 ? "rgba(26,130,255," : "rgba(180,210,255,",
     }));
 
     const orbs = Array.from({ length: 5 }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: 60 + Math.random() * 120,
+      x: Math.random() * W, y: Math.random() * H, r: 60 + Math.random() * 120,
       vx: (Math.random() - 0.5) * 0.09, vy: (Math.random() - 0.5) * 0.09,
-      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255",
-      alpha: 0.025 + Math.random() * 0.035,
+      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255", alpha: 0.025 + Math.random() * 0.035,
     }));
 
-    let t = 0;
     const draw = () => {
-      raf = requestAnimationFrame(draw); t++;
+      raf = requestAnimationFrame(draw);
       ctx.fillStyle = "#070b12"; ctx.fillRect(0, 0, W, H);
       orbs.forEach(o => {
         o.x += o.vx; o.y += o.vy;
-        if (o.x < -o.r) o.x = W + o.r; if (o.x > W + o.r) o.x = -o.r;
-        if (o.y < -o.r) o.y = H + o.r; if (o.y > H + o.r) o.y = -o.r;
-        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
-        g.addColorStop(0, `rgba(${o.color},${o.alpha})`);
-        g.addColorStop(1, `rgba(${o.color},0)`);
-        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
-        ctx.fillStyle = g; ctx.fill();
+        if (o.x < -o.r) o.x = W+o.r; if (o.x > W+o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = H+o.r; if (o.y > H+o.r) o.y = -o.r;
+        const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        g.addColorStop(0, `rgba(${o.color},${o.alpha})`); g.addColorStop(1, `rgba(${o.color},0)`);
+        ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
       });
       particles.forEach(p => {
         p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
-        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        if (p.x < 0) p.x=W; if (p.x > W) p.x=0; if (p.y < 0) p.y=H; if (p.y > H) p.y=0;
         const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
         const r = p.r / p.z;
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
-        g.addColorStop(0, `${p.color}${a})`);
-        g.addColorStop(1, `${p.color}0)`);
-        ctx.beginPath(); ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
-        ctx.fillStyle = g; ctx.fill();
-        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`; ctx.fill();
+        const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3);
+        g.addColorStop(0, `${p.color}${a})`); g.addColorStop(1, `${p.color}0)`);
+        ctx.beginPath(); ctx.arc(p.x,p.y,r*3,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=`${p.color}${Math.min(a*2,1)})`; ctx.fill();
       });
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const a = particles[i], b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
+      for (let i=0; i<particles.length; i++) {
+        for (let j=i+1; j<particles.length; j++) {
+          const a=particles[i], b=particles[j];
+          const dx=a.x-b.x, dy=a.y-b.y, dist=Math.sqrt(dx*dx+dy*dy);
           if (dist < 90) {
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`;
-            ctx.lineWidth = 0.5; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+            ctx.strokeStyle=`rgba(26,130,255,${(1-dist/90)*0.07})`; ctx.lineWidth=0.5; ctx.stroke();
           }
         }
       }
@@ -1586,38 +1398,26 @@ function LoginPage({ onLogin, loading }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
       <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
-      <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none",
-        background:"radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, rgba(7,11,18,0.5) 100%)" }} />
       <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52, animation:"fadeUp .9s ease both" }}>
-          <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45), 0 8px 24px rgba(0,0,0,0.5)" }}>
-            <svg width="26" height="26" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-              <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
-              <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/>
-              <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-            </svg>
+        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52 }}>
+          <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45)" }}>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/></svg>
           </div>
           <div>
-            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px", lineHeight:1 }}>LogoPlacer</div>
+            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px" }}>LogoPlacer</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
           </div>
         </div>
-        <div style={{ background:"rgba(10,16,26,0.8)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:24, padding:"40px 44px", width:"100%", maxWidth:390, display:"flex", flexDirection:"column", alignItems:"center", gap:26, boxShadow:"0 48px 96px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05)", animation:"fadeUp .9s .12s ease both" }}>
+        <div style={{ background:"rgba(10,16,26,0.8)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:24, padding:"40px 44px", width:"100%", maxWidth:390, display:"flex", flexDirection:"column", alignItems:"center", gap:26, boxShadow:"0 48px 96px rgba(0,0,0,0.7)" }}>
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>Sign in</div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>Anvand ditt Google-konto for att<br/>fa tillgang till appen.</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>Use your Google account to<br/>access the app.</div>
           </div>
           <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
           <button onClick={onLogin} disabled={loading}
             onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 20px", borderRadius:12, border:"none", background: hovered ? "#fff" : "rgba(255,255,255,0.93)", color:"#111827", fontSize:14, fontWeight:600, fontFamily:"inherit", cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition:"all .18s", boxShadow: hovered ? "0 8px 32px rgba(26,130,255,0.3)" : "0 4px 16px rgba(0,0,0,0.4)", transform: hovered ? "translateY(-1px) scale(1.01)" : "none" }}>
-            <svg width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
-            </svg>
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 20px", borderRadius:12, border:"none", background: hovered ? "#fff" : "rgba(255,255,255,0.93)", color:"#111827", fontSize:14, fontWeight:600, fontFamily:"inherit", cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1, transition:"all .18s" }}>
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
             {loading ? "Signing in..." : "Continue with Google"}
           </button>
           <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center" }}>Access is by invitation only</div>
@@ -1642,9 +1442,7 @@ function loadGIS() {
 
 let idCounter = 1;
 const uid = () => idCounter++;
-
 const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
-const defaultLogoInst = (w = 400, h = 300) => ({ id: uid(), size: 120, opacity: 100, pos: { x: Math.floor(w / 2) - 60, y: Math.floor(h / 2) - 60 } });
 
 function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
@@ -1657,11 +1455,10 @@ function App() {
       await new Promise((resolve, reject) => {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          // ── FIX: Gmail send scope added here ──────────────────────────
           scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
           callback: (resp) => {
             if (resp.error) { reject(resp.error); return; }
-            fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+            fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
               headers: { Authorization: `Bearer ${resp.access_token}` }
             })
             .then(r => r.json())
@@ -1669,21 +1466,18 @@ function App() {
               sessionStorage.setItem("lp_authed", "1");
               sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
               sessionStorage.setItem("lp_gtoken", resp.access_token);
-              setAuthed(true);
-              resolve();
+              setAuthed(true); resolve();
             })
             .catch(reject);
           },
         });
         client.requestAccessToken({ prompt: "select_account" });
       });
-    } catch { /* user cancelled */ }
+    } catch { /* cancelled */ }
     setAuthLoading(false);
   };
 
-  if (!authed) {
-    return <LoginPage onLogin={handleLogin} loading={authLoading} />;
-  }
+  if (!authed) return <LoginPage onLogin={handleLogin} loading={authLoading} />;
 
   const sessionUser = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
 
@@ -1693,8 +1487,7 @@ function App() {
     try {
       const saved = localStorage.getItem("lp_companies");
       if (!saved) return [];
-      const parsed = JSON.parse(saved);
-      return parsed.map(c => {
+      return JSON.parse(saved).map(c => {
         if (c.logoDataUrl && c.status === "ok") {
           const img = new Image(); img.src = c.logoDataUrl;
           return { ...c, logoEl: img };
@@ -1704,23 +1497,14 @@ function App() {
     } catch { return []; }
   });
   const [pasteText, setPasteText] = useState("");
-
-  useEffect(() => {
-    try {
-      const toSave = companies.map(({ logoEl, ...rest }) => rest);
-      localStorage.setItem("lp_companies", JSON.stringify(toSave));
-    } catch {}
-  }, [companies]);
-
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
   const [logoInstances, setLogoInstances] = useState([{ id: uid(), size: 120, opacity: 100, pos: { x: 50, y: 50 } }]);
-  const [openLogoId, setOpenLogoId] = useState(logoInstances[0].id);
+  const [openLogoId, setOpenLogoId] = useState(null);
   const [myLogoEl, setMyLogoEl] = useState(null);
   const [myLogoName, setMyLogoName] = useState(null);
   const [myLogoSize, setMyLogoSize] = useState(100);
   const [myLogoPos, setMyLogoPos] = useState({ x: 200, y: 50 });
-  const [myLogoOpen, setMyLogoOpen] = useState(false);
   const [textLayers, setTextLayers] = useState([defaultText()]);
   const [openTextId, setOpenTextId] = useState(textLayers[0].id);
   const [symbols, setSymbols] = useState([]);
@@ -1729,121 +1513,84 @@ function App() {
   const [toast, setToast] = useState(null);
   const [zipping, setZipping] = useState(false);
   const [hasImage, setHasImage] = useState(false);
-  const [personalImgEl, setPersonalImgEl] = useState(null);
-
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const [canvasZoom, setCanvasZoom] = useState(1);
   const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
   const [personalisedColors, setPersonalisedColors] = useState(false);
   const [brandColor, setBrandColor] = useState(null);
   const [colorToReplace, setColorToReplace] = useState("#ffffff");
-  const [pickingColor, setPickingColor] = useState(false);
-
-  const [templates, setTemplates] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; }
-  });
+  const [templates, setTemplates] = useState(() => { try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; } });
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [canvasZoom, setCanvasZoom] = useState(1);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [allPreviews, setAllPreviews] = useState([]);
+  const [previewIdx, setPreviewIdx] = useState(0);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
+  const [editingDomain, setEditingDomain] = useState({});
+  const [editingContact, setEditingContact] = useState(null);
+
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const baseImageRef = useRef(null);
+  const canvasSizeRef = useRef({ w: 0, h: 0 });
+
+  useEffect(() => {
+    try { localStorage.setItem("lp_companies", JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch {}
+  }, [companies]);
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+  const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
+  const addLogoInst = () => {
+    const { w } = canvasSizeRef.current;
+    const inst = { id: uid(), size: 80, opacity: 100, pos: { x: Math.min(50 + logoInstances.length * 40, w - 100), y: 100 } };
+    setLogoInstances(ls => [...ls, inst]); setOpenLogoId(inst.id);
+  };
+  const updateTextLayer = (id, patch) => setTextLayers(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
+  const addTextLayer = () => {
+    const t = { ...defaultText(), pos: { x: 50, y: 180 + textLayers.length * 50 } };
+    setTextLayers(ls => [...ls, t]); setOpenTextId(t.id);
+  };
+  const addSymbol = (char) => {
+    const { w, h } = canvasSizeRef.current;
+    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w/2)-20, y: Math.floor(h/2)-30 } }]);
+  };
+  const updateSymbol = (id, patch) => setSymbols(s => s.map(x => x.id === id ? { ...x, ...patch } : x));
+  const removeSymbol = (id) => setSymbols(s => s.filter(x => x.id !== id));
 
   const saveTemplate = () => {
     const name = templateName.trim() || `Template ${templates.length + 1}`;
     const tpl = { id: uid(), name, savedAt: Date.now(), logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace };
     const updated = [tpl, ...templates].slice(0, 20);
-    setTemplates(updated);
-    localStorage.setItem("lp_templates", JSON.stringify(updated));
-    setTemplateName("");
+    setTemplates(updated); localStorage.setItem("lp_templates", JSON.stringify(updated)); setTemplateName("");
     showToast(`Template "${name}" saved`);
   };
 
   const loadTemplate = (tpl) => {
     if (tpl.logoInstances) setLogoInstances(tpl.logoInstances);
-    if (tpl.textLayers)    setTextLayers(tpl.textLayers);
-    if (tpl.symbols)       setSymbols(tpl.symbols);
-    if (tpl.canvasBg)      setCanvasBg(tpl.canvasBg);
+    if (tpl.textLayers) setTextLayers(tpl.textLayers);
+    if (tpl.symbols) setSymbols(tpl.symbols);
+    if (tpl.canvasBg) setCanvasBg(tpl.canvasBg);
     if (tpl.personalisedColors !== undefined) setPersonalisedColors(tpl.personalisedColors);
-    if (tpl.colorToReplace)  setColorToReplace(tpl.colorToReplace);
-    setShowTemplates(false);
-    showToast(`Template "${tpl.name}" loaded`);
+    if (tpl.colorToReplace) setColorToReplace(tpl.colorToReplace);
+    setShowTemplates(false); showToast(`Template "${tpl.name}" loaded`);
   };
-
-  const deleteTemplate = (id) => {
-    const updated = templates.filter(t => t.id !== id);
-    setTemplates(updated);
-    localStorage.setItem("lp_templates", JSON.stringify(updated));
-  };
-
-  const baseImageRef = useRef(null);
-  const canvasSizeRef = useRef({ w: 0, h: 0 });
-
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
-  const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
-
-  const pickColorFromImage = () => {
-    if (!baseImageRef.current) return;
-    setPickingColor(true);
-  };
-
-  const addLogoInst = () => {
-    const { w, h } = canvasSizeRef.current;
-    const inst = { id: uid(), size: 80, opacity: 100, pos: { x: Math.min(50 + logoInstances.length * 40, w - 100), y: 100 } };
-    setLogoInstances(ls => [...ls, inst]);
-    setOpenLogoId(inst.id);
-  };
-  const removeLogoInst = (id) => { setLogoInstances(ls => ls.filter(l => l.id !== id)); };
-
-  const updateTextLayer = (id, patch) => setTextLayers(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
-  const addTextLayer = () => {
-    const t = { ...defaultText(), pos: { x: 50, y: 180 + textLayers.length * 50 } };
-    setTextLayers(ls => [...ls, t]);
-    setOpenTextId(t.id);
-  };
-  const removeTextLayer = (id) => { setTextLayers(ls => ls.filter(l => l.id !== id)); };
-
-  const addSymbol = (char) => {
-    const { w, h } = canvasSizeRef.current;
-    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
-  };
-  const updateSymbol = (id, patch) => setSymbols(s => s.map(x => x.id === id ? { ...x, ...patch } : x));
-  const removeSymbol = (id) => setSymbols(s => s.filter(x => x.id !== id));
 
   const drawImageToCanvas = (img) => {
     const maxW = 760, maxH = 520;
     let w = img.width, h = img.height;
     if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
     if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
-    canvasSizeRef.current = { w, h };
-    baseImageRef.current = img;
-    setHasImage(true);
+    canvasSizeRef.current = { w, h }; baseImageRef.current = img; setHasImage(true);
   };
-
-  useEffect(() => {
-    if (!hasImage || !baseImageRef.current) return;
-    const { w, h } = canvasSizeRef.current;
-    const first = companies.find(c => c.status === "ok");
-    if (!first) { setPersonalImgEl(null); return; }
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl, { ...canvasBg, personalisedColors, colorToReplace, brandColor: first.brandColor || null });
-    const img = new Image();
-    img.onload = () => setPersonalImgEl(img);
-    img.src = off.toDataURL();
-  }, [hasImage, companies, logoInstances, myLogoEl, myLogoPos, myLogoSize, textLayers, symbols]);
 
   const redrawBaseCanvas = () => {
     if (!canvasRef.current || !baseImageRef.current) return;
-    const img = baseImageRef.current;
     const { w, h } = canvasSizeRef.current;
     canvasRef.current.width = w; canvasRef.current.height = h;
-    canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
+    canvasRef.current.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
   };
 
   useEffect(() => { if (!hasImage) return; redrawBaseCanvas(); }, [hasImage]);
-
-  useEffect(() => {
-    const onVisible = () => { if (!document.hidden) redrawBaseCanvas(); };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, []);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
@@ -1851,21 +1598,15 @@ function App() {
     const isHEIC = name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
     setBaseImageName(file.name);
     if (isHEIC) {
-      setConverting(true); showToast("Konverterar HEIC...");
+      setConverting(true); showToast("Converting HEIC...");
       try {
         const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
         const blob = Array.isArray(converted) ? converted[0] : converted;
-        const img = new Image(); img.onload = () => { drawImageToCanvas(img); setConverting(false); showToast("HEIC konverterad"); }; img.src = URL.createObjectURL(blob);
-      } catch { setConverting(false); showToast("Kunde inte konvertera HEIC-filen"); }
+        const img = new Image(); img.onload = () => { drawImageToCanvas(img); setConverting(false); showToast("HEIC converted"); }; img.src = URL.createObjectURL(blob);
+      } catch { setConverting(false); showToast("Could not convert HEIC"); }
       return;
     }
     const img = new Image(); img.onload = () => drawImageToCanvas(img); img.src = URL.createObjectURL(file);
-  };
-
-  const handleMyLogoUpload = (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    setMyLogoName(file.name);
-    const img = new Image(); img.onload = () => setMyLogoEl(img); img.src = URL.createObjectURL(file);
   };
 
   const addContact = (personName, companyRaw, email = null) => {
@@ -1898,38 +1639,27 @@ function App() {
 
   const handlePaste = () => {
     const contacts = extractContacts(pasteText);
-    if (contacts.length === 0) { showToast("Inga kontakter — prova manuellt"); return; }
+    if (contacts.length === 0) { showToast("No contacts found — try manual"); return; }
     contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
-    const withEmail = contacts.filter(c => c.email).length;
-    showToast(`${contacts.length} kontakter tillagda${withEmail ? ` · ${withEmail} med email(s)` : ""}`);
+    showToast(`${contacts.length} contacts added${contacts.filter(c=>c.email).length ? ` · ${contacts.filter(c=>c.email).length} with email` : ""}`);
     setPasteText("");
   };
-
-  const getCompanyLogoEl = () => companies.find(c => c.status === "ok")?.logoEl || null;
 
   const downloadZip = async () => {
     const ready = companies.filter(c => c.status === "ok");
     if (!ready.length || !baseImageRef.current) return;
     setZipping(true); showToast("Creating zip…");
-    const zip = new JSZip(); const folder = zip.folder("loggor");
+    const zip = new JSZip(); const folder = zip.folder("images");
     const { w, h } = canvasSizeRef.current;
     for (const c of ready) {
       const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl, canvasBg);
       const blob = await new Promise(res => off.toBlob(res, "image/png"));
-      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`, blob);
+      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`, blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(zipBlob); a.download = "loggor.zip"; a.click();
-    setZipping(false); showToast(`${ready.length} bilder sparade`);
+    const a = document.createElement("a"); a.href = URL.createObjectURL(zipBlob); a.download = "images.zip"; a.click();
+    setZipping(false); showToast(`${ready.length} images saved`);
   };
-
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [allPreviews, setAllPreviews] = useState([]);
-  const [previewIdx, setPreviewIdx] = useState(0);
-  const [showSendModal, setShowSendModal] = useState(false);
-  const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
-  const [editingDomain, setEditingDomain] = useState({});
-  const [editingContact, setEditingContact] = useState(null);
 
   const getImageBlob = async (company) => {
     if (!baseImageRef.current) throw new Error("no base image");
@@ -1943,18 +1673,13 @@ function App() {
     const { w, h } = canvasSizeRef.current;
     const ready = companies.filter(c => c.status === "ok");
     const targets = ready.length > 0 ? ready : [{ personName: "Jordan", companyName: "Stratton Oakmont", logoEl: null }];
-    const previews = [];
-    let done = 0;
+    const previews = []; let done = 0;
     targets.forEach((comp, i) => {
       const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null });
       off.toBlob(blob => {
         previews[i] = { name: comp.companyName || "Preview", url: URL.createObjectURL(blob) };
         done++;
-        if (done === targets.length) {
-          setAllPreviews(previews);
-          setPreviewIdx(0);
-          setPreviewUrl(previews[0].url);
-        }
+        if (done === targets.length) { setAllPreviews(previews); setPreviewIdx(0); setPreviewUrl(previews[0].url); }
       });
     });
   };
@@ -1965,21 +1690,21 @@ function App() {
     const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
     for (const sym of symbols) {
       if (mx >= sym.pos.x && mx <= sym.pos.x + sym.size && my >= sym.pos.y && my <= sym.pos.y + sym.size) {
-        setDragging({ target: "symbol", id: sym.id, ox: mx - sym.pos.x, oy: my - sym.pos.y }); e.preventDefault(); return;
+        setDragging({ target:"symbol", id:sym.id, ox:mx-sym.pos.x, oy:my-sym.pos.y }); e.preventDefault(); return;
       }
     }
     if (myLogoEl && mx >= myLogoPos.x && mx <= myLogoPos.x + myLogoSize && my >= myLogoPos.y && my <= myLogoPos.y + myLogoSize) {
-      setDragging({ target: "mylogo", ox: mx - myLogoPos.x, oy: my - myLogoPos.y }); e.preventDefault(); return;
+      setDragging({ target:"mylogo", ox:mx-myLogoPos.x, oy:my-myLogoPos.y }); e.preventDefault(); return;
     }
     for (const inst of logoInstances) {
       if (mx >= inst.pos.x && mx <= inst.pos.x + inst.size && my >= inst.pos.y && my <= inst.pos.y + inst.size) {
-        setDragging({ target: "logo", id: inst.id, ox: mx - inst.pos.x, oy: my - inst.pos.y }); e.preventDefault(); return;
+        setDragging({ target:"logo", id:inst.id, ox:mx-inst.pos.x, oy:my-inst.pos.y }); e.preventDefault(); return;
       }
     }
     for (const layer of textLayers) {
       if (layer.enabled && layer.template) {
         if (mx >= layer.pos.x && mx <= layer.pos.x + 300 && my >= layer.pos.y && my <= layer.pos.y + 70) {
-          setDragging({ target: "text", id: layer.id, ox: mx - layer.pos.x, oy: my - layer.pos.y }); e.preventDefault(); return;
+          setDragging({ target:"text", id:layer.id, ox:mx-layer.pos.x, oy:my-layer.pos.y }); e.preventDefault(); return;
         }
       }
     }
@@ -1991,17 +1716,17 @@ function App() {
     const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
     const { w, h } = canvasSizeRef.current;
     const clamp = (v, max) => Math.max(0, Math.min(v, max));
-    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
-    else if (dragging.target === "mylogo") setMyLogoPos({ x: clamp(mx - dragging.ox, w - myLogoSize), y: clamp(my - dragging.oy, h - myLogoSize) });
-    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
-    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
+    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
+    else if (dragging.target === "mylogo") setMyLogoPos({ x:clamp(mx-dragging.ox,w-myLogoSize), y:clamp(my-dragging.oy,h-myLogoSize) });
+    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
+    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
   };
 
   const { w: cw, h: ch } = canvasSizeRef.current;
   const readyCount = companies.filter(c => c.status === "ok").length;
   const previewPerson = companies[0]?.personName || "Jordan";
   const previewCompany = companies[0]?.companyName || "Stratton Oakmont";
-  const companyLogoEl = getCompanyLogoEl();
+  const companyLogoEl = companies.find(c => c.status === "ok")?.logoEl || null;
 
   return (
     <>
@@ -2010,21 +1735,17 @@ function App() {
         <div className="header">
           <div className="header-brand">
             <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".9"/></svg></div>
-            <div>
-              <div className="header-name">LogoPlacer</div>
-              <div className="header-sub">Personalised demos</div>
-            </div>
+            <div><div className="header-name">LogoPlacer</div><div className="header-sub">Personalised demos</div></div>
           </div>
           <div className="header-btns">
             {sessionUser?.picture && (
               <div style={{display:"flex",alignItems:"center",gap:8,marginRight:4}}>
                 <img src={sessionUser.picture} alt="" style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--sep)"}} />
                 <span style={{fontSize:12,color:"var(--t3)"}}>{sessionUser.name?.split(" ")[0]}</span>
-                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }}
-                  style={{fontSize:11,padding:"3px 8px"}}>Sign out</button>
+                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{fontSize:11,padding:"3px 8px"}}>Sign out</button>
               </div>
             )}
-            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}>
+            <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
               <span style={{display:"flex",alignItems:"center",gap:6}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 Preview
@@ -2035,8 +1756,7 @@ function App() {
               Send
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
-            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13,letterSpacing:"-.1px"}}
-              disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
+            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? "Packing..." : `Download (${readyCount})`}
             </button>
           </div>
@@ -2050,47 +1770,38 @@ function App() {
         {mode === "video" && <VideoMode
           companies={companies}
           resolveTemplateFn={resolveTemplate}
-          renderIngredients={hasImage && baseImageRef.current ? {
-            baseImg: baseImageRef.current,
-            logoInstances, myLogoEl, myLogoPos, myLogoSize,
-            w: canvasSizeRef.current.w, h: canvasSizeRef.current.h,
-            textLayers, symbols
-          } : null}
+          renderIngredients={hasImage && baseImageRef.current ? { baseImg: baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w: canvasSizeRef.current.w, h: canvasSizeRef.current.h, textLayers, symbols } : null}
         />}
 
         {mode === "image" && <div className="workspace">
           <div className="sidebar">
             <span className="s-label">Base image</span>
             <div className="card"><div className="card-pad">
-              <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleFileUpload(e); }} className="upload-zone" style={{}}>
+              <DropZone accept="image/*" onFile={file => handleFileUpload({ target: { files: [file] } })} className="upload-zone" style={{}}>
                 <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
-                  <input type="file" accept="image/*,.heic,.heif,.HEIC,.HEIF" style={{display:"none"}} onChange={handleFileUpload} />
+                  <input type="file" accept="image/*,.heic,.heif" style={{display:"none"}} onChange={handleFileUpload} />
                   <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  {converting && <p className="uz-active">Konverterar...</p>}
+                  {converting && <p className="uz-active">Converting...</p>}
                   {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
                   {!converting && !baseImageName && <p className="uz-text">Click or drag here</p>}
-                  <p className="uz-hint">JPG · PNG · WEBP · HEIC · GIF</p>
+                  <p className="uz-hint">JPG · PNG · WEBP · HEIC</p>
                 </label>
               </DropZone>
             </div></div>
 
             <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom: canvasBg.enabled ? 10 : 0}}>
-                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Background colour</span>
-                <label style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}>
-                  <span style={{fontSize:12,color:"var(--t3)"}}>{canvasBg.enabled ? "On" : "Off"}</span>
-                  <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
-                    onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
-                    <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
-                  </div>
-                </label>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:canvasBg.enabled?10:0}}>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Background colour</span>
+                <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
+                  onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
+                  <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
+                </div>
               </div>
               {canvasBg.enabled && (
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <input type="color" value={canvasBg.color} onChange={e => setCanvasBg(bg => ({ ...bg, color: e.target.value }))}
                     style={{width:32,height:32,borderRadius:8,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none"}} />
                   <span style={{fontSize:12,color:"var(--t3)",fontFamily:"monospace"}}>{canvasBg.color}</span>
-                  <span style={{fontSize:11,color:"var(--t4)"}}>Fills behind image</span>
                 </div>
               )}
             </div>
@@ -2098,12 +1809,11 @@ function App() {
             <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                 <div>
-                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)",letterSpacing:".3px"}}>Match brand colour</span>
-                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Replace a colour in your image with recipient's brand</div>
+                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Match brand colour</span>
+                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Replace a colour with recipient's brand</div>
                 </div>
                 <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
-                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)}
-                    style={{opacity:0,width:0,height:0,position:"absolute"}}/>
+                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)} style={{opacity:0,width:0,height:0,position:"absolute"}}/>
                   <span style={{position:"absolute",inset:0,borderRadius:9,background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s"}}>
                     <span style={{position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
                   </span>
@@ -2115,15 +1825,6 @@ function App() {
                   <input type="color" value={colorToReplace} onChange={e => setColorToReplace(e.target.value)}
                     style={{width:32,height:28,borderRadius:6,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none",flexShrink:0}} />
                   <div style={{fontSize:10,color:"var(--t4)",fontFamily:"monospace"}}>{colorToReplace}</div>
-                  <button onClick={pickColorFromImage}
-                    style={{fontSize:10,padding:"4px 8px",borderRadius:6,border:"0.5px solid var(--sep)",background:"var(--bg4)",color:"var(--t2)",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
-                    Pick from image
-                  </button>
-                </div>
-              )}
-              {personalisedColors && (
-                <div style={{fontSize:10,color:"var(--t4)",marginTop:6,lineHeight:1.5}}>
-                  The selected colour will be replaced with each recipient's brand colour automatically.
                 </div>
               )}
             </div>
@@ -2136,7 +1837,7 @@ function App() {
               {logoInstances.map((inst, idx) => (
                 <LogoInstanceCard key={inst.id} inst={inst} idx={idx} total={logoInstances.length}
                   onChange={patch => updateLogoInst(inst.id, patch)}
-                  onRemove={() => removeLogoInst(inst.id)}
+                  onRemove={() => setLogoInstances(ls => ls.filter(l => l.id !== inst.id))}
                   isOpen={openLogoId === inst.id}
                   onToggle={() => setOpenLogoId(openLogoId === inst.id ? null : inst.id)} />
               ))}
@@ -2150,27 +1851,20 @@ function App() {
               {textLayers.map((layer, idx) => (
                 <TextLayerCard key={layer.id} layer={layer} idx={idx} total={textLayers.length}
                   onChange={patch => updateTextLayer(layer.id, patch)}
-                  onRemove={() => removeTextLayer(layer.id)}
+                  onRemove={() => setTextLayers(ls => ls.filter(l => l.id !== layer.id))}
                   isOpen={openTextId === layer.id}
                   onToggle={() => setOpenTextId(openTextId === layer.id ? null : layer.id)} />
               ))}
             </div>
 
             <div style={{margin:"0 10px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span className="s-label" style={{padding:0,marginBottom:0}}>Templates</span>
-              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>
-                {showTemplates ? "Hide" : `Saved (${templates.length})`}
-              </button>
+              <span className="s-label" style={{padding:0}}>Templates</span>
+              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>{showTemplates ? "Hide" : `Saved (${templates.length})`}</button>
             </div>
             <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
-              <input value={templateName} onChange={e => setTemplateName(e.target.value)}
-                placeholder="Template name…" onKeyDown={e => e.key==="Enter" && saveTemplate()}
+              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Template name…" onKeyDown={e => e.key==="Enter" && saveTemplate()}
                 style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}} />
-              <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0,
-                background:"linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15))",
-                border:"0.5px solid rgba(26,130,255,0.3)",color:"#5ba4ff"}}>
-                Save
-              </button>
+              <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0}}>Save</button>
             </div>
             {showTemplates && templates.length > 0 && (
               <div style={{margin:"0 10px 8px",display:"flex",flexDirection:"column",gap:4,maxHeight:220,overflowY:"auto"}}>
@@ -2180,31 +1874,26 @@ function App() {
                       <div style={{fontSize:12,fontWeight:600,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tpl.name}</div>
                       <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>Load</button>
-                    <button onClick={() => deleteTemplate(tpl.id)} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>✕</button>
+                    <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
+                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); }} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
                   </div>
                 ))}
               </div>
-            )}
-            {showTemplates && templates.length === 0 && (
-              <div style={{margin:"0 10px 8px",fontSize:12,color:"var(--t4)",textAlign:"center",padding:"12px 0"}}>No templates saved yet</div>
             )}
 
             <span className="s-label">Symbols</span>
             <div className="card">
               <div className="sym-grid">
-                {SYMBOL_OPTIONS.map(char => (
-                  <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>
-                ))}
+                {SYMBOL_OPTIONS.map(char => <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>)}
               </div>
               {symbols.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{display:"flex",flexDirection:"column",gap:6,padding:"0 8px 8px"}}>
                   {symbols.map(sym => (
                     <div key={sym.id} style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>{sym.char}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{ flex: 1, accentColor: "#fbbf24" }} />
+                      <span style={{fontSize:20,minWidth:28,textAlign:"center"}}>{sym.char}</span>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{flex:1,accentColor:"#fbbf24"}} />
                           <span style={{fontSize:11,color:"var(--yellow)",minWidth:28}}>{sym.size}px</span>
                           <div className="color-swatch" style={{background:sym.color}}><input type="color" value={sym.color} onChange={e => updateSymbol(sym.id,{color:e.target.value})} /></div>
                         </div>
@@ -2218,10 +1907,10 @@ function App() {
 
             <span className="s-label">Contacts</span>
             <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
-              <textarea className="paste-area" placeholder={"Paste from CRM/LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan , Stratton Oakmont"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
+              <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Stratton Oakmont"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
               <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extract contacts</button>
               <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
-                <p style={{fontSize:12,color:"var(--t3)"}}>Eller lägg till manuellt</p>
+                <p style={{fontSize:12,color:"var(--t3)"}}>Or add manually</p>
                 <input className="inp sm" placeholder="Person name (optional)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
                 <div style={{display:"flex",gap:7}}>
                   <input className="inp sm" style={{flex:1}} placeholder="Company name or domain" value={singleCompany}
@@ -2235,69 +1924,63 @@ function App() {
 
             {companies.length > 0 && (<>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 16px 6px"}}>
-                <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} bolag · {readyCount} klara</span>
-                <button className="btn-text-red" onClick={() => setCompanies([])}>Rensa</button>
+                <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} companies · {readyCount} ready</span>
+                <button className="btn-text-red" onClick={() => setCompanies([])}>Clear all</button>
               </div>
               <div className="co-list-wrap">
                 {companies.map(c => (
                   <div key={c.id}>
                     <div className="co-row">
-                      <div className="co-logo"
-                        style={{cursor: c.status === "error" ? "pointer" : "default"}}
-                        onClick={() => c.status === "error" && retryCompany(c)}
-                        title={c.status === "error" ? "Klicka för att försöka igen" : ""}>
+                      <div className="co-logo" style={{cursor:c.status==="error"?"pointer":"default"}} onClick={() => c.status==="error" && retryCompany(c)}>
                         {c.status === "loading" && <div className="spinner" />}
-                        {c.status === "ok"      && <img src={c.logoDataUrl} alt={c.companyName} />}
-                        {c.status === "error"   && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
+                        {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
+                        {c.status === "error" && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
                       </div>
-                      <div className="co-info" style={{flex:1, minWidth:0}}>
+                      <div className="co-info" style={{flex:1,minWidth:0}}>
                         <div className="co-name">{c.companyName}
                           {c.personName && <span style={{fontWeight:400,color:"var(--t3)",marginLeft:5,fontSize:12}}>· {c.personName}</span>}
                         </div>
                         {editingDomain[c.id] !== undefined ? (
-                          <div style={{display:"flex", alignItems:"center", gap:4, marginTop:2}}>
-                            <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="t.ex. lysa.se"
+                          <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+                            <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="e.g. lysa.se"
                               onChange={e => setEditingDomain(ed => ({...ed, [c.id]: e.target.value}))}
                               onKeyDown={e => { if (e.key==="Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key==="Escape") setEditingDomain(ed=>{const n={...ed};delete n[c.id];return n;}); }}
                               onBlur={() => commitDomain(c.id, editingDomain[c.id])} />
-                            <button className="ico-edit" onMouseDown={e=>{e.preventDefault();commitDomain(c.id,editingDomain[c.id]);}} title="Spara">✓</button>
                           </div>
                         ) : (
-                          <div style={{display:"flex", alignItems:"center", gap:3, marginTop:1}}>
-                            <span className="co-sub" style={{flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{c.domain}</span>
-                            <button className="ico-edit" onClick={()=>setEditingDomain(ed=>({...ed,[c.id]:c.domain}))} title="Ändra domän">✎</button>
+                          <div style={{display:"flex",alignItems:"center",gap:3,marginTop:1}}>
+                            <span className="co-sub" style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.domain}</span>
+                            <button className="ico-edit" onClick={() => setEditingDomain(ed => ({...ed, [c.id]: c.domain}))}>✎</button>
                           </div>
                         )}
                       </div>
-                      {c.email && <span title={c.email} style={{fontSize:11, color:"var(--green)", flexShrink:0}}>@</span>}
-                      {c.status === "ok"    && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
-                      {c.status === "error" && <button className="badge-err" title="Försök igen" onClick={()=>retryCompany(c)}>↺</button>}
-                      <button className="ico-edit" style={{fontSize:11,padding:"2px 5px"}} title="Redigera kontakt"
-                        onClick={()=>setEditingContact(ec => ec?.id===c.id ? null : {id:c.id, name:c.personName||"", email:c.email||""})}>
+                      {c.email && <span title={c.email} style={{fontSize:11,color:"var(--green)",flexShrink:0}}>@</span>}
+                      {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                      {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
+                      <button className="ico-edit" style={{fontSize:11,padding:"2px 5px"}}
+                        onClick={() => setEditingContact(ec => ec?.id===c.id ? null : {id:c.id, name:c.personName||"", email:c.email||""})}>
                         {editingContact?.id===c.id ? "▲" : "▼"}
                       </button>
-                      <button className="ico-rm" onClick={()=>setCompanies(cs=>cs.filter(x=>x.id!==c.id))}>×</button>
+                      <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                     </div>
                     {editingContact?.id === c.id && (
-                      <div style={{padding:"8px 12px 10px 54px", background:"var(--bg)", borderBottom:"0.5px solid var(--sep)", display:"flex", flexDirection:"column", gap:6}}>
-                        <div style={{display:"flex", gap:6}}>
+                      <div style={{padding:"8px 12px 10px 54px",background:"var(--bg)",borderBottom:"0.5px solid var(--sep)",display:"flex",flexDirection:"column",gap:6}}>
+                        <div style={{display:"flex",gap:6}}>
                           <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Namn</div>
-                            <input className="domain-inp" value={editingContact.name} placeholder="För- och efternamn"
-                              onChange={e=>setEditingContact(ec=>({...ec,name:e.target.value}))} />
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Name</div>
+                            <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({...ec, name:e.target.value}))} />
                           </div>
                           <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>E-post</div>
-                            <input className="domain-inp" value={editingContact.email} placeholder="namn@bolag.se" type="email"
-                              onChange={e=>setEditingContact(ec=>({...ec,email:e.target.value}))} />
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Email</div>
+                            <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({...ec, email:e.target.value}))} />
                           </div>
                         </div>
-                        <div style={{display:"flex", gap:6, justifyContent:"flex-end"}}>
-                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={()=>setEditingContact(null)}>Cancel</button>
-                          <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={()=>{
-                            setCompanies(cs=>cs.map(x=>x.id===c.id?{...x,personName:editingContact.name,email:editingContact.email||null}:x));
+                        <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
+                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={() => setEditingContact(null)}>Cancel</button>
+                          <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={() => {
+                            setCompanies(cs => cs.map(x => x.id===c.id ? {...x, personName:editingContact.name, email:editingContact.email||null} : x));
                             setEditingContact(null);
-                          }}>Spara</button>
+                          }}>Save</button>
                         </div>
                       </div>
                     )}
@@ -2308,10 +1991,7 @@ function App() {
           </div>
 
           <div className="canvas-area">
-            <div className="canvas-wrapper" onWheel={e => {
-              e.preventDefault();
-              setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001)));
-            }}>
+            <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001))); }}>
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
@@ -2320,7 +2000,7 @@ function App() {
                 </div>
               ) : (
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                  style={{ width: cw || "auto", height: ch || "auto", cursor: pickingColor ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "center center" }}>
+                  style={{ width:cw||"auto", height:ch||"auto", cursor:dragging?"grabbing":"default", transform:`scale(${canvasZoom})`, transformOrigin:"center center" }}>
                   <canvas ref={canvasRef} />
                   {cw > 0 && (
                     <>
@@ -2328,34 +2008,32 @@ function App() {
                         const color = LAYER_COLORS[(idx + 4) % LAYER_COLORS.length];
                         return (
                           <div key={inst.id} className="overlay-box"
-                            style={{ left: inst.pos.x, top: inst.pos.y, width: inst.size, height: inst.size, borderColor: color, background: `${color}11`, borderRadius: Math.min(inst.size * 0.15, 12) }}>
-                            <div className="ov-pill" style={{background:color}}>Logo {idx + 1}</div>
+                            style={{ left:inst.pos.x, top:inst.pos.y, width:inst.size, height:inst.size, borderColor:color, background:`${color}11`, borderRadius:Math.min(inst.size*0.15,12) }}>
+                            <div className="ov-pill" style={{background:color}}>Logo {idx+1}</div>
                             <span style={{fontSize:10,color,textTransform:"uppercase",pointerEvents:"none"}}>{companyLogoEl?"▣":"LOGO"}</span>
                           </div>
                         );
                       })}
                       {myLogoEl && (
-                        <div className="overlay-box"
-                          style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
+                        <div className="overlay-box" style={{ left:myLogoPos.x, top:myLogoPos.y, width:myLogoSize, height:myLogoSize, borderColor:"#a78bfa", background:"rgba(167,139,250,0.07)", borderRadius:Math.min(myLogoSize*0.15,12) }}>
                           <div className="ov-pill" style={{background:"var(--purple)"}}>My logo</div>
                           <span style={{fontSize:10,color:"var(--purple)",pointerEvents:"none"}}>▣</span>
                         </div>
                       )}
                       {textLayers.map((layer, idx) => {
                         const color = LAYER_COLORS[idx % LAYER_COLORS.length];
-                        const preview = layer.template ? resolveTemplate(layer.template, previewPerson, previewCompany) : "";
                         if (!layer.enabled || !layer.template) return null;
                         return (
                           <div key={layer.id} className="overlay-box text-box"
-                            style={{ left: layer.pos.x, top: layer.pos.y, borderColor: color, background: `${color}11`, fontSize: layer.fontSize, fontFamily: layer.fontFamily, color: layer.color, fontWeight: layer.fontWeight ?? (layer.bold ? "bold" : "normal"), fontStyle: layer.italic ? "italic" : "normal", lineHeight: 1.4 }}>
-                            <div className="ov-pill" style={{background:color}}>Text {idx + 1}</div>
-                            <span className="inner-text">{preview}</span>
+                            style={{ left:layer.pos.x, top:layer.pos.y, borderColor:color, background:`${color}11`, fontSize:layer.fontSize, fontFamily:layer.fontFamily, color:layer.color, fontWeight:layer.fontWeight??(layer.bold?"bold":"normal"), fontStyle:layer.italic?"italic":"normal", lineHeight:1.4 }}>
+                            <div className="ov-pill" style={{background:color}}>Text {idx+1}</div>
+                            <span className="inner-text">{resolveTemplate(layer.template, previewPerson, previewCompany)}</span>
                           </div>
                         );
                       })}
                       {symbols.map(sym => (
                         <div key={sym.id} className="overlay-box"
-                          style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
+                          style={{ left:sym.pos.x, top:sym.pos.y, width:sym.size, height:sym.size, borderColor:"#fbbf24", background:"rgba(251,191,36,0.07)", fontSize:sym.size*0.75, color:sym.color, fontWeight:"bold" }}>
                           <div className="ov-pill" style={{background:"var(--yellow)",color:"#000"}}>Symbol</div>
                           <span style={{fontSize:sym.size*0.7,color:sym.color,pointerEvents:"none"}}>{sym.char}</span>
                         </div>
@@ -2365,14 +2043,14 @@ function App() {
                 </div>
               )}
             </div>
-            <div className="canvas-footer">
-              {cw > 0 ? "Drag to move elements on the image" : "Upload a base image to get started"}
+            <div className="canvas-footer" style={{position:"relative"}}>
+              {cw > 0 ? "Drag elements to position · Scroll to zoom" : "Upload a base image to get started"}
               {hasImage && (
                 <div className="zoom-controls">
-                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z - 0.1).toFixed(2)))} title="Zooma ut">−</button>
-                  <span className="zoom-label">{Math.round(canvasZoom * 100)}%</span>
-                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z + 0.1).toFixed(2)))} title="Zooma in">+</button>
-                  <button className="zoom-btn" style={{fontSize:9,marginLeft:2}} onClick={() => setCanvasZoom(1)} title="Återställ zoom">↺</button>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z-0.1).toFixed(2)))}>−</button>
+                  <span className="zoom-label">{Math.round(canvasZoom*100)}%</span>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z+0.1).toFixed(2)))}>+</button>
+                  <button className="zoom-btn" style={{fontSize:9}} onClick={() => setCanvasZoom(1)}>↺</button>
                 </div>
               )}
             </div>
@@ -2382,30 +2060,19 @@ function App() {
         {toast && <div className="toast">{toast}</div>}
 
         {previewUrl && (
-          <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} style={{
-            position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,
-            display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"
-          }}>
-            <div onClick={e => e.stopPropagation()} style={{
-              display:"flex",flexDirection:"column",alignItems:"center",gap:14,
-              maxWidth:"92vw", maxHeight:"96vh",
-            }}>
+          <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }}
+            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+            <div onClick={e => e.stopPropagation()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,maxWidth:"92vw",maxHeight:"96vh"}}>
               <div style={{display:"flex",alignItems:"center",gap:16}}>
                 <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{allPreviews[previewIdx]?.name}</span>
-                {allPreviews.length > 1 && (
-                  <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{previewIdx+1} / {allPreviews.length}</span>
-                )}
+                {allPreviews.length > 1 && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{previewIdx+1} / {allPreviews.length}</span>}
               </div>
-              <img src={allPreviews[previewIdx]?.url || previewUrl}
-                style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}}
-                alt="Preview" />
+              <img src={allPreviews[previewIdx]?.url || previewUrl} style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}} alt="Preview" />
               {allPreviews.length > 1 && (
                 <div style={{display:"flex",gap:8,overflowX:"auto",maxWidth:"88vw",padding:"4px 0"}}>
                   {allPreviews.map((p,i) => (
                     <img key={i} src={p.url} alt={p.name} onClick={() => setPreviewIdx(i)}
-                      style={{ width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",
-                        border: i===previewIdx ? "2px solid var(--blue)" : "2px solid transparent",
-                        opacity: i===previewIdx ? 1 : 0.55, transition:"all .15s" }} />
+                      style={{width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",border:i===previewIdx?"2px solid var(--blue)":"2px solid transparent",opacity:i===previewIdx?1:0.55,transition:"all .15s"}} />
                   ))}
                 </div>
               )}
@@ -2416,13 +2083,8 @@ function App() {
                     <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>Next</button>
                   </>
                 )}
-                <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Stang</button>
-                <button onClick={() => {
-                  const a=document.createElement("a");
-                  a.href=allPreviews[previewIdx]?.url||previewUrl;
-                  a.download=`${allPreviews[previewIdx]?.name||"forhandsvisning"}.png`;
-                  a.click();
-                }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Download</button>
+                <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Close</button>
+                <button onClick={() => { const a=document.createElement("a"); a.href=allPreviews[previewIdx]?.url||previewUrl; a.download=`${allPreviews[previewIdx]?.name||"preview"}.png`; a.click(); }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Download</button>
               </div>
             </div>
           </div>
@@ -2444,15 +2106,12 @@ function App() {
 
 export default function AppRouter() {
   const [view, setView] = useState(() => window.location.hash === "#app" ? "app" : "landing");
-
   useEffect(() => {
     const onHash = () => setView(window.location.hash === "#app" ? "app" : "landing");
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
-
   const goToApp = () => { window.location.hash = "app"; setView("app"); };
-
   if (view === "landing") return <Landing onEnterApp={goToApp} />;
   return <App />;
 }

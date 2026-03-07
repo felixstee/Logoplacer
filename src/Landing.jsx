@@ -5,6 +5,71 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 // ─────────────────────────────────────────────
+// SEO — inject <title>, <meta> and Schema.org
+// ─────────────────────────────────────────────
+function SEO() {
+  useEffect(() => {
+    // Title
+    document.title = "Logoplacers — Personalised Demos That Close Deals";
+
+    const setMeta = (name, content, prop = false) => {
+      const attr = prop ? "property" : "name";
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+
+    // Core meta
+    setMeta("description", "Upload your product screenshot, auto-fetch any prospect's logo and send a pixel-perfect personalised demo from Gmail in under 30 seconds. Close more deals with Logoplacers.");
+    setMeta("robots", "index, follow");
+    setMeta("viewport", "width=device-width, initial-scale=1");
+
+    // Open Graph
+    setMeta("og:title",       "Logoplacers — Personalised Demos That Close Deals", true);
+    setMeta("og:description", "Auto-personalise product demos with your prospect's logo and send directly from Gmail. 3.4× more replies.", true);
+    setMeta("og:type",        "website", true);
+    setMeta("og:url",         "https://logoplacers.com", true);
+
+    // Twitter card
+    setMeta("twitter:card",        "summary_large_image");
+    setMeta("twitter:title",       "Logoplacers — Personalised Demos That Close Deals");
+    setMeta("twitter:description", "Personalise, send, close. Demos with your prospect's logo delivered straight from Gmail.");
+
+    // Schema.org SoftwareApplication
+    const existing = document.getElementById("schema-org");
+    if (!existing) {
+      const s = document.createElement("script");
+      s.id   = "schema-org";
+      s.type = "application/ld+json";
+      s.text = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Logoplacers",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": "https://logoplacers.com",
+        "description": "Personalised sales demos that close deals. Auto-fetch prospect logos, place them on your product screenshot and send from Gmail in under 30 seconds.",
+        "offers": [
+          { "@type": "Offer", "name": "Free",   "price": "0",   "priceCurrency": "SEK" },
+          { "@type": "Offer", "name": "Solo",   "price": "99",  "priceCurrency": "SEK", "billingPeriod": "P1M" },
+          { "@type": "Offer", "name": "Team",   "price": "299", "priceCurrency": "SEK", "billingPeriod": "P1M" },
+          { "@type": "Offer", "name": "Custom", "price": "0",   "priceCurrency": "SEK" },
+        ],
+        "featureList": [
+          "One-click logo personalisation",
+          "Gmail integration",
+          "Bulk export",
+          "Automatic logo detection",
+          "Pixel-perfect placement",
+        ],
+      });
+      document.head.appendChild(s);
+    }
+  }, []);
+  return null;
+}
+
+// ─────────────────────────────────────────────
 // SVG ICONS (no emojis)
 // ─────────────────────────────────────────────
 const Icon = {
@@ -1756,6 +1821,200 @@ function FAQ({ q, a }) {
 }
 
 // ─────────────────────────────────────────────
+// PRICING
+// ─────────────────────────────────────────────
+const CHECK_ICON = (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+function PricingCard({ plan, price, period, badge, features, cta, highlight, onEnterApp, delay = 0, visible }) {
+  const [hov, setHov] = useState(false);
+  const active = highlight || hov;
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        position: "relative",
+        background: highlight
+          ? "linear-gradient(160deg, rgba(26,130,255,0.12) 0%, rgba(91,79,255,0.08) 100%)"
+          : "rgba(255,255,255,0.02)",
+        backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+        border: `1px solid ${active ? "rgba(26,130,255,0.4)" : "rgba(255,255,255,0.07)"}`,
+        borderRadius: 24,
+        padding: "36px 32px 32px",
+        display: "flex", flexDirection: "column", gap: 0,
+        boxShadow: highlight
+          ? "0 0 0 1px rgba(26,130,255,0.2), 0 24px 64px rgba(26,130,255,0.15)"
+          : hov ? "0 16px 48px rgba(0,0,0,0.3)" : "none",
+        transition: `opacity .7s ${delay}ms, transform .7s ${delay}ms, border-color .2s, box-shadow .2s`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? (highlight ? "scale(1.03)" : "scale(1)") : "translateY(28px)",
+      }}>
+
+      {/* Most popular badge */}
+      {badge && (
+        <div style={{
+          position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
+          background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+          color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "1px",
+          padding: "5px 16px", borderRadius: 100, textTransform: "uppercase",
+          boxShadow: "0 4px 16px rgba(26,130,255,0.4)", whiteSpace: "nowrap",
+        }}>
+          {badge}
+        </div>
+      )}
+
+      {/* Plan name */}
+      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "2px", color: highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)", textTransform: "uppercase", marginBottom: 12 }}>{plan}</div>
+
+      {/* Price */}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 4, marginBottom: 6 }}>
+        {price === "Free" ? (
+          <span style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-2px", color: "#fff", lineHeight: 1 }}>Free</span>
+        ) : price === "Custom" ? (
+          <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", lineHeight: 1 }}>Custom</span>
+        ) : (
+          <>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>kr</span>
+            <span style={{ fontSize: 48, fontWeight: 800, letterSpacing: "-2.5px", color: "#fff", lineHeight: 1 }}>{price}</span>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>{period}</span>
+          </>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "20px 0 24px" }}/>
+
+      {/* Features */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+        {features.map((f, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <span style={{ color: highlight ? "#5ba4ff" : "rgba(255,255,255,0.35)", flexShrink: 0, marginTop: 1 }}>{CHECK_ICON}</span>
+            <span style={{ fontSize: 13.5, color: "rgba(255,255,255,0.58)", lineHeight: 1.55 }}>{f}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={onEnterApp}
+        style={{
+          marginTop: 28,
+          background: highlight
+            ? "linear-gradient(135deg,#1a82ff,#5b4fff)"
+            : "rgba(255,255,255,0.05)",
+          color: "#fff", border: highlight ? "none" : "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 12, padding: "14px",
+          fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+          boxShadow: highlight ? "0 6px 24px rgba(26,130,255,0.35)" : "none",
+          transition: "opacity .15s, transform .15s",
+          width: "100%",
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+      >{cta}</button>
+    </div>
+  );
+}
+
+function Pricing({ onEnterApp }) {
+  const [ref, visible] = useReveal(0.08);
+  const plans = [
+    {
+      plan: "Free",
+      price: "Free",
+      period: "",
+      features: [
+        "5 personalised demos / month",
+        "1 template",
+        "Manual logo upload",
+        "PNG export",
+      ],
+      cta: "Get started free",
+      highlight: false,
+    },
+    {
+      plan: "Solo",
+      price: "99",
+      period: "/ mån",
+      badge: "Most popular",
+      features: [
+        "Unlimited personalised demos",
+        "Unlimited templates",
+        "Auto logo detection",
+        "Gmail send integration",
+        "Bulk ZIP export",
+        "Priority support",
+      ],
+      cta: "Start Solo",
+      highlight: true,
+    },
+    {
+      plan: "Team",
+      price: "299",
+      period: "/ mån",
+      features: [
+        "Everything in Solo",
+        "Up to 5 team members",
+        "Shared template library",
+        "Team analytics dashboard",
+        "Custom branding",
+        "Dedicated onboarding",
+      ],
+      cta: "Start Team",
+      highlight: false,
+    },
+    {
+      plan: "Custom",
+      price: "Custom",
+      period: "",
+      features: [
+        "Everything in Team",
+        "Unlimited seats",
+        "Custom integrations (CRM, Slack)",
+        "SLA & dedicated support",
+        "White-label option",
+        "Custom contract",
+      ],
+      cta: "Contact us",
+      highlight: false,
+    },
+  ];
+
+  return (
+    <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", marginBottom: 72 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Pricing</div>
+        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 16px", lineHeight: 1.05 }}>
+          Simple, transparent pricing.
+        </h2>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.38)", maxWidth: 420, margin: "0 auto" }}>
+          Start free. Scale when you're ready. No hidden fees.
+        </p>
+      </div>
+
+      <div ref={ref} style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+        gap: 20,
+        alignItems: "start",
+      }}>
+        {plans.map((p, i) => (
+          <PricingCard key={p.plan} {...p} onEnterApp={onEnterApp} delay={i * 80} visible={visible} />
+        ))}
+      </div>
+
+      <p style={{ textAlign: "center", marginTop: 36, fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+        Prices in SEK, excl. VAT. Annual billing available at 20% discount. No credit card required for Free plan.
+      </p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────
 export default function Landing({ onEnterApp }) {
@@ -1782,6 +2041,7 @@ export default function Landing({ onEnterApp }) {
 
   return (
     <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", "--mx": mouse.x, "--my": mouse.y }}>
+      <SEO />
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
 
       {/* NAV */}
@@ -1799,7 +2059,7 @@ export default function Landing({ onEnterApp }) {
           <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.4px" }}>Logoplacers</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {["Features","How it works","FAQ"].map(label => (
+          {["Features","How it works","Pricing","FAQ"].map(label => (
             <a key={label} href={`#${label.toLowerCase().replace(/ /g,"-")}`}
               style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
               onMouseEnter={e => e.target.style.color="#fff"} onMouseLeave={e => e.target.style.color="rgba(255,255,255,0.45)"}>
@@ -1975,10 +2235,15 @@ export default function Landing({ onEnterApp }) {
               { q: "How many prospects can I personalise at once?", a: "There is no hard limit. Logoplacers generates images for every prospect in your list and exports them as a ZIP, or sends them directly via Gmail with anti-spam delays." },
               { q: "What image formats does it support?", a: "PNG, JPG, WEBP and HEIC (iPhone photos). HEIC files are automatically converted in the browser — no external tool needed." },
               { q: "How does automatic logo detection work?", a: "Type a company name or domain and Logoplacers queries multiple logo databases simultaneously. It validates each result and falls back gracefully if a logo cannot be found." },
-              { q: "Is there a free trial?", a: "Logoplacers is currently in early access. Apply below for access — we will reach out as soon as your spot is ready." },
+              { q: "Is there a free trial?", a: "Yes! The Free plan gives you 5 personalised demos per month with no credit card required. Upgrade to Solo for unlimited demos." },
             ].map((f, i) => <FAQ key={i} {...f} />)}
           </div>
         </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="pricing" style={{ padding: "120px 48px" }}>
+        <Pricing onEnterApp={onEnterApp} />
       </section>
 
       {/* LIVE DEMO */}
