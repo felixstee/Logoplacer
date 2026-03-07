@@ -1689,595 +1689,40 @@ function Step({ n, title, desc, icon, visible, delay = 0 }) {
 }
 
 // ─────────────────────────────────────────────
-// SOCIAL PROOF TICKER
+// TESTIMONIAL
 // ─────────────────────────────────────────────
-const TICKER_EVENTS = [
-  "Marcus just sent 47 personalised demos ⚡",
-  "Sofia closed a deal from a personalised outreach 🎉",
-  "Erik's reply rate jumped to 38% this week 📈",
-  "Lena saved 6 hours of manual Figma work ✅",
-  "Tom sent 120 demos in under 3 minutes 🚀",
-  "Anna got 14 replies in the first hour 💬",
-  "Peter personalised 80 demos before lunch ⚡",
-];
-
-function SocialProofTicker() {
-  const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    const t = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => { setIdx(i => (i + 1) % TICKER_EVENTS.length); setVisible(true); }, 400);
-    }, 3200);
-    return () => clearInterval(t);
-  }, []);
+function Testimonial({ quote, name, role, company, visible, delay = 0 }) {
   return (
     <div style={{
-      display: "inline-flex", alignItems: "center", gap: 10,
-      background: "rgba(26,130,255,0.06)", border: "1px solid rgba(26,130,255,0.18)",
-      borderRadius: 100, padding: "8px 18px 8px 12px",
-      fontSize: 12, color: "rgba(255,255,255,0.6)", fontWeight: 500,
+      background: "rgba(255,255,255,0.025)",
+      border: "1px solid rgba(255,255,255,0.07)",
+      borderRadius: 20, padding: "28px",
+      transition: `opacity .7s ${delay}ms, transform .7s ${delay}ms`,
+      opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
     }}>
-      <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#1a82ff", flexShrink: 0, boxShadow: "0 0 8px #1a82ff", animation: "pulse 1.8s infinite" }} />
-      <span style={{ transition: "opacity .35s", opacity: visible ? 1 : 0 }}>{TICKER_EVENTS[idx]}</span>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// TESTIMONIAL CAROUSEL
-// ─────────────────────────────────────────────
-const TESTIMONIALS = [
-  { quote: "I sent 40 personalised demos in the same time it used to take me to build one in Figma. My reply rate went through the roof.", name: "Marcus L.", role: "Senior AE", company: "Scaleup SaaS" },
-  { quote: "The Gmail integration is a game changer. My prospects respond saying they were impressed by how tailored the outreach felt.", name: "Sofia R.", role: "SDR Lead", company: "B2B Fintech" },
-  { quote: "Every cold email tool promises personalisation but this is the first one that makes it visual. It's like Loom but for demos.", name: "Erik J.", role: "Head of Sales", company: "Growth Agency" },
-  { quote: "I used to spend 20 minutes per prospect in Canva. Now I do 50 in the time it takes to make a coffee. Genuinely insane ROI.", name: "Lena M.", role: "Account Executive", company: "SaaS Startup" },
-  { quote: "Opened by 83% of my prospects last week. The personalised logo image is what makes people stop and look.", name: "Tom H.", role: "BDR", company: "RevOps Platform" },
-  { quote: "Our SDR team uses this daily. Booking rates are up 2x since we switched from plain text outreach.", name: "Anna K.", role: "VP Sales", company: "Enterprise SaaS" },
-];
-
-function TestimonialCarousel() {
-  const [current, setCurrent] = useState(0);
-  const [dir, setDir] = useState(1);
-  const [animating, setAnimating] = useState(false);
-  const [ref, vis] = useReveal(0.08);
-
-  const go = useCallback((next) => {
-    if (animating) return;
-    setDir(next > current ? 1 : -1);
-    setAnimating(true);
-    setTimeout(() => { setCurrent(next); setAnimating(false); }, 320);
-  }, [animating, current]);
-
-  useEffect(() => {
-    const t = setInterval(() => go((current + 1) % TESTIMONIALS.length), 5000);
-    return () => clearInterval(t);
-  }, [current, go]);
-
-  const t = TESTIMONIALS[current];
-  const cols = 3;
-  const visible3 = [0,1,2].map(i => TESTIMONIALS[(current + i) % TESTIMONIALS.length]);
-
-  return (
-    <div ref={ref} style={{ transition: "opacity .8s, transform .8s", opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(36px)" }}>
-      {/* 3-column desktop grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 32 }}
-        className="testi-grid">
-        {visible3.map((t2, i) => (
-          <div key={`${current}-${i}`} style={{
-            background: i === 0 ? "rgba(26,130,255,0.06)" : "rgba(255,255,255,0.025)",
-            border: `1px solid ${i === 0 ? "rgba(26,130,255,0.3)" : "rgba(255,255,255,0.07)"}`,
-            borderRadius: 20, padding: "28px",
-            transition: "opacity .32s, transform .32s",
-            opacity: animating ? 0 : 1,
-            transform: animating ? `translateX(${dir * 24}px)` : "translateX(0)",
-            transitionDelay: `${i * 60}ms`,
-          }}>
-            <div style={{ display: "flex", gap: 2, marginBottom: 14 }}>
-              {[...Array(5)].map((_, j) => (
-                <svg key={j} width="13" height="13" viewBox="0 0 24 24" fill="#1a82ff" stroke="none">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              ))}
-            </div>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 22, fontStyle: "italic" }}>
-              "{t2.quote}"
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 700, color: "#fff",
-              }}>{t2.name[0]}</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{t2.name}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{t2.role}, {t2.company}</div>
-              </div>
-            </div>
-          </div>
+      <div style={{ display: "flex", gap: 2, marginBottom: 16 }}>
+        {[...Array(5)].map((_, i) => (
+          <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#1a82ff" stroke="none">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
         ))}
       </div>
-
-      {/* Controls */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
-        <button onClick={() => go((current - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)} style={{
-          width: 36, height: 36, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.12)",
-          background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.5)", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background="rgba(26,130,255,0.15)"; e.currentTarget.style.borderColor="rgba(26,130,255,0.4)"; e.currentTarget.style.color="#fff"; }}
-          onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; e.currentTarget.style.color="rgba(255,255,255,0.5)"; }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div style={{ display: "flex", gap: 6 }}>
-          {TESTIMONIALS.map((_, i) => (
-            <button key={i} onClick={() => go(i)} style={{
-              width: i === current ? 20 : 7, height: 7, borderRadius: 4, border: "none", cursor: "pointer",
-              background: i === current ? "#1a82ff" : "rgba(255,255,255,0.15)",
-              transition: "all .3s", padding: 0,
-            }}/>
-          ))}
-        </div>
-        <button onClick={() => go((current + 1) % TESTIMONIALS.length)} style={{
-          width: 36, height: 36, borderRadius: "50%", border: "none",
-          background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", cursor: "pointer",
+      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 22, fontStyle: "italic" }}>
+        "{quote}"
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: "50%",
+          background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(26,130,255,0.35)",
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// COMPARISON TABLE
-// ─────────────────────────────────────────────
-function ComparisonTable() {
-  const [ref, vis] = useReveal(0.08);
-  const rows = [
-    { feature: "Auto logo fetch from domain", lp: true,  loom: false, canva: false, manual: false },
-    { feature: "Send directly from Gmail",    lp: true,  loom: false, canva: false, manual: true  },
-    { feature: "Bulk personalise 50+ demos",  lp: true,  loom: false, canva: false, manual: false },
-    { feature: "No design skills needed",     lp: true,  loom: true,  canva: false, manual: false },
-    { feature: "Under 30 seconds per demo",   lp: true,  loom: false, canva: false, manual: false },
-    { feature: "Works in the browser",        lp: true,  loom: true,  canva: true,  manual: true  },
-    { feature: "Visual brand personalisation",lp: true,  loom: false, canva: true,  manual: true  },
-    { feature: "Free plan available",         lp: true,  loom: true,  canva: true,  manual: true  },
-  ];
-  const cols = [
-    { label: "Logoplacers", highlight: true },
-    { label: "Loom",        highlight: false },
-    { label: "Canva",       highlight: false },
-    { label: "Manual",      highlight: false },
-  ];
-  const Check = ({ yes }) => yes
-    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a82ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-
-  return (
-    <div ref={ref} style={{
-      maxWidth: 840, margin: "0 auto",
-      transition: "opacity .8s, transform .8s",
-      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(36px)",
-    }}>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: "left", padding: "14px 16px", fontSize: 12, color: "rgba(255,255,255,0.3)", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>Feature</th>
-              {cols.map(c => (
-                <th key={c.label} style={{
-                  textAlign: "center", padding: "14px 16px", fontSize: 12, fontWeight: 700,
-                  color: c.highlight ? "#5ba4ff" : "rgba(255,255,255,0.35)",
-                  borderBottom: `1px solid ${c.highlight ? "rgba(26,130,255,0.3)" : "rgba(255,255,255,0.07)"}`,
-                  background: c.highlight ? "rgba(26,130,255,0.06)" : "transparent",
-                  borderRadius: c.highlight ? "12px 12px 0 0" : 0,
-                  letterSpacing: ".3px",
-                }}>{c.label}{c.highlight && <span style={{ marginLeft: 6, background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", fontSize: 9, padding: "2px 7px", borderRadius: 100, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", verticalAlign: "middle" }}>You're here</span>}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} style={{ transition: `opacity .5s ${i * 50}ms`, opacity: vis ? 1 : 0 }}>
-                <td style={{ padding: "13px 16px", fontSize: 13, color: "rgba(255,255,255,0.55)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{row.feature}</td>
-                {[row.lp, row.loom, row.canva, row.manual].map((val, j) => (
-                  <td key={j} style={{
-                    textAlign: "center", padding: "13px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.05)",
-                    background: j === 0 ? "rgba(26,130,255,0.04)" : "transparent",
-                  }}>
-                    <Check yes={val} />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// EXIT INTENT POPUP
-// ─────────────────────────────────────────────
-function ExitIntentPopup({ onEnterApp }) {
-  const [show, setShow] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const fired = useRef(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem("lp_exit_seen")) return;
-    const handle = (e) => {
-      if (e.clientY < 10 && !fired.current) {
-        fired.current = true;
-        setShow(true);
-        sessionStorage.setItem("lp_exit_seen", "1");
-      }
-    };
-    document.addEventListener("mouseleave", handle);
-    return () => document.removeEventListener("mouseleave", handle);
-  }, []);
-
-  if (!show || dismissed) return null;
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9999,
-      background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      animation: "fadeUp .25s ease",
-    }} onClick={() => setDismissed(true)}>
-      <div onClick={e => e.stopPropagation()} style={{
-        maxWidth: 460, width: "90%",
-        background: "linear-gradient(160deg,rgba(7,11,18,0.98),rgba(14,22,40,0.98))",
-        border: "1px solid rgba(26,130,255,0.25)", borderRadius: 24, padding: "48px 40px",
-        textAlign: "center", position: "relative",
-        boxShadow: "0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(26,130,255,0.1)",
-      }}>
-        <button onClick={() => setDismissed(true)} style={{
-          position: "absolute", top: 16, right: 16, background: "none", border: "none",
-          color: "rgba(255,255,255,0.3)", fontSize: 20, cursor: "pointer", lineHeight: 1,
-        }}>×</button>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>🎁</div>
-        <h3 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-1px", margin: "0 0 12px", color: "#fff" }}>
-          Before you go —
-        </h3>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, margin: "0 0 28px" }}>
-          Try Logoplacers free. No credit card. 4 personalised demos to see if it works for you.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={() => { setDismissed(true); onEnterApp(); }} style={{
-            background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
-            borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit", boxShadow: "0 6px 24px rgba(26,130,255,0.4)",
-          }}>
-            Try free now — no card needed
-          </button>
-          <button onClick={() => setDismissed(true)} style={{
-            background: "none", color: "rgba(255,255,255,0.25)", border: "none",
-            fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-          }}>
-            No thanks, I don't want more replies
-          </button>
+          fontSize: 14, fontWeight: 700, color: "#fff",
+        }}>{name[0]}</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{name}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{role}, {company}</div>
         </div>
       </div>
     </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// BLOG DATA + COMPONENTS
-// ─────────────────────────────────────────────
-const BLOG_POSTS = [
-  {
-    slug: "how-to-personalise-cold-outreach-at-scale",
-    title: "How to Personalise Cold Outreach at Scale Without Spending Hours in Canva",
-    excerpt: "Most SDRs spend 20 minutes per prospect creating personalised images. Here's how to do 50 in the same time.",
-    tag: "Sales Strategy", readTime: "5 min",
-    body: `Personalised outreach works. Study after study shows that buyers are significantly more likely to open, read, and reply to an email that feels made for them. The problem isn't the strategy — it's the execution.\n\nMost AEs and SDRs resort to one of two approaches: spend 20 minutes per prospect in Canva crafting something visual, or skip the personalisation altogether and blast generic templates.\n\nNeither works at scale.\n\n**The Visual Personalisation Problem**\n\nVisual personalisation — placing a prospect's logo on your product screenshot — is one of the highest-converting outreach tactics available today. It signals effort, specificity, and that you actually understand the prospect's world.\n\nBut doing it manually is brutal. You have to:\n1. Find the prospect's logo (good luck if it's not on their website)\n2. Download it\n3. Open Canva, Figma, or Photoshop\n4. Resize and position it\n5. Export\n6. Attach to an email\n\nMultiply that by 50 prospects and you've killed your entire morning.\n\n**The Logoplacers Approach**\n\nLogoplacers solves this with a three-step workflow:\n1. Upload your product screenshot once\n2. Paste your prospect list\n3. Click export\n\nThe tool auto-fetches each company's logo, places it on your screenshot, and generates personalised images for every prospect simultaneously. What used to take 20 minutes per prospect now takes under 30 seconds total.\n\n**Why Visual Personalisation Works**\n\nThe psychology is simple: when someone sees their own logo on your product, they immediately visualise the integration. They see themselves using it. That mental shift from "interesting tool" to "this could be for us" is worth dozens of follow-up emails.\n\nHigh-performing sales teams report 2-3x higher reply rates on visual personalised outreach vs plain text. Not because the copy is better — because the image does the storytelling before a single word is read.\n\n**Getting Started**\n\nThe best approach is to start small. Take your current best-performing email template, add one personalised image, and run an A/B test over 50 sends. The data will convince you more than any article could.`,
-  },
-  {
-    slug: "personalised-sales-demos-reply-rates",
-    title: "Why Personalised Sales Demos Get 3.4x More Replies (And How to Build Them in 30 Seconds)",
-    excerpt: "The data is clear: visual personalisation in cold email outperforms generic outreach by a wide margin. Here's the science and the shortcut.",
-    tag: "Data & Research", readTime: "4 min",
-    body: `Cold email is harder than it's ever been. Inboxes are flooded. Spam filters are sophisticated. And buyers have developed a finely-tuned reflex for detecting templated outreach.\n\nSo how do the top 1% of SDRs and AEs still achieve consistent 25%+ reply rates? The answer, increasingly, is visual personalisation.\n\n**The Numbers**\n\nAcross campaigns tracked by sales intelligence platforms, emails containing a personalised image — specifically the prospect's logo embedded in a product screenshot — achieve reply rates between 2.8x and 3.6x higher than text-only alternatives.\n\nThe mechanism is clear: personalised images aren't just visually distinctive in an inbox — they communicate "I made this for you" in a way that no subject line personalisation can replicate.\n\n**Why Logos Specifically**\n\nBrand logos carry psychological weight. They're symbols of identity, ownership, and investment. When a prospect sees their logo on your product interface, the brain processes it as social proof and relevance simultaneously.\n\nIt's not manipulation — it's communication. You're showing, not telling.\n\n**The Speed Problem**\n\nThe reason most teams don't do this consistently is time. Creating 50 personalised images manually takes a full day. That's not sustainable.\n\nLogoplacers exists specifically to remove that bottleneck. The tool fetches logos automatically, places them on your template, and generates bulk exports in seconds. A full sequence of 100 prospects — images generated, Gmail ready — takes under three minutes.\n\n**Implementation Tips**\n\n— Test one personalised image per campaign before rolling out at scale\n— Place the prospect's logo prominently, not buried\n— Keep the product screenshot clean and recognisable\n— Pair the image with a subject line that references the personalisation`,
-  },
-  {
-    slug: "best-cold-email-tools-2025",
-    title: "The Best Cold Email Personalisation Tools in 2025 (Honest Comparison)",
-    excerpt: "We compared the top tools for visual personalisation in cold outreach. Here's what actually works for SDR teams.",
-    tag: "Tool Reviews", readTime: "7 min",
-    body: `The cold email tool market is crowded. Every week there's a new AI writing assistant promising to 10x your reply rates. But most of them solve the wrong problem.\n\nThe real leverage in cold outreach isn't word choice — it's visual differentiation. This guide covers the tools that actually move the needle on reply rates through personalisation.\n\n**Category 1: Visual Personalisation Tools**\n\n*Logoplacers* — Purpose-built for logo-on-screenshot personalisation. Auto-fetches company logos, bulk generates images, sends directly from Gmail. Best for AEs and SDRs who want visual personalisation at scale without design tools.\n\n*Hyperise* — Broader personalisation platform. Good for image personalisation within email sequences. Higher price point, more complex setup.\n\n*Lemlist* — Email sequencing with built-in image personalisation. Good if you need an all-in-one sequence tool, but the image personalisation is less flexible than standalone tools.\n\n**Category 2: Screen Recording**\n\n*Loom* — Great for bespoke video messages but not scalable for bulk outreach. Every video requires manual recording. Best for late-stage personalisation.\n\n**Category 3: Design Tools**\n\n*Canva / Figma* — Maximum flexibility but requires significant time per prospect. Not viable for sequences of more than 10 prospects.\n\n**Our Recommendation**\n\nFor SDR teams focused on cold outreach volume: Logoplacers for image personalisation, paired with your existing sequence tool for delivery.\n\nFor enterprise teams needing full customisation: Consider Hyperise alongside a dedicated sequence platform.\n\nFor one-to-one high-value deals: Loom for personal video, Logoplacers for the initial hook.`,
-  },
-  {
-    slug: "what-is-aio-ai-optimisation",
-    title: "What Is AIO? How to Optimise Your SaaS for AI Search in 2025",
-    excerpt: "ChatGPT, Claude, and Perplexity are replacing Google for product discovery. Here's how to get your SaaS in front of AI-generated answers.",
-    tag: "SEO & AIO", readTime: "6 min",
-    body: `If you've noticed your organic traffic patterns changing in 2025, you're not imagining things. A significant and growing portion of product discovery now happens through AI assistants — ChatGPT, Claude, Perplexity, and Gemini — rather than traditional search.\n\nThis shift is what people are calling AIO: AI Optimisation.\n\n**What Is AIO?**\n\nAIO refers to the practice of structuring your web content so that AI language models can accurately represent your product in conversational search results.\n\nWhen someone asks ChatGPT "what's the best tool for personalising cold email outreach with prospect logos?", the model synthesises information from its training data and live web searches. AIO is about making sure your product shows up accurately in that synthesis.\n\n**How AI Models Discover Products**\n\nAI crawlers and training pipelines process web content differently from traditional search engines. They prioritise:\n\n— Clear, factual descriptions of what a product does\n— Structured data (Schema.org) that explicitly categorises the product\n— Consistent brand mentions across multiple sources\n— Clear use-case articulation (who uses it, for what problem)\n— Authoritative third-party mentions (directories, reviews, comparisons)\n\n**The llms.txt Standard**\n\nA new convention is emerging: the llms.txt file. Similar to robots.txt for search crawlers, llms.txt is a plain-text file placed at the root of your domain that gives AI models a structured summary of your product, use cases, and key pages.\n\nEarly adoption of this standard is a low-effort way to signal clarity to AI systems.\n\n**Practical AIO Checklist**\n\n1. Add Schema.org SoftwareApplication markup to your homepage\n2. Create an llms.txt file at your domain root\n3. Write clear, factual FAQs in natural Q&A format\n4. Build blog content around specific use-case queries\n5. Get listed on AI-curated directories (Futurepedia, Toolify, There's An AI For That)\n6. Ensure consistent product descriptions across all platforms`,
-  },
-  {
-    slug: "sdr-productivity-hacks-2025",
-    title: "7 SDR Productivity Hacks That Top Performers Swear By in 2025",
-    excerpt: "The best SDRs aren't working harder — they've found the leverage points. Here are the tactics making the biggest difference right now.",
-    tag: "Sales Productivity", readTime: "5 min",
-    body: `Top-performing SDRs don't book more meetings by making more calls. They book more meetings by making smarter investments of their time.\n\nHere are seven tactics that consistently separate the top 10% from the rest.\n\n**1. Visual Personalisation on the First Touch**\n\nStop leading with generic templates. A personalised image — your prospect's logo on your product screenshot — takes 30 seconds with the right tool and consistently 2-3x the response rate. This is the single highest-leverage change most SDRs can make today.\n\n**2. Time-Block Sequencing**\n\nDon't send emails throughout the day. Block 60-90 minutes in the morning for bulk personalisation and sending. The focus effect alone improves output quality.\n\n**3. The 10-Minute Research Rule**\n\nSpend exactly 10 minutes researching a prospect before reaching out. Find one specific trigger — a recent hire, funding round, product launch, or competitor mention — and lead with it. No more, no less. More than 10 minutes and you're over-investing on unqualified accounts.\n\n**4. Subject Line A/B Testing**\n\nMost SDRs write subject lines based on intuition. Run a proper A/B test across 50 sends minimum. The winning subject line often feels counterintuitive — short, lowercase, and oddly specific outperforms polished and professional.\n\n**5. LinkedIn + Email Sequences**\n\nMulti-channel sequences outperform single-channel by 40-70%. A simple pattern: email day 1, LinkedIn connection day 3, email follow-up day 6.\n\n**6. Record and Review**\n\nRecord your cold calls once a week and listen back. Most SDRs discover they're talking too fast, not pausing enough, or killing objections with over-explanation. Ten minutes of review saves hours of ineffective calling.\n\n**7. Batch Similar Tasks**\n\nResearch mode, writing mode, calling mode — your brain switches gears for each. Batch similar activities together rather than context-switching all day. Personalisation, research, writing, calls — each gets its own block.`,
-  },
-  {
-    slug: "cold-email-personalisation-examples",
-    title: "10 Cold Email Personalisation Examples That Actually Got Replies",
-    excerpt: "Real examples of personalised cold emails that broke through. What they had in common, and how to replicate the approach.",
-    tag: "Email Templates", readTime: "6 min",
-    body: `Personalisation in cold email is often misunderstood. Adding {{first_name}} to a subject line is not personalisation. Researching someone's LinkedIn and writing a paragraph about their career history is over-engineering.\n\nThe sweet spot is specific, effortless-feeling personalisation that signals you understand the prospect's world without feeling like you stalked them.\n\nHere are patterns from emails that generated real responses:\n\n**Pattern 1: The Logo Hook**\n\nSubject: Made something for [Company]\nBody: "Hi [Name], I put together a personalised demo of [Your Product] for [Company] — attached. Takes 30 seconds to look at. [CTA]"\n\nThe attached personalised image does the heavy lifting. The email is short precisely because the image communicates what 200 words couldn't.\n\n**Pattern 2: The Specific Trigger**\n\n"Hi [Name], saw [Company] just launched [feature/product/announcement]. Congrats — that's a meaningful milestone. We work with teams at this stage to [specific use case]. Would a 15-minute call make sense?"\n\n**Pattern 3: The Peer Reference**\n\n"Hi [Name], I was talking to [Peer at similar company] last week about [shared challenge]. They mentioned you might be dealing with the same thing. Worth 15 minutes?"\n\n**Pattern 4: The Honest Ask**\n\n"Hi [Name], I'll be direct — I'm reaching out because [Company] fits our ideal customer profile exactly. I think [Your Product] would be genuinely useful for your team. Can I show you why in 15 minutes?"\n\n**What They All Have in Common**\n\n— Short (under 75 words)\n— One specific reason for reaching out\n— One clear ask\n— Zero filler phrases ("I hope this finds you well", "I wanted to reach out")\n— Visual element (logo image, screenshot) where possible`,
-  },
-  {
-    slug: "b2b-sales-prospecting-tools",
-    title: "B2B Sales Prospecting Tools That Save the Most Time in 2025",
-    excerpt: "A practical guide to the tools that actually reduce manual work in B2B prospecting and outreach.",
-    tag: "Tools & Tech", readTime: "5 min",
-    body: `B2B prospecting has more tools than ever, which paradoxically makes decision-making harder. This guide cuts through the noise and focuses on tools that create genuine time savings.\n\n**List Building**\n\n*Apollo.io* — The standard for prospect list building. Strong filtering, decent email data, integrated sequencing.\n*Clay* — More powerful enrichment, better for building sophisticated prospecting workflows.\n*LinkedIn Sales Navigator* — Still the gold standard for account-based prospecting.\n\n**Personalisation**\n\n*Logoplacers* — Visual personalisation at scale. Auto-fetches logos, generates bulk images, sends via Gmail. Best for teams doing high-volume visual outreach.\n*Hyperise* — Broader personalisation platform for multi-format campaigns.\n\n**Sequencing**\n\n*Outreach / Salesloft* — Enterprise-grade sequence management.\n*Instantly* — Better for high-volume cold email at lower cost.\n*Lemlist* — Good balance of features for SMB and mid-market teams.\n\n**Recording and Video**\n\n*Loom* — For bespoke video messages in late-stage or high-value outreach.\n*Vidyard* — Enterprise video personalisation with better tracking.\n\n**Our Stack Recommendation for an SDR Team of 5-10**\n\nApollo or Clay for list building → Logoplacers for visual personalisation → Instantly or Lemlist for sequencing → Loom for high-value follow-ups.\n\nThis stack costs under $300/month combined, saves 20+ hours per SDR per month, and produces consistently better reply rates than more expensive alternatives.`,
-  },
-  {
-    slug: "gmail-cold-outreach-limits",
-    title: "Gmail Cold Outreach: Limits, Best Practices, and How Not to Get Banned",
-    excerpt: "Using Gmail for cold outreach? Here's everything you need to know about sending limits, spam signals, and staying deliverable.",
-    tag: "Deliverability", readTime: "5 min",
-    body: `Gmail is the most trusted email client in B2B. Sending from a Gmail or Google Workspace account gets your emails into inboxes that corporate email servers regularly flag from third-party tools.\n\nBut Gmail has limits, and ignoring them will kill your domain.\n\n**The Numbers**\n\nFree Gmail accounts: 500 emails per day.\nGoogle Workspace accounts: 2,000 emails per day.\n\nThese are hard limits. Hit them and Google suspends sending for 24 hours. Hit them repeatedly and your account gets flagged.\n\n**Anti-Spam Signals That Trigger Google**\n\n— Sending identical emails to large lists (no personalisation)\n— High bounce rates (>3%)\n— High spam complaint rates (>0.1%)\n— Sending to purchased lists\n— Sudden volume spikes\n\n**The Right Approach**\n\nSend in batches of 50-100 per day from a single account. Warm your domain gradually if it's new. Use delays between sends (Logoplacers builds in random 15-45 second anti-spam delays automatically).\n\nPersonalise every email. Not just the subject line — the image. A personalised image is the single most effective signal to Gmail's spam detection that this is a real, relevant communication.\n\n**Domain Warm-Up**\n\nFor a new Google Workspace domain:\n— Week 1: 20-30 emails per day\n— Week 2: 50-75 per day\n— Week 3: 100-150 per day\n— Week 4+: Up to your target volume\n\nThis gradual ramp is non-negotiable for preserving deliverability.`,
-  },
-  {
-    slug: "what-is-logo-personalisation",
-    title: "What Is Logo Personalisation in Sales? (And Why It Works Better Than You Think)",
-    excerpt: "The complete guide to using prospect logos in sales outreach — what it is, why it works, and how to do it at scale.",
-    tag: "Beginner's Guide", readTime: "4 min",
-    body: `Logo personalisation is a cold outreach technique where you embed a prospect's company logo directly into an image you send them — typically your product screenshot, a demo environment, or a mockup.\n\nThe concept is simple. The results are not.\n\n**Why It Works**\n\nThere are three psychological mechanisms at work:\n\n*Relevance signal*: Seeing their own logo on your product creates an immediate "this is relevant to me" response before a word is read.\n\n*Effort signal*: A personalised image communicates that you didn't blast 10,000 people with the same message. It signals selectivity, which increases perceived value.\n\n*Visualisation*: The prospect sees their brand inside your product. This collapses the gap between "interesting" and "I can see us using this."\n\n**What You Actually Send**\n\nThe most effective format is a product screenshot — your actual dashboard, interface, or output — with the prospect's logo placed naturally within it. Not a mock-up, not a generic template. Your real product, contextualised for them.\n\n**The Scale Problem (and Its Solution)**\n\nDoing this manually in Canva or Photoshop takes 15-20 minutes per prospect. That's fine for 5 prospects. It's impossible for 50.\n\nLogoplacers solves this: upload your screenshot, paste your company list, and the tool fetches every logo automatically and generates all personalised images simultaneously. 50 prospects in under a minute.\n\n**Getting Started**\n\n1. Take a clean screenshot of your best product feature\n2. Add it to Logoplacers as your template\n3. Paste your prospect list\n4. Generate and send`,
-  },
-  {
-    slug: "outbound-sales-strategy-2025",
-    title: "Outbound Sales Strategy in 2025: What's Working, What's Dead, What's Next",
-    excerpt: "The outbound playbook has changed significantly. Here's a grounded view of what's actually producing pipeline in 2025.",
-    tag: "Sales Strategy", readTime: "7 min",
-    body: `The outbound sales landscape in 2025 looks nothing like it did three years ago. AI writing tools flooded inboxes with high-volume, low-quality sequences. Buyers got smarter. Spam filters got better. Reply rates collapsed for everyone who didn't adapt.\n\nBut outbound isn't dead — it's just become higher-signal. Here's what's working.\n\n**What's Dead**\n\n*Volume-only strategies*: Sending 500 generic emails per day produces noise. Buyers have learned to filter it at a glance. High volume is only effective paired with high relevance.\n\n*Long, impressive intros*: "I hope this finds you well, I wanted to reach out to introduce you to..." — deleted before the second sentence. Nobody cares about your intro.\n\n*Feature-focused pitches*: "We have X integrations and Y uptime and Z compliance certifications." Features don't sell. Outcomes do.\n\n**What's Working**\n\n*Trigger-based outreach*: Reaching out specifically because of a recent hiring spike, product launch, funding announcement, or competitive switch. The timing justifies the contact.\n\n*Visual personalisation*: Logo-on-screenshot outreach continues to significantly outperform text-only. The image communicates relevance in half a second.\n\n*Tight ICP + lower volume*: 30 highly-targeted prospects per week outperforms 300 loosely-targeted ones. The maths work out better.\n\n*Multi-threaded deals*: One contact per account is fragile. Best-performing teams are threading multiple stakeholders simultaneously.\n\n**What's Emerging**\n\n*AI-assisted research*: Using LLMs to rapidly synthesise prospect context — news, LinkedIn activity, job postings — before writing.\n\n*Video in late-stage sequences*: Loom or similar for prospects who've engaged but not converted. Personal video at this stage has outsized impact.\n\n*AIO-driven inbound*: Teams investing in content optimised for AI search are seeing compounding inbound that reduces outbound burden over time.`,
-  },
-  {
-    slug: "how-to-send-bulk-personalised-emails",
-    title: "How to Send Bulk Personalised Emails Without Looking Like a Spammer",
-    excerpt: "Bulk email doesn't have to mean generic. Here's how to send at volume while keeping personalisation (and deliverability) intact.",
-    tag: "Email How-To", readTime: "5 min",
-    body: `Bulk email has a reputation problem. When most people think "bulk email", they think spam filters, bounced messages, and unsubscribes.\n\nBut bulk personalised email — done correctly — is one of the most efficient activities in an SDR's toolkit. Here's how to do it properly.\n\n**The Core Principle: Personalise the Image, Not Just the Text**\n\nText personalisation ({{first_name}}, {{company}}) is so common that buyers have stopped noticing it. The next level is visual personalisation — embedding the prospect's logo in the image you attach.\n\nThis is nearly impossible to fake at scale without a dedicated tool. Which is exactly why it still works: it signals genuine effort.\n\n**Deliverability Fundamentals**\n\nBefore sending anything at volume:\n— Use Google Workspace (not free Gmail) for business email\n— Verify your domain (SPF, DKIM, DMARC)\n— Clean your list — remove invalid addresses before sending\n— Warm your domain if it's less than 3 months old\n\n**The Right Sending Pattern**\n\nNever send more than 100 emails per day from a single account if you're doing cold outreach. Build in delays between sends — 15-45 seconds is the sweet spot for appearing human.\n\nLogoplacers handles this automatically: its Gmail send feature includes randomised anti-spam delays built in.\n\n**Segmenting for Relevance**\n\nDon't send the same message to your entire list. Segment by:\n— Industry\n— Company size\n— Job function\n— Specific trigger event\n\nFive well-segmented lists of 20 prospects each will consistently outperform one generic list of 100.`,
-  },
-  {
-    slug: "personalisation-vs-automation-sales",
-    title: "Personalisation vs Automation in Sales: Finding the Right Balance",
-    excerpt: "Too much automation feels robotic. Too much personalisation doesn't scale. Here's where to draw the line.",
-    tag: "Sales Strategy", readTime: "4 min",
-    body: `The tension between personalisation and automation is one of the defining challenges in modern sales. Automation scales. Personalisation converts. The challenge is doing both.\n\n**The Spectrum**\n\nAt one extreme: fully automated sequences, zero personalisation, maximum volume. Low conversion, high scale.\n\nAt the other extreme: fully personalised, handcrafted outreach to every single prospect. High conversion, zero scale.\n\nThe optimal point lies in between — but it's not exactly in the middle.\n\n**Where Automation Wins**\n\n— Timing (when emails go out)\n— Sequence management (follow-ups)\n— Data enrichment (pulling company info)\n— List building and segmentation\n\n**Where Personalisation Wins**\n\n— First-touch differentiation (the image, the hook, the reason for contact)\n— Response handling\n— Late-stage deal nurturing\n— Re-engagement after silence\n\n**The Hybrid Approach**\n\nAutomate the infrastructure. Personalise the signal.\n\nUse automation to build your list, schedule your sends, and manage follow-ups. Use personalisation tools like Logoplacers to generate custom images at scale — so the prospect receives what feels like a handcrafted message, at the speed of automation.\n\nThis is the formula that lets a single SDR send 50 personalised demos per day without compromising quality.`,
-  },
-  {
-    slug: "sales-demo-design-best-practices",
-    title: "Sales Demo Design: 8 Best Practices for Demos That Actually Close",
-    excerpt: "A poorly designed demo loses deals before the conversation starts. Here's how to design product demos that convert.",
-    tag: "Design & UX", readTime: "5 min",
-    body: `A product demo is a first impression, a value proposition, and a call to action simultaneously. Most demos underdeliver on all three because they're designed for comprehensiveness rather than conversion.\n\nHere's how to fix that.\n\n**1. Lead With Outcome, Not Feature**\n\nThe opening slide/screen should show the prospect what success looks like — their metrics improved, their problem solved. Show the outcome before you explain how you achieve it.\n\n**2. Use Real Data**\n\nDemos with generic placeholder data ("John Doe", "ACME Corp") look like templates. Replace with real-looking data, ideally data that mirrors the prospect's industry.\n\n**3. Personalise Visually**\n\nEmbed the prospect's logo in the demo. This takes a second with a tool like Logoplacers and creates an immediate "this was made for us" feeling.\n\n**4. Keep It Under 3 Minutes**\n\nIf you're sending a static demo or short video, 3 minutes is the maximum. Longer and completion rates drop off a cliff. Force yourself to edit ruthlessly.\n\n**5. One CTA**\n\nSingle, clear call to action. "Book a 15-minute call" or "start a free trial." Multiple options create decision paralysis.\n\n**6. Mobile-First Design**\n\n60%+ of emails are first opened on mobile. Your demo image needs to read at 375px width. If the key information isn't legible on a phone screen, redesign.\n\n**7. Brand Consistency**\n\nYour demo should look like your brand. Fonts, colours, and visual style should be consistent. An inconsistent demo signals an inconsistent product.\n\n**8. Test and Iterate**\n\nA/B test demo designs just like you A/B test email copy. The best-converting demo isn't the most beautiful — it's the one that most clearly communicates the outcome for the specific prospect.`,
-  },
-  {
-    slug: "remote-sales-team-tools",
-    title: "The Essential Tech Stack for Remote Sales Teams in 2025",
-    excerpt: "What tools do high-performing remote sales teams actually use? A practical guide with honest assessments.",
-    tag: "Tools & Tech", readTime: "6 min",
-    body: `Remote sales teams face a specific challenge: they need to maintain the same output quality and coordination as co-located teams, without the casual collaboration that co-location enables.\n\nThe right tech stack is what makes this possible.\n\n**Communication**\n\n*Slack* — Standard. Channels per account, per campaign, per deal stage.\n*Loom* — Async video for internal updates, manager coaching, and high-value prospect touches.\n*Zoom* — Live discovery calls and demos. Nothing has genuinely replaced it.\n\n**Prospecting**\n\n*Apollo or Clay* — List building and enrichment.\n*LinkedIn Sales Navigator* — Account and contact research.\n\n**Personalisation**\n\n*Logoplacers* — Visual personalisation at scale. Particularly valuable for remote teams because it eliminates the coordination cost of having someone in a central office create custom images.\n\n**Outreach and Sequencing**\n\n*Instantly or Outreach* — Depending on team size and budget.\n\n**CRM**\n\n*HubSpot* — Best for SMB and mid-market remote teams.\n*Salesforce* — Enterprise standard.\n\n**Pipeline and Forecasting**\n\n*Clari or Gong* — Conversation intelligence and pipeline health.\n\n**The Most Underrated Remote Sales Tool**\n\nCalendar hygiene. The best remote sales teams have strict meeting scheduling standards, deep work blocks, and async-first communication norms. This isn't a product — it's a practice. But it determines whether all the other tools actually get used.`,
-  },
-  {
-    slug: "increase-email-reply-rate",
-    title: "How to Increase Your Cold Email Reply Rate: A Practical Guide",
-    excerpt: "Actionable, tested changes that consistently improve reply rates in cold email campaigns. No theory — just what works.",
-    tag: "Email How-To", readTime: "6 min",
-    body: `Low reply rates are the most common cold email problem, and they almost always trace back to the same root causes: lack of relevance, lack of specificity, or lack of differentiation.\n\nHere's a systematic approach to diagnosing and fixing each.\n\n**Step 1: Audit Your Subject Lines**\n\nSubject lines determine open rates. Open rates determine whether your reply rate problem is in the email or before it. If your open rate is below 30%, fix subject lines first.\n\nHighest-performing subject line patterns:\n— Referencing a specific trigger: "Re: [Company]'s recent launch"\n— Ultra-short: "Quick question"\n— Honest and direct: "[Name] — 5 minutes?"\n\n**Step 2: Check Your First Sentence**\n\nThe first sentence either earns attention or loses it permanently. It should:\n— Not start with "I"\n— Not explain who you are\n— Create immediate relevance for the specific prospect\n\n**Step 3: Add a Visual Element**\n\nEmails with personalised images consistently outperform text-only. A screenshot with the prospect's logo placed on it takes 30 seconds with Logoplacers and typically raises reply rates by 2-3x.\n\n**Step 4: Shorten Everything**\n\nIf your email is over 75 words, cut it in half. The best cold emails are 40-60 words.\n\n**Step 5: Improve the Ask**\n\nThe CTA should be specific, low-commitment, and time-bounded. "Would a 15-minute call next week make sense?" outperforms "Would love to connect!" every time.\n\n**Step 6: Test Systematically**\n\nChange one variable at a time. Subject line, first sentence, image, CTA — test each in isolation across 50 sends minimum. Build your own database of what works for your ICP.`,
-  },
-];
-
-function BlogCard({ post, style: s }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <a
-      href={`#blog/${post.slug}`}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: "block", textDecoration: "none",
-        background: hov ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
-        border: `1px solid ${hov ? "rgba(26,130,255,0.25)" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 18, padding: "26px",
-        transition: "all .2s",
-        transform: hov ? "translateY(-2px)" : "none",
-        boxShadow: hov ? "0 16px 40px rgba(0,0,0,0.3)" : "none",
-        ...s,
-      }}>
-      <div style={{
-        display: "inline-block", fontSize: 10, fontWeight: 700, letterSpacing: "1px",
-        textTransform: "uppercase", color: "#5ba4ff",
-        background: "rgba(26,130,255,0.1)", border: "1px solid rgba(26,130,255,0.2)",
-        borderRadius: 6, padding: "3px 8px", marginBottom: 14,
-      }}>{post.tag}</div>
-      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: "0 0 10px", lineHeight: 1.45, letterSpacing: "-.3px" }}>{post.title}</h3>
-      <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.38)", lineHeight: 1.65, margin: "0 0 16px" }}>{post.excerpt}</p>
-      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", gap: 6 }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        {post.readTime} read
-        <span style={{ color: "rgba(255,255,255,0.15)", margin: "0 4px" }}>·</span>
-        <span style={{ color: "#5ba4ff" }}>Read →</span>
-      </div>
-    </a>
-  );
-}
-
-function BlogSection() {
-  const [ref, vis] = useReveal(0.06);
-  const [showAll, setShowAll] = useState(false);
-  const shown = showAll ? BLOG_POSTS : BLOG_POSTS.slice(0, 6);
-  return (
-    <div ref={ref} style={{ maxWidth: 1140, margin: "0 auto" }}>
-      <div style={{ textAlign: "center", marginBottom: 72,
-        transition: "opacity .8s, transform .8s", opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(28px)" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Blog</div>
-        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px", lineHeight: 1.05 }}>
-          Learn from the best.
-        </h2>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.38)", margin: 0 }}>Practical guides for modern sales teams.</p>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 18 }}>
-        {shown.map((post, i) => (
-          <BlogCard key={post.slug} post={post} style={{
-            transition: `opacity .6s ${(i % 6) * 70}ms, transform .6s ${(i % 6) * 70}ms`,
-            opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(24px)",
-          }} />
-        ))}
-      </div>
-      {!showAll && BLOG_POSTS.length > 6 && (
-        <div style={{ textAlign: "center", marginTop: 36 }}>
-          <button onClick={() => setShowAll(true)} style={{
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-            color: "rgba(255,255,255,0.6)", borderRadius: 12, padding: "13px 32px",
-            fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-            transition: "all .15s",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background="rgba(26,130,255,0.1)"; e.currentTarget.style.borderColor="rgba(26,130,255,0.3)"; e.currentTarget.style.color="#fff"; }}
-            onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; e.currentTarget.style.color="rgba(255,255,255,0.6)"; }}>
-            Show all {BLOG_POSTS.length} articles →
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// BLOG POST PAGE
-// ─────────────────────────────────────────────
-function BlogPostPage({ slug, onBack }) {
-  const post = BLOG_POSTS.find(p => p.slug === slug);
-  useEffect(() => { window.scrollTo(0, 0); if (post) document.title = `${post.title} — Logoplacers`; }, [slug]);
-  if (!post) return <div style={{ padding: 80, textAlign: "center", color: "rgba(255,255,255,0.4)" }}>Post not found. <button onClick={onBack} style={{ background:"none",border:"none",color:"#5ba4ff",cursor:"pointer",fontFamily:"inherit",fontSize:14 }}>← Back</button></div>;
-
-  const paragraphs = post.body.split("\n\n");
-
-  return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "120px 32px 100px" }}>
-      <button onClick={onBack} style={{ background:"none",border:"none",color:"rgba(255,255,255,0.35)",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:600,letterSpacing:".3px",display:"flex",alignItems:"center",gap:6,marginBottom:40,padding:0,transition:"color .15s" }}
-        onMouseEnter={e=>e.currentTarget.style.color="#fff"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.35)"}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-        All articles
-      </button>
-      <div style={{ display:"inline-block",fontSize:10,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",color:"#5ba4ff",background:"rgba(26,130,255,0.1)",border:"1px solid rgba(26,130,255,0.2)",borderRadius:6,padding:"3px 8px",marginBottom:20 }}>{post.tag}</div>
-      <h1 style={{ fontSize:"clamp(28px,4vw,44px)",fontWeight:800,letterSpacing:"-1.5px",lineHeight:1.12,margin:"0 0 20px",color:"#fff" }}>{post.title}</h1>
-      <div style={{ fontSize:12,color:"rgba(255,255,255,0.25)",marginBottom:52,display:"flex",gap:12,alignItems:"center" }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        {post.readTime} read
-      </div>
-      <div style={{ color:"rgba(255,255,255,0.62)",lineHeight:1.85,fontSize:15.5 }}>
-        {paragraphs.map((p, i) => {
-          if (p.startsWith("**") && p.endsWith("**")) {
-            return <h2 key={i} style={{ fontSize:19,fontWeight:700,color:"#fff",margin:"36px 0 12px",letterSpacing:"-.4px" }}>{p.replace(/\*\*/g,"")}</h2>;
-          }
-          if (p.startsWith("— ") || p.startsWith("*") || p.match(/^\d\./)) {
-            const items = p.split("\n").filter(Boolean);
-            return <ul key={i} style={{ paddingLeft:20,margin:"0 0 20px",display:"flex",flexDirection:"column",gap:6 }}>
-              {items.map((item,j) => <li key={j} style={{ color:"rgba(255,255,255,0.55)",fontSize:14.5 }}>{item.replace(/^[—*]\s?/,"").replace(/^\d\.\s?/,"")}</li>)}
-            </ul>;
-          }
-          if (p.startsWith("*") && p.endsWith("*")) {
-            return <p key={i} style={{ fontStyle:"italic",color:"rgba(255,255,255,0.45)",margin:"0 0 20px" }}>{p.replace(/\*/g,"")}</p>;
-          }
-          return <p key={i} style={{ margin:"0 0 22px" }}>{p}</p>;
-        })}
-      </div>
-      <div style={{ marginTop:56,padding:"28px 32px",background:"rgba(26,130,255,0.07)",border:"1px solid rgba(26,130,255,0.2)",borderRadius:18 }}>
-        <div style={{ fontSize:16,fontWeight:700,color:"#fff",marginBottom:8 }}>Try Logoplacers free</div>
-        <div style={{ fontSize:13,color:"rgba(255,255,255,0.42)",marginBottom:18,lineHeight:1.6 }}>Personalise your first demos in under a minute. No credit card required.</div>
-        <button onClick={onBack} style={{ background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:10,padding:"11px 24px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit" }}>
-          Get started free →
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// SOCIAL PROOF TICKER
-// ─────────────────────────────────────────────
-// ─────────────────────────────────────────────
-// BLOG PREVIEW SECTION (on landing page)
-// ─────────────────────────────────────────────
-function BlogPreview({ onOpenBlog }) {
-  const [ref, vis] = useReveal(0.08);
-  const previews = [
-    { title: "Why Personalised Sales Demos Get 3× More Replies", cat: "Strategy", min: 7, slug: "personalised-sales-demos-reply-rates" },
-    { title: "How to Personalise Cold Email at Scale in 2025", cat: "Outreach", min: 9, slug: "cold-email-personalisation-at-scale" },
-    { title: "The Best B2B Outbound Sales Tools in 2025 (Ranked)", cat: "Tools", min: 11, slug: "b2b-outbound-sales-tools-2025" },
-  ];
-  return (
-    <section style={{ padding: "120px 48px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-      <div style={{ maxWidth: 1140, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 56, flexWrap: "wrap", gap: 20 }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>From the blog</div>
-            <h2 style={{ fontSize: "clamp(28px,4vw,46px)", fontWeight: 800, letterSpacing: "-1.5px", margin: 0 }}>
-              Sales playbooks that work.
-            </h2>
-          </div>
-          <button onClick={onOpenBlog} style={{
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "rgba(255,255,255,0.6)", borderRadius: 12, padding: "10px 20px",
-            fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-            transition: "all .15s", display: "flex", alignItems: "center", gap: 8,
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(26,130,255,0.35)"; e.currentTarget.style.color="#5ba4ff"; e.currentTarget.style.background="rgba(26,130,255,0.08)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"; e.currentTarget.style.color="rgba(255,255,255,0.6)"; e.currentTarget.style.background="rgba(255,255,255,0.04)"; }}>
-            View all 15 articles
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-        <div ref={ref} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 18 }}>
-          {previews.map((p, i) => (
-            <BlogPreviewCard key={p.slug} post={p} idx={i} visible={vis} onOpenBlog={onOpenBlog} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BlogPreviewCard({ post, idx, visible, onOpenBlog }) {
-  const [hov, setHov] = useState(false);
-  const CAT_COLOR = { Strategy: "#5ba4ff", Outreach: "#a78bfa", Tools: "#34d399" };
-  return (
-    <article
-      onClick={onOpenBlog}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        cursor: "pointer",
-        background: hov ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.015)",
-        border: `1px solid ${hov ? "rgba(26,130,255,0.2)" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 20, padding: "28px",
-        transition: `opacity .6s ${idx * 80}ms, transform .6s ${idx * 80}ms, background .2s, border-color .2s, box-shadow .2s`,
-        opacity: visible ? 1 : 0, transform: visible ? (hov ? "translateY(-4px)" : "translateY(0)") : "translateY(28px)",
-        boxShadow: hov ? "0 12px 40px rgba(0,0,0,0.3)" : "none",
-        display: "flex", flexDirection: "column", gap: 14,
-      }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".8px", textTransform: "uppercase", color: CAT_COLOR[post.cat] || "#5ba4ff", background: "rgba(26,130,255,0.1)", border: "1px solid rgba(26,130,255,0.2)", borderRadius: 100, padding: "3px 10px" }}>{post.cat}</span>
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{post.min} min read</span>
-      </div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.4, letterSpacing: "-.2px" }}>{post.title}</h3>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, color: hov ? "#5ba4ff" : "rgba(255,255,255,0.3)", fontSize: 12, fontWeight: 600, transition: "color .2s", marginTop: "auto" }}>
-        Read →
-      </div>
-    </article>
   );
 }
 
@@ -2310,19 +1755,364 @@ function FAQ({ q, a }) {
   );
 }
 
+
+// ─────────────────────────────────────────────
+// TESTIMONIAL CAROUSEL
+// ─────────────────────────────────────────────
+const TDATA = [
+  { quote: "I sent 40 personalised demos in the same time it used to take me to build one in Figma. My reply rate went through the roof.", name: "Marcus L.", role: "Senior AE", company: "Scaleup SaaS", c: "#1a82ff" },
+  { quote: "The Gmail integration is a game changer. Prospects respond saying they were impressed by how tailored the outreach felt.", name: "Sofia R.", role: "SDR Lead", company: "B2B Fintech", c: "#8b5cf6" },
+  { quote: "Every cold email tool promises personalisation. This is the first one that makes it visual. Like Loom but for demos.", name: "Erik J.", role: "Head of Sales", company: "Growth Agency", c: "#10b981" },
+  { quote: "We went from 4% reply rate to 18% in two weeks. Visual personalisation makes prospects feel you really did your homework.", name: "Anna K.", role: "VP Sales", company: "SaaS Startup", c: "#f59e0b" },
+  { quote: "Logo auto-detection saves me 20 minutes per prospect. I now send personalised demos to everyone on my list.", name: "Johan B.", role: "Account Executive", company: "B2B Tech", c: "#ec4899" },
+  { quote: "Outreach that actually stands out. Our SDR team adopted it in one day — zero training needed.", name: "Lena M.", role: "Sales Manager", company: "Enterprise SaaS", c: "#06b6d4" },
+];
+const STAR_ROW = (
+  <div style={{display:"flex",gap:2}}>
+    {[...Array(5)].map((_,i)=>(
+      <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b" stroke="none">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    ))}
+  </div>
+);
+function TestimonialCarousel() {
+  const [idx, setIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [dir, setDir] = useState(1);
+  const total = TDATA.length;
+  const go = useCallback((next) => {
+    if (fading) return;
+    setDir(next > idx ? 1 : -1);
+    setFading(true);
+    setTimeout(() => { setIdx(next); setFading(false); }, 280);
+  }, [idx, fading]);
+  useEffect(() => {
+    const t = setInterval(() => go((idx + 1) % total), 4800);
+    return () => clearInterval(t);
+  }, [idx, go, total]);
+  const t = TDATA[idx];
+  return (
+    <div style={{maxWidth:1100,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:60}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:14}}>What people say</div>
+        <h2 style={{fontSize:"clamp(32px,5vw,52px)",fontWeight:800,letterSpacing:"-2px",margin:0}}>Sales teams love it.</h2>
+      </div>
+      {/* Main card */}
+      <div style={{position:"relative",marginBottom:24}}>
+        <div style={{
+          background:"rgba(255,255,255,0.022)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)",
+          border:`1px solid ${t.c}44`, borderRadius:28,
+          padding:"clamp(28px,4vw,52px) clamp(24px,5vw,60px)",
+          boxShadow:`0 0 80px ${t.c}14,0 24px 64px rgba(0,0,0,.32)`,
+          opacity:fading?0:1, transform:fading?`translateX(${dir*20}px)`:"translateX(0)",
+          transition:"opacity .26s,transform .26s,border-color .4s",
+          position:"relative", overflow:"hidden", minHeight:190,
+        }}>
+          <div style={{position:"absolute",top:10,left:32,fontSize:100,lineHeight:1,color:`${t.c}12`,fontFamily:"Georgia,serif",fontWeight:700,pointerEvents:"none",userSelect:"none"}}>"</div>
+          <div style={{marginBottom:20,position:"relative"}}>{STAR_ROW}</div>
+          <p style={{fontSize:"clamp(15px,2vw,20px)",color:"rgba(255,255,255,.83)",lineHeight:1.65,marginBottom:28,fontStyle:"italic",maxWidth:800,position:"relative",margin:"0 0 28px"}}>
+            "{t.quote}"
+          </p>
+          <div style={{display:"flex",alignItems:"center",gap:13}}>
+            <div style={{width:42,height:42,borderRadius:"50%",background:`linear-gradient(135deg,${t.c},${t.c}99)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:"#fff",boxShadow:`0 0 16px ${t.c}55`,flexShrink:0}}>{t.name[0]}</div>
+            <div>
+              <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{t.name}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.32)",marginTop:2}}>{t.role} · {t.company}</div>
+            </div>
+          </div>
+        </div>
+        {/* Arrows */}
+        {[{d:-1,s:"left"},{d:1,s:"right"}].map(({d,s})=>(
+          <button key={s} onClick={()=>go((idx+d+total)%total)} style={{
+            position:"absolute",top:"50%",[s]:-16,transform:"translateY(-50%)",
+            width:36,height:36,borderRadius:"50%",
+            background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",
+            color:"rgba(255,255,255,.4)",fontSize:14,cursor:"pointer",
+            display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s",
+          }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";e.currentTarget.style.color="#fff";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.05)";e.currentTarget.style.color="rgba(255,255,255,.4)";}}
+          >{d<0?"←":"→"}</button>
+        ))}
+      </div>
+      {/* Dots */}
+      <div style={{display:"flex",justifyContent:"center",gap:7,marginBottom:26}}>
+        {TDATA.map((_,i)=>(
+          <button key={i} onClick={()=>go(i)} style={{width:i===idx?22:7,height:7,borderRadius:4,background:i===idx?t.c:"rgba(255,255,255,.15)",border:"none",cursor:"pointer",padding:0,transition:"width .3s,background .3s"}}/>
+        ))}
+      </div>
+      {/* Mini strip */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:9}}>
+        {TDATA.map((tt,i)=>(
+          <div key={i} onClick={()=>go(i)} style={{
+            background:i===idx?"rgba(255,255,255,.04)":"rgba(255,255,255,.012)",
+            border:`1px solid ${i===idx?`${tt.c}44`:"rgba(255,255,255,.05)"}`,
+            borderRadius:12,padding:"11px 13px",cursor:"pointer",
+            transform:i===idx?"scale(1.02)":"scale(1)",transition:"all .2s",
+          }}>
+            <div style={{display:"flex",gap:1,marginBottom:5}}>{STAR_ROW}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.38)",lineHeight:1.45,marginBottom:7}}>"{tt.quote.slice(0,52)}…"</div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:18,height:18,borderRadius:"50%",background:`linear-gradient(135deg,${tt.c},${tt.c}88)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{tt.name[0]}</div>
+              <span style={{fontSize:10,fontWeight:600,color:"rgba(255,255,255,.45)"}}>{tt.name}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL PROOF TICKER
+// ─────────────────────────────────────────────
+const TICKS = [
+  "Marcus from Stockholm just sent 47 personalised demos",
+  "Sofia closed a deal after her logo demo · 3 min ago",
+  "Erik's reply rate hit 31% this week",
+  "New user from London just signed up",
+  "Anna sent 120 demos in 8 minutes",
+  "Johan's prospect replied within 4 minutes",
+  "Lena's team sent 340 demos today",
+  "New user from Berlin just signed up",
+];
+function SocialProofTicker() {
+  const [i, setI] = useState(0);
+  const [vis, setVis] = useState(true);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVis(false);
+      setTimeout(() => { setI(x=>(x+1)%TICKS.length); setVis(true); }, 360);
+    }, 3600);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{
+      position:"fixed",bottom:22,left:22,zIndex:400,
+      background:"rgba(7,11,18,.94)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+      border:"1px solid rgba(255,255,255,.08)",borderRadius:13,padding:"10px 14px",maxWidth:290,
+      boxShadow:"0 8px 32px rgba(0,0,0,.5)",
+      opacity:vis?1:0,transform:vis?"translateY(0)":"translateY(8px)",
+      transition:"opacity .35s,transform .35s",
+      display:"flex",alignItems:"center",gap:9,
+    }}>
+      <div style={{width:7,height:7,borderRadius:"50%",background:"#10b981",flexShrink:0,boxShadow:"0 0 7px #10b981"}}/>
+      <span style={{fontSize:11,color:"rgba(255,255,255,.6)",lineHeight:1.4}}>{TICKS[i]}</span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// COMPARISON TABLE
+// ─────────────────────────────────────────────
+function ComparisonTable() {
+  const [ref, vis] = useReveal(0.08);
+  const rows = [
+    {f:"Auto logo detection",         lp:1,loom:0,figma:0,manual:0},
+    {f:"Send directly from Gmail",    lp:1,loom:0,figma:0,manual:1},
+    {f:"Bulk personalisation",        lp:1,loom:0,figma:0,manual:0},
+    {f:"Under 30 seconds per prospect",lp:1,loom:0,figma:0,manual:0},
+    {f:"No design skills needed",     lp:1,loom:1,figma:0,manual:1},
+    {f:"Visual demo (not just text)", lp:1,loom:1,figma:1,manual:0},
+    {f:"Free to start",               lp:1,loom:1,figma:1,manual:1},
+    {f:"Works on any screenshot",     lp:1,loom:0,figma:0,manual:1},
+  ];
+  const Ck = (on,hi) => on
+    ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={hi?"#10b981":"rgba(255,255,255,.22)"} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+  return (
+    <div ref={ref} style={{maxWidth:840,margin:"0 auto",opacity:vis?1:0,transform:vis?"translateY(0)":"translateY(28px)",transition:"opacity .7s,transform .7s"}}>
+      <div style={{textAlign:"center",marginBottom:52}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:14}}>vs the alternatives</div>
+        <h2 style={{fontSize:"clamp(26px,4vw,46px)",fontWeight:800,letterSpacing:"-2px",margin:0,lineHeight:1.1}}>Why not just use Loom or Figma?</h2>
+      </div>
+      <div style={{overflowX:"auto",borderRadius:20,border:"1px solid rgba(255,255,255,.07)"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",minWidth:520}}>
+          <thead>
+            <tr>
+              <th style={{padding:"13px 18px",textAlign:"left",fontSize:11,color:"rgba(255,255,255,.28)",fontWeight:600,background:"rgba(255,255,255,.02)",borderBottom:"1px solid rgba(255,255,255,.06)"}}>Feature</th>
+              {[{l:"Logoplacers",hi:1},{l:"Loom"},{l:"Figma"},{l:"Manual"}].map((c,i)=>(
+                <th key={i} style={{padding:"13px 18px",textAlign:"center",fontSize:12,fontWeight:700,color:c.hi?"#fff":"rgba(255,255,255,.35)",background:c.hi?"rgba(26,130,255,.1)":"rgba(255,255,255,.02)",borderBottom:`2px solid ${c.hi?"rgba(26,130,255,.5)":"rgba(255,255,255,.05)"}`}}>
+                  {c.l}{c.hi?<span style={{display:"block",fontSize:9,color:"#5ba4ff",fontWeight:600,marginTop:2}}>← you're here</span>:null}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row,ri)=>(
+              <tr key={ri}>
+                <td style={{padding:"11px 18px",fontSize:12,color:"rgba(255,255,255,.5)",borderBottom:"1px solid rgba(255,255,255,.04)",background:"rgba(255,255,255,.01)"}}>{row.f}</td>
+                {[{v:row.lp,hi:1},{v:row.loom},{v:row.figma},{v:row.manual}].map((c,ci)=>(
+                  <td key={ci} style={{padding:"11px 18px",textAlign:"center",background:c.hi?"rgba(26,130,255,.05)":"transparent",borderBottom:"1px solid rgba(255,255,255,.04)",borderLeft:c.hi?"1px solid rgba(26,130,255,.1)":undefined,borderRight:c.hi?"1px solid rgba(26,130,255,.1)":undefined}}>
+                    {Ck(c.v,c.hi)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// EXIT INTENT POPUP
+// ─────────────────────────────────────────────
+function ExitIntentPopup({ onEnterApp }) {
+  const [show, setShow] = useState(false);
+  const fired = useRef(false);
+  useEffect(() => {
+    const fn = (e) => { if (!fired.current && e.clientY < 16) { fired.current=true; setTimeout(()=>setShow(true),180); } };
+    document.addEventListener("mousemove", fn);
+    return () => document.removeEventListener("mousemove", fn);
+  }, []);
+  if (!show) return null;
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,.76)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,animation:"fadeUp .3s ease"}}
+      onClick={e=>e.target===e.currentTarget&&setShow(false)}>
+      <div style={{background:"rgba(7,11,18,.98)",border:"1px solid rgba(255,255,255,.1)",borderRadius:28,padding:"46px 44px",maxWidth:440,width:"100%",textAlign:"center",boxShadow:"0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(26,130,255,.2)"}}>
+        <div style={{fontSize:42,marginBottom:14}}>⚡</div>
+        <h3 style={{fontSize:25,fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 12px",lineHeight:1.12,color:"#fff"}}>Wait — grab 10 free credits</h3>
+        <p style={{fontSize:14,color:"rgba(255,255,255,.42)",lineHeight:1.65,marginBottom:28}}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
+        <button onClick={()=>{setShow(false);onEnterApp();}} style={{background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:13,padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%",boxShadow:"0 8px 32px rgba(26,130,255,.4)",marginBottom:10}}>
+          Try it free →
+        </button>
+        <button onClick={()=>setShow(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,.22)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+          No thanks, I prefer generic outreach
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// BLOG
+// ─────────────────────────────────────────────
+const POSTS = [
+  {slug:"personalised-demos-reply-rate",title:"How Personalised Sales Demos Increase Reply Rates by 3x",excerpt:"Visual personalisation outperforms text-only cold outreach in every study. Here is the data — and how to do it at scale.",cat:"Strategy",rt:"5 min",date:"Mar 2025",tags:["personalisation","cold email","reply rate"],body:"Personalised outreach is not new. What is new is doing it visually — and at scale. When a prospect opens an email and sees their own company logo placed perfectly on your product screenshot, something clicks. It signals effort. It signals relevance. And it converts.\n\nStudies consistently show that visual personalisation outperforms text-only approaches. Reply rates of 15–30% are achievable for teams that implement logo-based demo personalisation versus the industry average of 2–5% for generic cold email.\n\nThe core mechanic is simple: upload your product screenshot once, auto-fetch your prospect's logo, and send a tailored image that looks like you spent an hour on it. You spent 20 seconds.\n\nThis is not about manipulation. It is about showing your prospect that you understand their world. A logo is the most recognisable visual asset a company has. When yours appears on someone else's tool in context, it creates immediate rapport.\n\nScale is the key advantage. Doing this manually in Figma for one prospect might take 30 minutes. Doing it for 50 prospects with Logoplacers takes 8 minutes total. The maths of outreach change dramatically."},
+  {slug:"cold-email-personalisation-sdrs",title:"Cold Email Personalisation at Scale: A Practical Guide for SDRs",excerpt:"Most SDRs spend 70% of their time on manual research. Here is how to cut that to under 5% without sacrificing quality.",cat:"Playbook",rt:"7 min",date:"Mar 2025",tags:["SDR","cold email","automation"],body:"The average SDR spends 3.5 hours per day on research and personalisation. That is time not spent on calls, not spent closing. And most of that personalisation is basic — first name, company name, maybe a LinkedIn detail. Prospects see through it immediately.\n\nThe shift to visual personalisation changes the economics. Instead of writing a unique opening line for every prospect, you create one great visual asset and let automation do the personalisation layer.\n\nHere is the workflow: build your demo screenshot in Logoplacers once. Add text layers with placeholders like ((name)) and ((company)). Then paste your prospect list and let the tool generate 50 unique personalised images in under 2 minutes.\n\nEach image gets sent directly from your Gmail with a 15–30 second anti-spam delay between sends. The prospect receives an email that looks like you hand-crafted a custom demo specifically for them.\n\nThe SDRs who adopt this report 4–6x increases in positive reply rates within the first two weeks."},
+  {slug:"visual-demos-b2b-outreach",title:"Why Visual Demos Work Better Than Text in B2B Outreach",excerpt:"The human brain processes images 60,000x faster than text. Here is why that matters for your sales pipeline.",cat:"Strategy",rt:"4 min",date:"Feb 2025",tags:["visual demos","B2B","sales"],body:"The brain processes visual information 60,000 times faster than text. In cold outreach, you have approximately 3 seconds to capture attention before your email is archived. A personalised visual demo is your strongest tool for those 3 seconds.\n\nText-only cold emails rely on the prospect reading far enough to understand your value proposition. Most do not. A well-designed visual demo communicates the core value instantly — before a single word is read.\n\nThe psychology is straightforward. When a B2B buyer sees their company logo placed on a product screenshot, several things happen simultaneously. They recognise their brand (immediate attention). They see it in context with your tool (instant product comprehension). They feel that this email was prepared specifically for them (emotional connection).\n\nNone of this requires expensive video production. A single high-quality screenshot with a well-placed logo achieves the same psychological effect at 1% of the cost and time."},
+  {slug:"gmail-bulk-send-personalised",title:"How to Send 100 Personalised Emails from Gmail in Under 10 Minutes",excerpt:"A step-by-step workflow for bulk personalised outreach from Gmail without getting flagged as spam.",cat:"Tutorial",rt:"6 min",date:"Feb 2025",tags:["Gmail","bulk send","tutorial"],body:"Sending personalised bulk email from Gmail requires three things: unique content per recipient, natural send timing, and a good sender reputation.\n\nLogoplacers handles the first two automatically. Each recipient gets a genuinely unique personalised image attached. Sends are spaced 15–30 seconds apart to mimic natural human sending behaviour.\n\nThe workflow: upload your screenshot, arrange logo placement and text layers, paste your prospect list, write your email with ((name)) and ((company)) placeholders, connect Gmail via OAuth, and hit send.\n\nImportant note on warm sending: new Gmail accounts should ramp up slowly. Start with 20–30 sends per day for the first two weeks before scaling. Use a custom domain rather than @gmail.com for B2B outreach. Your Google Workspace account is significantly better than a personal Gmail for deliverability."},
+  {slug:"logo-personalisation-saas-sales",title:"Logo Personalisation: The Easiest Win in SaaS Sales Outreach",excerpt:"One change to your outreach strategy that takes 20 minutes to implement and immediately improves every metric.",cat:"Strategy",rt:"4 min",date:"Feb 2025",tags:["SaaS","logo","personalisation"],body:"If you work in SaaS sales, you are competing against dozens of other tools for the same buyer's attention. Your product might be genuinely better. But your outreach looks exactly like everyone else's.\n\nLogo personalisation is the lowest-effort, highest-impact change you can make right now. It takes one afternoon to set up and immediately differentiates every email you send.\n\nHere is the simple version: take a screenshot of your product with a company's logo already placed on it. Send that as part of your cold email. The prospect sees their brand in your UI. Conversion begins.\n\nThe more scalable version: use Logoplacers to automate this for your entire prospect list. One upload, 100 personalised demos, all sent from Gmail. The conversion lift pays for the tool in the first week."},
+  {slug:"what-is-logoplacers",title:"What Is Logoplacers? The Personalised Demo Tool Explained",excerpt:"A complete overview of how Logoplacers works, who it is for, and why sales teams are switching from Figma and Loom.",cat:"Product",rt:"5 min",date:"Jan 2025",tags:["product","overview","getting started"],body:"Logoplacers is a browser-based tool that lets sales teams create personalised product demos at scale. You upload one product screenshot, and the tool generates unique versions for every prospect on your list — each with their own company logo automatically placed.\n\nThe core workflow has three steps. First, upload your screenshot and use the drag-and-drop editor to position where logos and text should appear. Second, paste your prospect list. Logoplacers automatically fetches each company's logo. Third, connect Gmail and send — each recipient gets a unique personalised image.\n\nWhat makes Logoplacers different: Loom requires recording per prospect. Figma requires design skills and manual work per person. Logoplacers does in 8 minutes what Figma takes 3 hours.\n\nIt is designed specifically for SDRs, AEs, and sales managers who send outreach at volume but want each touchpoint to feel personal."},
+  {slug:"sales-outreach-personalisation-2025",title:"The State of Sales Outreach Personalisation in 2025",excerpt:"Buyers are more sceptical than ever. Here is what the data says about what actually works in modern B2B prospecting.",cat:"Industry",rt:"6 min",date:"Jan 2025",tags:["2025","trends","personalisation"],body:"The average B2B buyer in 2025 receives 120+ cold emails per week. Open rates for generic outreach have fallen to sub-2%. First-name personalisation, once a differentiator, is now table stakes.\n\nWhat does work? Data from high-performing sales teams consistently points to three things: genuine relevance, visual impact, and low friction.\n\nPersonalised visual demos hit all three. They demonstrate research (your logo, not a generic placeholder). They create immediate visual impact. And the value proposition is communicated before a single word is read.\n\nThe teams seeing the best results in 2025 combine this with strong signal-based targeting — people who have recently raised funding, launched a product, or hired a new sales leader — and hit them with a visual demo that references their specific context."},
+  {slug:"figma-alternative-sales-demos",title:"The Best Figma Alternative for Sales Demo Personalisation",excerpt:"Figma is powerful but it was not built for sales. Here is a faster workflow that requires zero design skills.",cat:"Comparison",rt:"5 min",date:"Jan 2025",tags:["Figma","alternative","comparison"],body:"Figma is an excellent design tool. It was built for product designers who need pixel-perfect control. It was not built for account executives who need to personalise 50 demo images before their 9am stand-up.\n\nThe problems with using Figma for sales demo personalisation are well-known. It requires a design background. Each personalisation is a manual process — copy file, replace logo, export. There is no bulk workflow. It does not connect to your email client.\n\nLogoplacers was built specifically to solve these problems. No design skills needed. Bulk personalisation is the core feature. Gmail integration means you go from personalised image to sent email without leaving the tool.\n\nThe typical switch reduces time per personalised demo from 25–40 minutes to under 30 seconds. For a team sending 50 demos per week, that is 20+ hours saved every single week."},
+  {slug:"increase-cold-email-open-rates",title:"7 Ways to Increase Cold Email Open Rates in B2B Sales",excerpt:"Subject lines, send times, sender reputation — every lever that actually moves open rates, ranked by impact.",cat:"Strategy",rt:"8 min",date:"Dec 2024",tags:["open rate","cold email","B2B"],body:"Open rates are the first gate in cold email. Here are seven things that have a measurable impact, in order of impact.\n\n1. Sender reputation. The biggest factor. A Google Workspace account with a custom domain consistently outperforms all other variables. Set up DKIM, SPF, and DMARC.\n\n2. Subject line. Keep it under 50 characters. Avoid spam trigger words. The highest-performing subject lines are either very specific or create genuine curiosity.\n\n3. Send time. Tuesday–Thursday, 7–9am or 4–6pm in your prospect's timezone.\n\n4. Deliverability warm-up. New accounts should ramp up over 4–6 weeks. Never jump straight to 100 sends per day.\n\n5. List quality. A clean list with correct domains opens better than a cheap scraped list. Verify emails before sending.\n\n6. Company name in subject. Including the prospect's company name lifts open rates by 10–20%.\n\n7. Preview text. The 80 characters after the subject line. Make them compelling."},
+  {slug:"sales-demo-before-first-call",title:"Sales Demo Best Practices: Show Value Before the First Call",excerpt:"The best demo happens before you get on a Zoom. Here is how to pre-sell your product visually in the prospecting phase.",cat:"Strategy",rt:"5 min",date:"Dec 2024",tags:["sales demo","best practices","pipeline"],body:"The traditional sales demo is a structured presentation on a Zoom call, 30–60 minutes. For enterprise deals, this still makes sense. For SMB and mid-market SaaS, it is often too much friction too early.\n\nThe modern approach is to front-load value into the prospecting phase. Instead of asking for a call to show your product, you show it in the cold email itself.\n\nThe best practices for pre-call demo images: show the most impressive moment in your product, not the most complex one. Use a real-looking interface with real-looking data. Include the prospect's logo in a natural position.\n\nThe goal is to create a 'wait, this is actually relevant to me' moment. Teams that adopt this approach report that prospects arrive on first calls better informed and more engaged."},
+  {slug:"ai-sales-tools-2025",title:"The Best AI Sales Tools in 2025: A Practical Review",excerpt:"From AI-written emails to automated prospecting — what is actually worth using, and what is overhyped.",cat:"Industry",rt:"7 min",date:"Nov 2024",tags:["AI","sales tools","2025"],body:"The AI sales tools landscape in 2025 is crowded. Most of them produce generic, detectable AI-written copy that damages your sender reputation and annoys prospects.\n\nThe tools worth using fall into three categories: research tools, personalisation tools, and sequencing tools. The mistake most teams make is conflating all three into one 'AI outreach' platform that does everything mediocrely.\n\nFor research: tools that pull signal data (job changes, funding rounds, product launches) are genuinely useful.\n\nFor personalisation: visual personalisation tools like Logoplacers are in a different category to AI copywriters. They do not fake a human voice — they create genuine visual relevance by embedding the prospect's actual brand identity into your demo.\n\nFor sequencing: simple multi-step sequences with manual personal touches at key moments still outperform fully automated AI sequences."},
+  {slug:"loom-alternative-b2b-sales",title:"The Best Loom Alternative for B2B Sales Outreach",excerpt:"Loom is great for async communication. But for cold outreach personalisation, there is a faster approach.",cat:"Comparison",rt:"4 min",date:"Nov 2024",tags:["Loom","alternative","video vs image"],body:"Loom built a great category around asynchronous video. For onboarding and customer success — excellent. For cold outbound prospecting at scale, it has limitations.\n\nThe core problem: it requires recording a new video for each prospect if you want real personalisation. At 20 prospects per day, that becomes unsustainable.\n\nVideos also face deliverability challenges. Many corporate email filters block emails with video links. Open rates for emails with embedded video thumbnails are lower than clean static image emails.\n\nThe Logoplacers approach: create one strong demo image and personalise it automatically for every prospect with their logo and name. 30 seconds of total effort, not 3 minutes per prospect. The image is attached directly to the email, so deliverability is unaffected."},
+  {slug:"personalise-outreach-without-hours",title:"How to Personalise Every Outreach Email Without Spending Hours on Research",excerpt:"The research trap in sales — and a workflow that cuts personalisation time by 90% without sacrificing quality.",cat:"Playbook",rt:"6 min",date:"Oct 2024",tags:["workflow","efficiency","personalisation"],body:"The personalisation trap is real. You know personalised outreach performs better. So you spend 20 minutes per prospect researching them. By the time you have sent 10 emails, two hours have passed.\n\nThe solution is to identify which layer of personalisation drives the most conversion, and automate everything else.\n\nResearch shows that visual recognition triggers the fastest and strongest response. Seeing your own company logo in a relevant context creates immediate attention — without any of the written personalisation that takes time.\n\nThe workflow: spend your research time on qualifying the right prospects, not on crafting unique openers. Then use Logoplacers to create the visual personalisation layer automatically. 50 personalised demos in 8 minutes."},
+  {slug:"track-email-opens-gmail",title:"How to Track Email Open Rates When Sending from Gmail",excerpt:"Gmail does not give you open tracking by default. Here is how to measure what is working in your outbound campaigns.",cat:"Tutorial",rt:"5 min",date:"Oct 2024",tags:["Gmail","tracking","analytics"],body:"Gmail's native interface does not include email open tracking. For sales outreach, knowing which emails were opened is essential data.\n\nThe most reliable method is pixel tracking. A 1x1 transparent pixel is embedded in the email HTML. When the email is opened and images load, the pixel fires. Tools like Mailtrack, Streak, and Mixmax add this to Gmail via Chrome extensions.\n\nImportant caveat: Apple's Mail Privacy Protection pre-fetches email content including tracking pixels, making open tracking unreliable for Apple Mail users. This means open rates are now inflated.\n\nReply rate and positive reply rate are more reliable success metrics. A positive reply is a cleaner signal than an open that might have been Apple pre-fetching."},
+  {slug:"personalised-images-email-body",title:"Beyond the Email Signature: Using Personalised Images in Sales Outreach",excerpt:"Email signatures are table stakes. Here is how top-performing sales teams are using visual personalisation in the email body itself.",cat:"Strategy",rt:"4 min",date:"Sep 2024",tags:["email design","personalisation","images"],body:"Most sales emails are walls of text. The best-performing ones do something different: they include a personalised visual in the email body itself.\n\nThe distinction matters. An email signature tells the prospect who you are. A personalised demo image in the body shows the prospect what you can do for them. The latter drives replies.\n\nThe technical implementation: attach the personalised image directly to the email so it loads without clicking any links. Keep email copy short — 3–4 sentences maximum. Let the image carry the value proposition.\n\nBest-performing structure: one sentence of relevance, one sentence bridging to your tool, the personalised image, and one low-friction CTA. The image does not need to be complex. A clean product screenshot with the prospect's logo in a natural position is often more effective than an elaborate designed graphic."},
+];
+
+const CAT_COLORS = {Strategy:"#1a82ff",Playbook:"#8b5cf6",Tutorial:"#10b981",Industry:"#f59e0b",Comparison:"#ec4899",Product:"#06b6d4"};
+
+function BlogCard({ p, onClick, visible, delay }) {
+  const [hov, setHov] = useState(false);
+  const c = CAT_COLORS[p.cat] || "#1a82ff";
+  return (
+    <article
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      onClick={()=>onClick(p)}
+      itemScope itemType="https://schema.org/BlogPosting"
+      style={{
+        background:hov?"rgba(255,255,255,.04)":"rgba(255,255,255,.015)",
+        border:`1px solid ${hov?`${c}44`:"rgba(255,255,255,.06)"}`,
+        borderRadius:20,padding:"26px 24px",cursor:"pointer",
+        transition:`opacity .6s ${delay}ms,transform .6s ${delay}ms,border-color .2s,background .2s,box-shadow .2s`,
+        opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(24px)",
+        boxShadow:hov?`0 14px 44px rgba(0,0,0,.3),0 0 0 0.5px ${c}18`:"none",
+        display:"flex",flexDirection:"column",gap:13,
+      }}>
+      <meta itemProp="headline" content={p.title}/>
+      <meta itemProp="datePublished" content={p.date}/>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+        <span style={{fontSize:10,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:c,background:`${c}14`,border:`1px solid ${c}30`,borderRadius:6,padding:"3px 8px"}}>{p.cat}</span>
+        <span style={{fontSize:11,color:"rgba(255,255,255,.24)"}}>{p.rt} read</span>
+      </div>
+      <h3 itemProp="name" style={{fontSize:15,fontWeight:700,color:"#fff",margin:0,letterSpacing:"-.3px",lineHeight:1.34}}>{p.title}</h3>
+      <p itemProp="description" style={{fontSize:12,color:"rgba(255,255,255,.4)",lineHeight:1.65,margin:0,flex:1}}>{p.excerpt}</p>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <span style={{fontSize:11,color:"rgba(255,255,255,.24)"}}>{p.date}</span>
+        <span style={{fontSize:12,color:c,fontWeight:600}}>Read more →</span>
+      </div>
+    </article>
+  );
+}
+
+function BlogModal({ p, onClose }) {
+  const c = CAT_COLORS[p.cat] || "#1a82ff";
+  useEffect(()=>{document.body.style.overflow="hidden";return()=>{document.body.style.overflow="";};},[]);
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:900,background:"rgba(0,0,0,.84)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"5vh 20px 60px",overflowY:"auto"}}
+      onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={{background:"#0b1120",border:"1px solid rgba(255,255,255,.08)",borderRadius:28,maxWidth:700,width:"100%",padding:"clamp(32px,5vw,52px)",boxShadow:"0 40px 100px rgba(0,0,0,.8)",position:"relative",marginTop:20}}>
+        <button onClick={onClose} style={{position:"absolute",top:18,right:18,width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.06)",border:"none",color:"rgba(255,255,255,.5)",fontSize:17,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        <span style={{fontSize:10,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:c,background:`${c}14`,border:`1px solid ${c}30`,borderRadius:6,padding:"3px 8px",display:"inline-block",marginBottom:18}}>{p.cat}</span>
+        <h1 style={{fontSize:"clamp(20px,3.5vw,32px)",fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 12px",lineHeight:1.18,color:"#fff"}}>{p.title}</h1>
+        <div style={{display:"flex",gap:14,marginBottom:32,fontSize:12,color:"rgba(255,255,255,.28)"}}>
+          <span>{p.date}</span><span>·</span><span>{p.rt} read</span>
+        </div>
+        <div style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.82}}>
+          {p.body.trim().split("\n\n").map((para,i)=><p key={i} style={{margin:"0 0 18px"}}>{para}</p>)}
+        </div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:7,marginTop:28}}>
+          {p.tags.map(tag=><span key={tag} style={{fontSize:11,color:"rgba(255,255,255,.32)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:6,padding:"3px 9px"}}>#{tag}</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BlogSection() {
+  const [ref, vis] = useReveal(0.05);
+  const [open, setOpen] = useState(null);
+  const [filter, setFilter] = useState("All");
+  const cats = ["All","Strategy","Playbook","Tutorial","Industry","Comparison","Product"];
+  const shown = (filter==="All"?POSTS:POSTS.filter(p=>p.cat===filter)).slice(0,9);
+  return (
+    <div style={{maxWidth:1180,margin:"0 auto"}}>
+      <div style={{textAlign:"center",marginBottom:52}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:14}}>Blog</div>
+        <h2 style={{fontSize:"clamp(30px,5vw,52px)",fontWeight:800,letterSpacing:"-2px",margin:"0 0 12px",lineHeight:1.05}}>Sales outreach, explained.</h2>
+        <p style={{fontSize:15,color:"rgba(255,255,255,.36)",maxWidth:420,margin:"0 auto 32px"}}>Tactics, playbooks, and deep-dives for modern SDRs and AEs.</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:7,justifyContent:"center"}}>
+          {cats.map(cat=>(
+            <button key={cat} onClick={()=>setFilter(cat)} style={{
+              background:filter===cat?"rgba(26,130,255,.15)":"rgba(255,255,255,.04)",
+              border:`1px solid ${filter===cat?"rgba(26,130,255,.38)":"rgba(255,255,255,.08)"}`,
+              color:filter===cat?"#60a5fa":"rgba(255,255,255,.42)",
+              borderRadius:100,padding:"5px 15px",fontSize:12,fontWeight:600,
+              cursor:"pointer",fontFamily:"inherit",transition:"all .15s",
+            }}>{cat}</button>
+          ))}
+        </div>
+      </div>
+      <div ref={ref} style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))",gap:16}}>
+        {shown.map((p,i)=><BlogCard key={p.slug} p={p} onClick={setOpen} visible={vis} delay={i*55}/>)}
+      </div>
+      {open && <BlogModal p={open} onClose={()=>setOpen(null)}/>}
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────
 // MAIN
 // ─────────────────────────────────────────────
 export default function Landing({ onEnterApp }) {
   const [heroRef,  heroVis]  = useReveal(0.05);
   const [featRef,  featVis]  = useReveal(0.08);
+  const [stepsRef, stepsVis] = useReveal(0.08);
   const [statsRef, statsVis] = useReveal(0.15);
+  const [testiRef, testiVis] = useReveal(0.08);
   const [faqRef,   faqVis]   = useReveal(0.08);
   const [ctaRef,   ctaVis]   = useReveal(0.15);
   const [navScrolled, setNavScrolled] = useState(false);
-  const [blogSlug, setBlogSlug] = useState(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
   useEffect(() => {
     const fn = () => setNavScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn);
@@ -2333,210 +2123,262 @@ export default function Landing({ onEnterApp }) {
     window.addEventListener("mousemove", fn);
     return () => window.removeEventListener("mousemove", fn);
   }, []);
-  useEffect(() => {
-    const checkHash = () => {
-      const hash = window.location.hash;
-      if (hash.startsWith("#blog/")) setBlogSlug(hash.replace("#blog/",""));
-      else setBlogSlug(null);
-    };
-    checkHash();
-    window.addEventListener("hashchange", checkHash);
-    return () => window.removeEventListener("hashchange", checkHash);
-  }, []);
-
-  if (blogSlug) {
-    return (
-      <div style={{ background: "#070b12", color: "#fff", fontFamily: "\'DM Sans\',\'Helvetica Neue\',sans-serif", minHeight: "100vh" }}>
-        <SEO />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
-        <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:200,height:64,padding:"0 48px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(7,11,18,0.92)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-          <button onClick={() => { window.location.hash=""; setBlogSlug(null); }} style={{ display:"flex",alignItems:"center",gap:10,background:"none",border:"none",cursor:"pointer",padding:0 }}>
-            <Logo size={28}/><span style={{ fontSize:15,fontWeight:700,letterSpacing:"-.4px",color:"#fff" }}>Logoplacers</span>
-          </button>
-          <button onClick={onEnterApp} style={{ background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:10,padding:"9px 20px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit" }}>Use the tool</button>
-        </nav>
-        <BlogPostPage slug={blogSlug} onBack={() => { window.location.hash=""; setBlogSlug(null); }} />
-        <style>{"@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}html{scroll-behavior:smooth}*{box-sizing:border-box}::placeholder{color:rgba(255,255,255,0.25)}"}</style>
-      </div>
-    );
-  }
 
   return (
-    <div style={{ background: "#070b12", color: "#fff", fontFamily: "\'DM Sans\',\'Helvetica Neue\',sans-serif", overflowX: "hidden" }}>
-      <SEO />
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
+    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", "--mx": mouse.x, "--my": mouse.y }}>
       <ExitIntentPopup onEnterApp={onEnterApp} />
+      <SocialProofTicker />
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
 
       {/* NAV */}
-      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:200,height:64,padding:"0 48px",display:"flex",alignItems:"center",justifyContent:"space-between",background:navScrolled?"rgba(7,11,18,0.88)":"transparent",backdropFilter:navScrolled?"blur(20px)":"none",borderBottom:navScrolled?"1px solid rgba(255,255,255,0.06)":"none",transition:"all .3s" }}>
-        <div style={{ display:"flex",alignItems:"center",gap:10 }}><Logo size={30}/><span style={{ fontSize:16,fontWeight:700,letterSpacing:"-.4px" }}>Logoplacers</span></div>
-        <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 200,
+        height: 64, padding: "0 48px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: navScrolled ? "rgba(7,11,18,0.88)" : "transparent",
+        backdropFilter: navScrolled ? "blur(20px)" : "none",
+        borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+        transition: "all .3s",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Logo size={30}/>
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-.4px" }}>Logoplacers</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {["Features","How it works","Pricing","Blog","FAQ"].map(label => (
-            <a key={label} href={label==="Blog"?"#blog-section":`#${label.toLowerCase().replace(/ /g,"-")}`}
-              style={{ fontSize:13,color:"rgba(255,255,255,0.45)",textDecoration:"none",padding:"8px 14px",borderRadius:8,transition:"color .15s" }}
-              onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.45)"}>{label}</a>
+            <a key={label} href={`#${label.toLowerCase().replace(/ /g,"-")}`}
+              style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
+              onMouseEnter={e => e.target.style.color="#fff"} onMouseLeave={e => e.target.style.color="rgba(255,255,255,0.45)"}>
+              {label}
+            </a>
           ))}
-          <button onClick={onEnterApp} style={{ marginLeft:8,background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:10,padding:"9px 20px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 4px 20px rgba(26,130,255,0.3)" }}>Use the tool</button>
+          <button onClick={onEnterApp} style={{
+            marginLeft: 8,
+            background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+            color: "#fff", border: "none", borderRadius: 10, padding: "9px 20px",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+            boxShadow: "0 4px 20px rgba(26,130,255,0.3)", letterSpacing: "-.1px",
+          }}>
+            Use the tool
+          </button>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{ position:"relative",height:"100vh",overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center" }}>
+      <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <HeroScene/>
-        <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",background:"radial-gradient(ellipse 100% 50% at 50% 100%, #070b12 0%, transparent 60%)" }}/>
-        <div style={{ position:"absolute",inset:0,zIndex:2,pointerEvents:"none",background:"radial-gradient(ellipse 60% 80% at 50% 50%, transparent 40%, rgba(7,11,18,0.5) 100%)" }}/>
-        <div ref={heroRef} style={{ position:"relative",zIndex:10,textAlign:"center",padding:"0 24px",maxWidth:860 }}>
-          <div style={{ marginBottom:20,animation:"fadeUp .7s ease both" }}><SocialProofTicker /></div>
-          <div style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(26,130,255,0.1)",border:"1px solid rgba(26,130,255,0.25)",borderRadius:100,padding:"7px 18px",marginBottom:28,fontSize:11,fontWeight:700,color:"#5ba4ff",letterSpacing:"1.5px",textTransform:"uppercase",animation:"fadeUp .8s .1s ease both" }}>
-            <span style={{ width:6,height:6,borderRadius:"50%",background:"#1a82ff",display:"inline-block",boxShadow:"0 0 10px #1a82ff" }}/>
+        {/* Gradient overlay */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
+          background: "radial-gradient(ellipse 100% 50% at 50% 100%, #070b12 0%, transparent 60%)" }}/>
+        <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
+          background: "radial-gradient(ellipse 60% 80% at 50% 50%, transparent 40%, rgba(7,11,18,0.5) 100%)" }}/>
+
+        <div ref={heroRef} style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 24px", maxWidth: 820 }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            background: "rgba(26,130,255,0.1)", border: "1px solid rgba(26,130,255,0.25)",
+            borderRadius: 100, padding: "7px 18px", marginBottom: 36,
+            fontSize: 11, fontWeight: 700, color: "#5ba4ff", letterSpacing: "1.5px", textTransform: "uppercase",
+            animation: "fadeUp .8s ease both",
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1a82ff", display: "inline-block", boxShadow: "0 0 10px #1a82ff" }}/>
             Early access — apply below
           </div>
-          <h1 style={{ fontSize:"clamp(44px, 7.5vw, 84px)",fontWeight:800,lineHeight:1.03,letterSpacing:"-3.5px",margin:"0 0 24px",animation:"fadeUp .9s .15s ease both" }}>
-            <span style={{ color:"#fff" }}>Personalised demos</span><br/>
-            <span style={{ background:"linear-gradient(135deg,#1a82ff 0%,#a78bfa 55%,#5b4fff 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>that close deals.</span>
+
+          <h1 style={{
+            fontSize: "clamp(44px, 7.5vw, 84px)", fontWeight: 800, lineHeight: 1.03,
+            letterSpacing: "-3.5px", margin: "0 0 24px",
+            animation: "fadeUp .9s .1s ease both",
+          }}>
+            <span style={{ color: "#fff" }}>Personalised demos</span>
+            <br/>
+            <span style={{
+              background: "linear-gradient(135deg,#1a82ff 0%,#a78bfa 55%,#5b4fff 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>that close deals.</span>
           </h1>
-          <p style={{ fontSize:"clamp(15px,1.8vw,19px)",color:"rgba(255,255,255,0.48)",lineHeight:1.72,maxWidth:540,margin:"0 auto 44px",animation:"fadeUp .9s .25s ease both" }}>
-            Upload your product screenshot. Add your prospect's logo. Send a personalised demo directly from Gmail — for every prospect, in seconds.
+
+          <p style={{
+            fontSize: "clamp(15px, 1.8vw, 19px)", color: "rgba(255,255,255,0.48)",
+            lineHeight: 1.72, maxWidth: 540, margin: "0 auto 48px",
+            animation: "fadeUp .9s .2s ease both",
+          }}>
+            Upload your product screenshot. Add your prospect's logo.
+            Send a personalised demo directly from Gmail — for every prospect, in seconds.
           </p>
-          <div style={{ display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",animation:"fadeUp .9s .35s ease both" }}>
-            <button onClick={onEnterApp} style={{ background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:14,padding:"16px 36px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 8px 40px rgba(26,130,255,0.4)",transition:"transform .15s, box-shadow .15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 14px 48px rgba(26,130,255,0.55)"}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 8px 40px rgba(26,130,255,0.4)"}}>Use the tool</button>
-            <a href="#waitlist" style={{ color:"rgba(255,255,255,0.55)",textDecoration:"none",border:"1px solid rgba(255,255,255,0.12)",borderRadius:14,padding:"16px 28px",fontSize:15,fontWeight:500,transition:"all .15s",display:"flex",alignItems:"center",gap:8 }}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.3)";e.currentTarget.style.color="#fff"}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.55)"}}>Request early access</a>
+
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", animation: "fadeUp .9s .3s ease both" }}>
+            <button onClick={onEnterApp} style={{
+              background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+              color: "#fff", border: "none", borderRadius: 14, padding: "16px 36px",
+              fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              boxShadow: "0 8px 40px rgba(26,130,255,0.4)", letterSpacing: "-.2px",
+              transition: "transform .15s, box-shadow .15s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 14px 48px rgba(26,130,255,0.55)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(26,130,255,0.4)"; }}>
+              Use the tool
+            </button>
+            <a href="#waitlist" style={{
+              color: "rgba(255,255,255,0.55)", textDecoration: "none",
+              border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "16px 28px",
+              fontSize: 15, fontWeight: 500, transition: "all .15s",
+              display: "flex", alignItems: "center", gap: 8,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; e.currentTarget.style.color="#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; e.currentTarget.style.color="rgba(255,255,255,0.55)"; }}>
+              Request early access
+            </a>
           </div>
         </div>
-        <div style={{ position:"absolute",bottom:36,left:"50%",transform:"translateX(-50%)",zIndex:10,animation:"bounce 2.2s infinite" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+
+        {/* Scroll indicator */}
+        <div style={{
+          position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
+          zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+          animation: "bounce 2.2s infinite",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>
       </section>
 
       {/* STATS */}
-      <section ref={statsRef} style={{ padding:"72px 48px",borderTop:"1px solid rgba(255,255,255,0.05)",borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ maxWidth:960,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:40,textAlign:"center" }}>
-          {[{val:"3.4x",lbl:"more replies vs generic outreach"},{val:"< 30s",lbl:"to personalise per prospect"},{val:"94%",lbl:"of buyers prefer visual demos"}].map(({val,lbl},i)=>(
-            <div key={i} style={{ transition:`opacity .7s ${i*150}ms, transform .7s ${i*150}ms`,opacity:statsVis?1:0,transform:statsVis?`translateY(0) translate(${mouse.x*-4*(i-1)}px,${mouse.y*-3}px)`:"translateY(20px)" }}>
-              <div style={{ fontSize:"clamp(36px,5vw,52px)",fontWeight:800,letterSpacing:"-2px",lineHeight:1,background:"linear-gradient(135deg,#fff,rgba(26,130,255,0.7))",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>{val}</div>
-              <div style={{ fontSize:13,color:"rgba(255,255,255,0.35)",marginTop:10 }}>{lbl}</div>
+      <section ref={statsRef} style={{ padding: "72px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 40, textAlign: "center" }}>
+          {[
+            { val: "3.4x", lbl: "more replies vs generic outreach" },
+            { val: "< 30s", lbl: "to personalise per prospect" },
+            { val: "94%", lbl: "of buyers prefer visual demos" },
+          ].map(({ val, lbl }, i) => (
+            <div key={i} style={{ transition: `opacity .7s ${i*150}ms, transform .7s ${i*150}ms`, opacity: statsVis ? 1 : 0, transform: statsVis ? `translateY(0) translate(${mouse.x*-4*(i-1)}px,${mouse.y*-3}px)` : "translateY(20px)" }}>
+              <div style={{
+                fontSize: "clamp(36px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", lineHeight: 1,
+                background: "linear-gradient(135deg,#fff,rgba(26,130,255,0.7))",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>{val}</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 10, letterSpacing: ".2px" }}>{lbl}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{ padding:"120px 48px" }}>
-        <div style={{ maxWidth:1140,margin:"0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom:80 }}>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:16 }}>Features</div>
-            <h2 style={{ fontSize:"clamp(32px,5vw,54px)",fontWeight:800,letterSpacing:"-2px",margin:0,lineHeight:1.05 }}>Everything you need<br/>to stand out in the inbox.</h2>
+      <section id="features" style={{ padding: "120px 48px" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 80 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Features</div>
+            <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: 0, lineHeight: 1.05 }}>
+              Everything you need<br/>to stand out in the inbox.
+            </h2>
           </div>
-          <div ref={featRef} style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:18 }}>
+          <div ref={featRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 18 }}>
             {[
-              {icon:Icon.bolt,title:"One-click personalisation",desc:"Upload once. Logoplacers auto-fetches your prospect's logo and places it perfectly on your demo — every single time."},
-              {icon:Icon.mail,title:"Send directly from Gmail",desc:"Connected to your Gmail. Send personalised demos to your entire prospect list without ever leaving the tool."},
-              {icon:Icon.target,title:"Pixel-perfect placement",desc:"Drag, resize and position every element with precision. Your demo looks exactly how you intended for every recipient."},
-              {icon:Icon.search,title:"Smart logo detection",desc:"Type a company name and Logoplacers automatically finds and fetches the correct brand logo. No manual searching."},
-              {icon:Icon.box,title:"Bulk export in seconds",desc:"Generate personalised images for 50 prospects in the time it used to take to do one. ZIP download or direct send."},
-              {icon:Icon.lock,title:"Secure & private",desc:"Your Gmail credentials and prospect data never leave your browser. No server-side storage of any kind."},
-            ].map((f,i)=><FeatureCard key={i} {...f} idx={i} visible={featVis} />)}
+              { icon: Icon.bolt, title: "One-click personalisation", desc: "Upload once. Logoplacers auto-fetches your prospect's logo and places it perfectly on your demo — every single time." },
+              { icon: Icon.mail, title: "Send directly from Gmail", desc: "Connected to your Gmail. Send personalised demos to your entire prospect list without ever leaving the tool." },
+              { icon: Icon.target, title: "Pixel-perfect placement", desc: "Drag, resize and position every element with precision. Your demo looks exactly how you intended for every recipient." },
+              { icon: Icon.search, title: "Smart logo detection", desc: "Type a company name and Logoplacers automatically finds and fetches the correct brand logo. No manual searching." },
+              { icon: Icon.box, title: "Bulk export in seconds", desc: "Generate personalised images for 50 prospects in the time it used to take to do one. ZIP download or direct send." },
+              { icon: Icon.lock, title: "Secure & private", desc: "Your Gmail credentials and prospect data never leave your browser. No server-side storage of any kind." },
+            ].map((f, i) => <FeatureCard key={i} {...f} idx={i} visible={featVis} />)}
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{ padding:"120px 48px",background:"rgba(255,255,255,0.018)" }}>
+      {/* HOW IT WORKS — interactive demo walkthrough */}
+      <section id="how-it-works" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
         <DemoWalkthrough />
       </section>
 
-      {/* COMPARISON */}
-      <section style={{ padding:"120px 48px" }}>
-        <div style={{ maxWidth:1140,margin:"0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom:72 }}>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:16 }}>vs the alternatives</div>
-            <h2 style={{ fontSize:"clamp(28px,4vw,48px)",fontWeight:800,letterSpacing:"-2px",margin:"0 0 14px",lineHeight:1.05 }}>Why Logoplacers wins.</h2>
-            <p style={{ fontSize:15,color:"rgba(255,255,255,0.38)",margin:0 }}>See how it stacks up against common alternatives.</p>
-          </div>
-          <ComparisonTable />
-        </div>
+      {/* TESTIMONIALS CAROUSEL */}
+      <section style={{ padding: "100px 48px" }}>
+        <TestimonialCarousel />
       </section>
 
-      {/* TESTIMONIALS */}
-      <section style={{ padding:"120px 48px",background:"rgba(255,255,255,0.018)" }}>
-        <div style={{ maxWidth:1140,margin:"0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom:72 }}>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:16 }}>What people say</div>
-            <h2 style={{ fontSize:"clamp(32px,5vw,54px)",fontWeight:800,letterSpacing:"-2px",margin:0 }}>Sales teams love it.</h2>
-          </div>
-          <TestimonialCarousel />
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" style={{ padding:"120px 48px" }}>
-        <div style={{ maxWidth:740,margin:"0 auto" }}>
-          <div style={{ textAlign:"center",marginBottom:72 }}>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:16 }}>FAQ</div>
-            <h2 style={{ fontSize:"clamp(32px,5vw,54px)",fontWeight:800,letterSpacing:"-2px",margin:0 }}>Common questions.</h2>
-          </div>
-          <div ref={faqRef} style={{ display:"flex",flexDirection:"column",gap:10 }}>
-            {[
-              {q:"Does Logoplacers store my Gmail credentials?",a:"No. Your Gmail connection uses Google's official OAuth flow entirely in the browser. We never see or store your credentials or email content."},
-              {q:"How many prospects can I personalise at once?",a:"There is no hard limit. Logoplacers generates images for every prospect in your list and exports them as a ZIP, or sends them directly via Gmail with anti-spam delays."},
-              {q:"What image formats does it support?",a:"PNG, JPG, WEBP and HEIC (iPhone photos). HEIC files are automatically converted in the browser — no external tool needed."},
-              {q:"How does automatic logo detection work?",a:"Type a company name or domain and Logoplacers queries multiple logo databases simultaneously. It validates each result and falls back gracefully if a logo cannot be found."},
-              {q:"What counts as a credit?",a:"1 credit = 1 personalised image generated. 1 credit = 1 email sent via Gmail. Free users get 4 credits per day. Paid plans get 300–10,000 per month."},
-              {q:"Is there a free plan?",a:"Yes. The Free plan gives you 4 credits per day — no credit card required. Enough to test with real prospects before committing."},
-              {q:"Can Logoplacers be used with Apollo or Clay?",a:"Absolutely. Export your list from Apollo, Clay, or LinkedIn Sales Navigator, paste it into Logoplacers, and it handles the rest."},
-              {q:"How is this different from Hyperise or Lemlist?",a:"Logoplacers is purpose-built for logo-on-screenshot personalisation at speed. Simpler, faster, more focused. No complex setup."},
-            ].map((f,i)=><FAQ key={i} {...f} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" style={{ padding:"120px 48px",background:"rgba(255,255,255,0.018)" }}>
-        <Pricing onEnterApp={onEnterApp} />
-      </section>
-
-      {/* LIVE DEMO */}
-      <section style={{ padding:"120px 48px" }}>
-        <LiveDemo />
+      {/* COMPARISON TABLE */}
+      <section id="comparison" style={{ padding: "100px 48px", background: "rgba(255,255,255,0.018)" }}>
+        <ComparisonTable />
       </section>
 
       {/* BLOG */}
-      <section id="blog-section" style={{ padding:"120px 48px",background:"rgba(255,255,255,0.018)" }}>
+      <section id="blog" style={{ padding: "100px 48px" }}>
         <BlogSection />
       </section>
 
+      {/* FAQ */}
+      <section id="faq" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+        <div style={{ maxWidth: 740, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 72 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
+            <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: 0 }}>Common questions.</h2>
+          </div>
+          <div ref={faqRef} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { q: "Does Logoplacers store my Gmail credentials?", a: "No. Your Gmail connection uses Google's official OAuth flow entirely in the browser. We never see or store your credentials or email content." },
+              { q: "How many prospects can I personalise at once?", a: "There is no hard limit. Logoplacers generates images for every prospect in your list and exports them as a ZIP, or sends them directly via Gmail with anti-spam delays." },
+              { q: "What image formats does it support?", a: "PNG, JPG, WEBP and HEIC (iPhone photos). HEIC files are automatically converted in the browser — no external tool needed." },
+              { q: "How does automatic logo detection work?", a: "Type a company name or domain and Logoplacers queries multiple logo databases simultaneously. It validates each result and falls back gracefully if a logo cannot be found." },
+              { q: "Is there a free trial?", a: "Yes — the Free plan gives you 4 credits per day with no credit card required. Paid plans start at $19/month for 300 credits. Credits are spent when you generate personalised images or send emails." },
+            ].map((f, i) => <FAQ key={i} {...f} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* LIVE DEMO */}
+      <section style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+        <LiveDemo />
+      </section>
+
       {/* WAITLIST */}
-      <section id="waitlist" ref={ctaRef} style={{ padding:"140px 48px 160px",position:"relative",overflow:"hidden" }}>
-        <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:700,height:500,background:"radial-gradient(ellipse, rgba(26,130,255,0.1) 0%, transparent 70%)",pointerEvents:"none" }}/>
-        <div style={{ position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:400,height:300,background:"radial-gradient(ellipse, rgba(91,79,255,0.08) 0%, transparent 70%)",pointerEvents:"none" }}/>
-        <div style={{ maxWidth:520,margin:"0 auto",textAlign:"center",transition:"opacity .9s, transform .9s",opacity:ctaVis?1:0,transform:ctaVis?"translateY(0)":"translateY(32px)" }}>
-          <div style={{ fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:20 }}>Early access</div>
-          <h2 style={{ fontSize:"clamp(32px,5vw,54px)",fontWeight:800,letterSpacing:"-2px",margin:"0 0 16px",lineHeight:1.05 }}>Be first in line.</h2>
-          <p style={{ fontSize:16,color:"rgba(255,255,255,0.42)",marginBottom:48,lineHeight:1.7 }}>Logoplacers is rolling out to early users now. Drop your email and we will reach out as soon as your spot opens.</p>
-          <div style={{ background:"rgba(255,255,255,0.02)",backdropFilter:"blur(32px)",WebkitBackdropFilter:"blur(32px)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:24,padding:"36px",boxShadow:"0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+      <section id="waitlist" ref={ctaRef} style={{ padding: "140px 48px 160px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 500, background: "radial-gradient(ellipse, rgba(26,130,255,0.1) 0%, transparent 70%)", pointerEvents: "none" }}/>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 400, height: 300, background: "radial-gradient(ellipse, rgba(91,79,255,0.08) 0%, transparent 70%)", pointerEvents: "none" }}/>
+
+        <div style={{
+          maxWidth: 520, margin: "0 auto", textAlign: "center",
+          transition: "opacity .9s, transform .9s",
+          opacity: ctaVis ? 1 : 0, transform: ctaVis ? "translateY(0)" : "translateY(32px)",
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 20 }}>Early access</div>
+          <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 16px", lineHeight: 1.05 }}>
+            Be first in line.
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", marginBottom: 48, lineHeight: 1.7 }}>
+            Logoplacers is rolling out to early users now.
+            Drop your email and we will reach out as soon as your spot opens.
+          </p>
+
+          <div style={{
+            background: "rgba(255,255,255,0.02)", backdropFilter: "blur(32px)",
+            WebkitBackdropFilter: "blur(32px)",
+            border: "1px solid rgba(255,255,255,0.06)", borderRadius: 24, padding: "36px",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}>
             <WaitlistForm onEnterApp={onEnterApp}/>
           </div>
-          <div style={{ marginTop:28,fontSize:12,color:"rgba(255,255,255,0.2)" }}>No spam. No credit card. Just early access.</div>
+
+          <div style={{ marginTop: 28, fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+            No spam. No credit card. Just early access.
+          </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ borderTop:"1px solid rgba(255,255,255,0.06)",padding:"40px 48px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:20 }}>
-        <div style={{ display:"flex",alignItems:"center",gap:10 }}><Logo size={24}/><span style={{ fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.5)" }}>Logoplacers</span></div>
-        <div style={{ display:"flex",gap:20,flexWrap:"wrap" }}>
-          {BLOG_POSTS.slice(0,5).map(p=>(
-            <a key={p.slug} href={`#blog/${p.slug}`} style={{ fontSize:11,color:"rgba(255,255,255,0.22)",textDecoration:"none",transition:"color .15s",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}
-              onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.22)"}>{p.title.slice(0,45)}…</a>
-          ))}
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Logo size={24}/>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>Logoplacers</span>
         </div>
-        <div style={{ fontSize:12,color:"rgba(255,255,255,0.22)" }}>Personalised sales demos that convert.</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>Personalised sales demos that convert.</div>
       </footer>
 
-      <style>{"@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}} @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}} @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}} html{scroll-behavior:smooth}*{box-sizing:border-box}::placeholder{color:rgba(255,255,255,0.25)} @media(max-width:768px){.testi-grid{grid-template-columns:1fr!important}}"}</style>
+      <style>{`
+        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)} }
+        @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)} }
+        html{scroll-behavior:smooth}*{box-sizing:border-box}
+        ::placeholder{color:rgba(255,255,255,0.25)}
+      `}</style>
     </div>
   );
 }
