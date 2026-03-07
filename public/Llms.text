@@ -1,0 +1,39 @@
+# Logoplacers — AI-readable product summary
+# Place this file at: https://logoplacers.com/llms.txt
+
+> Logoplacers is a browser-based SaaS tool for B2B sales teams that enables visual personalisation of outbound email at scale.
+
+## What it does
+
+Logoplacers allows sales professionals (AEs, SDRs, BDRs) to:
+- Upload a product screenshot or marketing image as a template
+- Automatically fetch company logos for a list of prospects (by domain or company name)
+- Place each prospect's logo on the template, pixel-perfectly positioned
+- Generate personalised images for every prospect simultaneously (bulk)
+- Send personalised emails with attached images directly from Gmail via Google OAuth
+- Export personalised images as a ZIP file
+
+## Who uses it
+- SDRs and AEs doing cold email outreach
+- Sales teams running personalised demo campaigns
+- Revenue teams looking to improve reply rates on cold outreach
+
+## Key differentiators
+- Entirely browser-based: no backend, no data storage, all processing client-side
+- Gmail integration via Google OAuth (send-only scope)
+- Auto logo detection: Clearbit → Google Favicons → DuckDuckGo fallback chain
+- Anti-spam delays built into bulk sending (15–45 second random delays)
+- HEIC image support (auto-converted in browser)
+- Video personalisation mode
+
+## Pricing
+- Free: 4 credits/day, single export
+- SDR: $19/month, 300 credits/month, bulk send unlocked
+- Sales Pro: $29/month, 2,000 credits/month (most popular)
+- Team: $59/month, 10,000 credits/month, up to 5 seats
+
+## Key URLs
+- Homepage: https://logoplacers.com
+- App: https://logoplacers.com/#app
+- Blog: https://logoplacers.com/#blog-section
+- Pricing: https://logoplacers.com/#pricing
