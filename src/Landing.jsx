@@ -1999,7 +1999,7 @@ const BLOG_POSTS = [
     title: "What Is AIO? How to Optimise Your SaaS for AI Search in 2025",
     excerpt: "ChatGPT, Claude, and Perplexity are replacing Google for product discovery. Here's how to get your SaaS in front of AI-generated answers.",
     tag: "SEO & AIO", readTime: "6 min",
-    body: `If you've noticed your organic traffic patterns changing in 2025, you're not imagining things. A significant and growing portion of product discovery now happens through AI assistants — ChatGPT, Claude, Perplexity, and Gemini — rather than traditional search.\n\nThis shift is what people are calling AIO: AI Optimisation.\n\n**What Is AIO?**\n\nAIO refers to the practice of structuring your web content so that AI language models can accurately represent your product in conversational search results.\n\nWhen someone asks ChatGPT "what's the best tool for personalising cold email outreach with prospect logos?", the model synthesises information from its training data and live web searches. AIO is about making sure your product shows up accurately in that synthesis.\n\n**How AI Models Discover Products**\n\nAI crawlers and training pipelines process web content differently from traditional search engines. They prioritise:\n\n— Clear, factual descriptions of what a product does\n— Structured data (Schema.org) that explicitly categorises the product\n— Consistent brand mentions across multiple sources\n— Clear use-case articulation (who uses it, for what problem)\n— Authoritative third-party mentions (directories, reviews, comparisons)\n\n**The llms.txt Standard**\n\nA new convention is emerging: the `llms.txt` file. Similar to `robots.txt` for search crawlers, `llms.txt` is a plain-text file placed at the root of your domain that gives AI models a structured summary of your product, use cases, and key pages.\n\nEarly adoption of this standard is a low-effort way to signal clarity to AI systems.\n\n**Practical AIO Checklist**\n\n1. Add Schema.org SoftwareApplication markup to your homepage\n2. Create an `llms.txt` file at your domain root\n3. Write clear, factual FAQs in natural Q&A format\n4. Build blog content around specific use-case queries\n5. Get listed on AI-curated directories (Futurepedia, Toolify, There's An AI For That)\n6. Ensure consistent product descriptions across all platforms`,
+    body: `If you've noticed your organic traffic patterns changing in 2025, you're not imagining things. A significant and growing portion of product discovery now happens through AI assistants — ChatGPT, Claude, Perplexity, and Gemini — rather than traditional search.\n\nThis shift is what people are calling AIO: AI Optimisation.\n\n**What Is AIO?**\n\nAIO refers to the practice of structuring your web content so that AI language models can accurately represent your product in conversational search results.\n\nWhen someone asks ChatGPT "what's the best tool for personalising cold email outreach with prospect logos?", the model synthesises information from its training data and live web searches. AIO is about making sure your product shows up accurately in that synthesis.\n\n**How AI Models Discover Products**\n\nAI crawlers and training pipelines process web content differently from traditional search engines. They prioritise:\n\n— Clear, factual descriptions of what a product does\n— Structured data (Schema.org) that explicitly categorises the product\n— Consistent brand mentions across multiple sources\n— Clear use-case articulation (who uses it, for what problem)\n— Authoritative third-party mentions (directories, reviews, comparisons)\n\n**The llms.txt Standard**\n\nA new convention is emerging: the llms.txt file. Similar to robots.txt for search crawlers, llms.txt is a plain-text file placed at the root of your domain that gives AI models a structured summary of your product, use cases, and key pages.\n\nEarly adoption of this standard is a low-effort way to signal clarity to AI systems.\n\n**Practical AIO Checklist**\n\n1. Add Schema.org SoftwareApplication markup to your homepage\n2. Create an llms.txt file at your domain root\n3. Write clear, factual FAQs in natural Q&A format\n4. Build blog content around specific use-case queries\n5. Get listed on AI-curated directories (Futurepedia, Toolify, There's An AI For That)\n6. Ensure consistent product descriptions across all platforms`,
   },
   {
     slug: "sdr-productivity-hacks-2025",
@@ -2209,115 +2209,6 @@ function BlogPostPage({ slug, onBack }) {
 // ─────────────────────────────────────────────
 // SOCIAL PROOF TICKER
 // ─────────────────────────────────────────────
-const TICKER_EVENTS = [
-  "Marcus at Klarna just sent 47 personalised demos",
-  "Sofia at Stripe booked 3 meetings from one sequence",
-  "Erik's reply rate hit 38% this week",
-  "Anna at HubSpot generated 60 demos in under 2 minutes",
-  "Liam just closed a deal after a personalised follow-up",
-  "Julia booked a VP meeting on the first email",
-  "Tom hit 41% open rate with visual personalisation",
-  "Emma sent 80 personalised demos before lunch",
-];
-
-function SocialProofTicker() {
-  const [idx, setIdx] = useState(0);
-  const [vis, setVis] = useState(true);
-  useEffect(() => {
-    const id = setInterval(() => {
-      setVis(false);
-      setTimeout(() => { setIdx(i => (i + 1) % TICKER_EVENTS.length); setVis(true); }, 350);
-    }, 4200);
-    return () => clearInterval(id);
-  }, []);
-  return (
-    <div style={{
-      position: "fixed", bottom: 24, left: 24, zIndex: 300,
-      background: "rgba(7,11,18,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "10px 16px",
-      display: "flex", alignItems: "center", gap: 10, maxWidth: 320,
-      transition: "opacity .35s, transform .35s",
-      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(6px)",
-      pointerEvents: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-    }}>
-      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", flexShrink: 0, boxShadow: "0 0 8px rgba(34,197,94,0.7)" }}/>
-      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.45 }}>{TICKER_EVENTS[idx]}</span>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// EXIT-INTENT POPUP
-// ─────────────────────────────────────────────
-function ExitIntentPopup({ onEnterApp }) {
-  const [show, setShow] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  useEffect(() => {
-    if (dismissed) return;
-    const handler = (e) => {
-      if (e.clientY <= 8 && !dismissed) { setShow(true); }
-    };
-    document.addEventListener("mouseleave", handler);
-    return () => document.removeEventListener("mouseleave", handler);
-  }, [dismissed]);
-  if (!show || dismissed) return null;
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 500,
-      background: "rgba(0,0,0,0.72)", backdropFilter: "blur(8px)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
-      animation: "fadeIn .25s ease",
-    }} onClick={e => { if (e.target === e.currentTarget) { setShow(false); setDismissed(true); } }}>
-      <div style={{
-        background: "linear-gradient(135deg, rgba(13,18,30,0.98), rgba(7,11,18,0.98))",
-        border: "1px solid rgba(26,130,255,0.25)", borderRadius: 28, padding: "52px 48px",
-        maxWidth: 480, width: "100%", textAlign: "center", position: "relative",
-        boxShadow: "0 40px 120px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(26,130,255,0.1)",
-        animation: "popIn .3s cubic-bezier(.34,1.56,.64,1) both",
-      }}>
-        <button onClick={() => { setShow(false); setDismissed(true); }} style={{
-          position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.06)", border: "none",
-          color: "rgba(255,255,255,0.4)", width: 32, height: 32, borderRadius: "50%",
-          cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "background .15s",
-        }}
-          onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.12)"}
-          onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.06)"}>×</button>
-
-        {/* Glow blob */}
-        <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, background: "radial-gradient(ellipse, rgba(26,130,255,0.15), transparent 70%)", pointerEvents: "none" }}/>
-
-        <div style={{ fontSize: 48, marginBottom: 16 }}>✋</div>
-        <h3 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-1px", margin: "0 0 12px", lineHeight: 1.2 }}>
-          Wait — before you go.
-        </h3>
-        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.48)", lineHeight: 1.7, margin: "0 0 32px" }}>
-          Personalise your first demo in 30 seconds — no credit card, no setup. Just upload a screenshot and see the difference.
-        </p>
-        <div style={{ display: "flex", gap: 12, flexDirection: "column" }}>
-          <button onClick={() => { onEnterApp(); setDismissed(true); }} style={{
-            background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
-            borderRadius: 14, padding: "16px", fontSize: 15, fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit", boxShadow: "0 8px 32px rgba(26,130,255,0.35)",
-            transition: "transform .15s",
-          }}
-            onMouseEnter={e => e.currentTarget.style.transform="translateY(-1px)"}
-            onMouseLeave={e => e.currentTarget.style.transform="none"}>
-            Try for free — takes 30 seconds
-          </button>
-          <button onClick={() => { setShow(false); setDismissed(true); }} style={{
-            background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 12,
-            cursor: "pointer", fontFamily: "inherit", padding: "4px",
-          }}>
-            No thanks, I'll keep building demos manually
-          </button>
-        </div>
-      </div>
-      <style>{`@keyframes popIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} } @keyframes fadeIn { from{opacity:0} to{opacity:1} }`}</style>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────
 // BLOG PREVIEW SECTION (on landing page)
 // ─────────────────────────────────────────────
