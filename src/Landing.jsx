@@ -80,6 +80,7 @@ function Logo({ size = 36 }) {
       <rect x="17" y="4" width="11" height="11" rx="3" fill="white" opacity=".6"/>
       <rect x="4" y="17" width="11" height="11" rx="3" fill="white" opacity=".6"/>
       <rect x="17" y="17" width="11" height="11" rx="3" fill="white" opacity=".95"/>
+      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".28"/>
     </svg>
   );
 }
@@ -1972,7 +1973,7 @@ function ExitIntentPopup({ onEnterApp }) {
     <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,.76)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,animation:"fadeUp .3s ease"}}
       onClick={e=>e.target===e.currentTarget&&setShow(false)}>
       <div style={{background:"rgba(7,11,18,.98)",border:"1px solid rgba(255,255,255,.1)",borderRadius:28,padding:"46px 44px",maxWidth:440,width:"100%",textAlign:"center",boxShadow:"0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(26,130,255,.2)"}}>
-        <div style={{marginBottom:18,display:"flex",justifyContent:"center"}}><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="11" fill="url(#ei)"/><rect x="5" y="5" width="14" height="14" rx="3" fill="white" opacity=".95"/><rect x="23" y="5" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="5" y="23" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="23" y="23" width="14" height="14" rx="3" fill="white" opacity=".95"/><defs><linearGradient id="ei" x1="0" y1="0" x2="42" y2="42"><stop offset="0%" stopColor="#1a82ff"/><stop offset="100%" stopColor="#5b4fff"/></linearGradient></defs></svg></div>
+        <div style={{marginBottom:18,display:"flex",justifyContent:"center"}}><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="11" fill="url(#ei)"/><rect x="5" y="5" width="14" height="14" rx="3" fill="white" opacity=".95"/><rect x="23" y="5" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="5" y="23" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="23" y="23" width="14" height="14" rx="3" fill="white" opacity=".95"/><rect x="17.5" y="17.5" width="7" height="7" rx="1.75" fill="white" opacity=".28"/><defs><linearGradient id="ei" x1="0" y1="0" x2="42" y2="42"><stop offset="0%" stopColor="#1a82ff"/><stop offset="100%" stopColor="#5b4fff"/></linearGradient></defs></svg></div>
         <h3 style={{fontSize:25,fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 12px",lineHeight:1.12,color:"#fff"}}>Wait — grab 10 free credits</h3>
         <p style={{fontSize:14,color:"rgba(255,255,255,.42)",lineHeight:1.65,marginBottom:28}}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
         <button onClick={()=>{setShow(false);onEnterApp();}} style={{background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:13,padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%",boxShadow:"0 8px 32px rgba(26,130,255,.4)",marginBottom:10}}>

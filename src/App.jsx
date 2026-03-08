@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Landing from "./Landing";
+import Blog from "./Blog";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -481,29 +482,65 @@ function extractContacts(raw) {
 }
 
 async function fetchLogoDataURL(domain) {
-  const d = domain.replace(/^www\./, "");
-  const proxyUrl = `/.netlify/functions/logo?domain=${encodeURIComponent(d)}`;
-  try {
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) {
+  const d = domain.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase().trim();
+
+  // Fetch URL as blob → object URL → avoids CORS canvas taint
+  const tryFetch = async (url) => {
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) return null;
       const blob = await res.blob();
-      if (blob.size >= 50) {
-        const dataUrl = await new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve(r.result);
-          r.onerror = reject;
-          r.readAsDataURL(blob);
-        });
-        await new Promise((res, rej) => {
-          const img = new Image();
-          img.onload = () => img.width <= 2 && img.height <= 2 ? rej() : res();
-          img.onerror = rej;
-          img.src = dataUrl;
-        });
-        return dataUrl;
-      }
+      if (!blob.size) return null;
+      const objUrl = URL.createObjectURL(blob);
+      return await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => { resolve(img.naturalWidth > 16 ? img : null); };
+        img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(null); };
+        img.src = objUrl;
+      });
+    } catch { return null; }
+  };
+
+  // img tag fallback (no canvas export, but works for display)
+  const tryImgTag = (url) => new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img.naturalWidth > 16 ? img : null);
+    img.onerror = () => resolve(null);
+    setTimeout(() => resolve(null), 4000);
+    img.src = url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+  });
+
+  const toDataURL = (img) => {
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth || 128;
+    c.height = img.naturalHeight || 128;
+    c.getContext("2d").drawImage(img, 0, 0);
+    try { return c.toDataURL("image/png"); } catch { return null; }
+  };
+
+  const sources = [
+    `https://logo.clearbit.com/${d}`,
+    `https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`,
+    `https://icons.duckduckgo.com/ip3/${d}.ico`,
+    `https://favicons.githubusercontent.com/${d}`,
+  ];
+
+  for (const url of sources) {
+    const img = await tryFetch(url);
+    if (img) {
+      const data = toDataURL(img);
+      if (data) return data;
     }
-  } catch { /* fall through */ }
+  }
+  // Last resort: img tag (may not be exportable to canvas but good for preview)
+  for (const url of sources.slice(0, 2)) {
+    const img = await tryImgTag(url);
+    if (img) {
+      const data = toDataURL(img);
+      if (data) return data;
+    }
+  }
   throw new Error("no logo found for " + domain);
 }
 
@@ -1087,11 +1124,179 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
   });
 }
 
-function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired }) {
+
+// ─────────────────────────────────────────────
+// GOOGLE DRIVE UPLOAD
+// ─────────────────────────────────────────────
+function DriveUploadField({ token, videoLink, setVideoLink }) {
+  const [uploading, setUploading] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState("");
+  const fileRef = useRef(null);
+
+  const uploadToDrive = async (file) => {
+    setUploading(true); setError(""); setProgress(0);
+    setFileName(file.name);
+    try {
+      // 1. Initiate resumable upload
+      const meta = { name: file.name, mimeType: file.type };
+      const initRes = await fetch(
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "X-Upload-Content-Type": file.type,
+            "X-Upload-Content-Length": file.size,
+          },
+          body: JSON.stringify(meta),
+        }
+      );
+      if (!initRes.ok) throw new Error("Upload init failed: " + initRes.status);
+      const uploadUrl = initRes.headers.get("Location");
+
+      // 2. Upload file in chunks (5MB)
+      const chunkSize = 5 * 1024 * 1024;
+      let offset = 0;
+      let fileId = null;
+      while (offset < file.size) {
+        const chunk = file.slice(offset, offset + chunkSize);
+        const end = Math.min(offset + chunkSize, file.size);
+        const chunkRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`,
+            "Content-Type": file.type,
+          },
+          body: chunk,
+        });
+        setProgress(Math.round((end / file.size) * 100));
+        if (chunkRes.status === 200 || chunkRes.status === 201) {
+          const data = await chunkRes.json();
+          fileId = data.id;
+          break;
+        } else if (chunkRes.status !== 308) {
+          throw new Error("Upload chunk failed: " + chunkRes.status);
+        }
+        offset = end;
+      }
+      if (!fileId) throw new Error("Upload completed but no file ID returned");
+
+      // 3. Make file shareable (anyone with link can view)
+      await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "reader", type: "anyone" }),
+      });
+
+      // 4. Get shareable link
+      const infoRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=webViewLink`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const info = await infoRes.json();
+      setVideoLink(info.webViewLink || `https://drive.google.com/file/d/${fileId}/view`);
+    } catch (e) {
+      setError(e.message || "Upload failed");
+    } finally {
+      setUploading(false); setProgress(0);
+    }
+  };
+
+  const handleFile = (e) => {
+    const f = e.target.files?.[0];
+    if (f) uploadToDrive(f);
+    e.target.value = "";
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (f) uploadToDrive(f);
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <label className="field-lbl">
+        Video link
+        <span style={{fontWeight:400,color:"var(--t4)",marginLeft:4}}>(optional — adds a Watch demo button)</span>
+      </label>
+
+      {/* Manual link OR uploaded link */}
+      <div style={{display:"flex",gap:6,alignItems:"center"}}>
+        <input className="modal-inp" style={{flex:1}}
+          placeholder="Paste Loom / Drive link, or upload below…"
+          value={videoLink} onChange={e => setVideoLink(e.target.value)} />
+        {videoLink && (
+          <button onClick={() => { setVideoLink(""); setFileName(""); }}
+            style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:16,padding:"0 4px",flexShrink:0}}>×</button>
+        )}
+      </div>
+
+      {/* Drive upload zone */}
+      {!videoLink && (
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => !uploading && fileRef.current?.click()}
+          style={{
+            border:"1.5px dashed var(--sep)", borderRadius:10, padding:"14px 16px",
+            display:"flex", alignItems:"center", gap:12, cursor: uploading ? "default" : "pointer",
+            background:"var(--bg3)", transition:"border-color .15s",
+          }}
+          onMouseEnter={e => !uploading && (e.currentTarget.style.borderColor = "var(--blue)")}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--sep)")}
+        >
+          <input ref={fileRef} type="file" accept="video/*,.mp4,.mov,.webm,.gif"
+            onChange={handleFile} style={{display:"none"}} />
+
+          {uploading ? (
+            <>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2.5px solid var(--blue)",borderTopColor:"transparent",animation:"spin 0.7s linear infinite",flexShrink:0}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,color:"var(--t2)",marginBottom:4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fileName}</div>
+                <div style={{height:4,borderRadius:2,background:"var(--bg4)",overflow:"hidden"}}>
+                  <div style={{height:"100%",width:progress+"%",background:"var(--blue)",transition:"width .3s"}}/>
+                </div>
+              </div>
+              <span style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>{progress}%</span>
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              </svg>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Upload to Google Drive</div>
+                <div style={{fontSize:11,color:"var(--t4)"}}>MP4, MOV, WebM, GIF · drag & drop or click</div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {videoLink && (
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:"rgba(26,130,255,.08)",border:"1px solid rgba(26,130,255,.2)",borderRadius:8}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style={{fontSize:11,color:"var(--t2)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{videoLink}</span>
+          <a href={videoLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--blue)",textDecoration:"none",flexShrink:0}}>Preview ↗</a>
+        </div>
+      )}
+
+      {error && <div style={{fontSize:11,color:"var(--red)"}}>{error}</div>}
+    </div>
+  );
+}
+
+function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade }) {
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
   const token = sharedToken;
   const [subject, setSubject] = useState("A personal demo for ((company))");
   const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
+  const [videoLink, setVideoLink] = useState("");
   const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
   const [results, setResults] = useState({});
@@ -1109,12 +1314,12 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     if (!window.google?.accounts?.oauth2) { alert("Google Sign-In failed to load. Check popup blockers."); return; }
     window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/gmail.send",
+      scope: "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
       callback: (r) => {
         if (r.access_token) { onTokenAcquired(r.access_token); setStep("compose"); }
         else alert("Login failed: " + (r.error || "unknown"));
       },
-    }).requestAccessToken();
+    }).requestAccessToken({ prompt: "select_account" });
   };
 
   const selectedContacts = withEmail.filter(c => selected?.has(c.id));
@@ -1142,6 +1347,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   };
 
   const sendAll = async () => {
+    // Credit check: 1 credit per send
+    if (spendCredits && !spendCredits(selectedContacts.length)) {
+      onUpgrade?.();
+      return;
+    }
     setStep("sending");
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
@@ -1153,7 +1363,10 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
         const subj = resolveStr(subject, c);
-        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}</div>`;
+        const videoBtn = videoLink.trim()
+          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#1a82ff;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+          : "";
+        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}${videoBtn}</div>`;
         const blob = await getImageBlob(c);
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
@@ -1236,6 +1449,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 </div>
                 <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personalised image attached automatically as .png per recipient.</p>
               </div>
+              <DriveUploadField token={token} videoLink={videoLink} setVideoLink={setVideoLink} />
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 <label className="field-lbl">Recipients ({selectedContacts.length}/{withEmail.length})</label>
                 <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
@@ -1444,6 +1658,188 @@ let idCounter = 1;
 const uid = () => idCounter++;
 const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
 
+// ─────────────────────────────────────────────
+// CREDIT SYSTEM
+// ─────────────────────────────────────────────
+const PLANS = {
+  free:       { label: "Free",       creditsPerDay: 4,    monthly: null, bulkMax: 1 },
+  sdr:        { label: "SDR",        creditsPerDay: null, monthly: 300,  bulkMax: Infinity },
+  salespro:   { label: "Sales Pro",  creditsPerDay: null, monthly: 2000, bulkMax: Infinity },
+  team:       { label: "Team",       creditsPerDay: null, monthly: 10000,bulkMax: Infinity },
+};
+
+// Credits stored in localStorage: { plan, balance, resetAt (ISO date string) }
+function loadCredits() {
+  try {
+    const raw = localStorage.getItem("lp_credits");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+function saveCredits(data) {
+  localStorage.setItem("lp_credits", JSON.stringify(data));
+}
+function initCredits(plan = "free") {
+  const p = PLANS[plan];
+  const now = new Date();
+  let resetAt, balance;
+  if (p.creditsPerDay) {
+    // Reset daily at midnight
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0,0,0,0);
+    resetAt = tomorrow.toISOString();
+    balance = p.creditsPerDay;
+  } else {
+    // Reset monthly
+    const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth() + 1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
+    resetAt = nextMonth.toISOString();
+    balance = p.monthly;
+  }
+  const data = { plan, balance, resetAt };
+  saveCredits(data);
+  return data;
+}
+function getOrInitCredits() {
+  let data = loadCredits();
+  if (!data) return initCredits("free");
+  // Check if reset is due
+  if (new Date() >= new Date(data.resetAt)) {
+    return initCredits(data.plan);
+  }
+  return data;
+}
+
+function useCredits() {
+  const [credits, setCredits] = useState(() => getOrInitCredits());
+
+  const refresh = () => setCredits(getOrInitCredits());
+
+  // 1 credit per image generated, 1 credit per email sent
+  const spend = (amount = 1) => {
+    const current = getOrInitCredits();
+    if (current.balance < amount) return false;
+    const updated = { ...current, balance: current.balance - amount };
+    saveCredits(updated);
+    setCredits(updated);
+    return true;
+  };
+
+  const canBulk = (count) => {
+    const plan = PLANS[credits.plan];
+    if (count > plan.bulkMax) return false;       // Free = 1 max
+    return credits.balance >= count;
+  };
+
+  const topUp = (amount) => {
+    const current = getOrInitCredits();
+    const updated = { ...current, balance: current.balance + amount };
+    saveCredits(updated);
+    setCredits(updated);
+  };
+
+  return { credits, spend, canBulk, topUp, refresh, plan: PLANS[credits.plan] };
+}
+
+// Credit badge shown in header
+function CreditBadge({ credits, onUpgrade }) {
+  const plan = PLANS[credits.plan];
+  const total = plan.creditsPerDay ?? plan.monthly;
+  const pct   = total ? Math.round((credits.balance / total) * 100) : 100;
+  const low   = pct <= 20;
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:8, cursor: low ? "pointer" : "default" }}
+      onClick={low ? onUpgrade : undefined}
+      title={`${credits.balance} credits remaining`}>
+      <div style={{
+        background: low ? "rgba(239,68,68,0.12)" : "rgba(26,130,255,0.1)",
+        border: `0.5px solid ${low ? "rgba(239,68,68,0.35)" : "rgba(26,130,255,0.25)"}`,
+        borderRadius: 8, padding: "4px 10px", display:"flex", alignItems:"center", gap:6,
+      }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low?"#ef4444":"#5ba4ff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span style={{ fontSize:12, fontWeight:600, color: low?"#ef4444":"#7db8ff", fontVariantNumeric:"tabular-nums" }}>
+          {credits.balance.toLocaleString()}
+        </span>
+        <span style={{ fontSize:10, color:"var(--t4)" }}>/ {plan.label}</span>
+      </div>
+      {low && (
+        <button onClick={onUpgrade} style={{
+          background:"linear-gradient(135deg,#1a82ff,#5b4fff)", color:"#fff", border:"none",
+          borderRadius:7, padding:"4px 10px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+        }}>Upgrade</button>
+      )}
+    </div>
+  );
+}
+
+// Modal shown when out of credits or trying to upgrade
+function UpgradeModal({ onClose, credits }) {
+  const plans = [
+    { key:"free",     label:"Free",      price:"Free",    period:"",     features:["4 credits / day","Single export only"], current: credits.plan === "free" },
+    { key:"sdr",      label:"SDR",       price:"$19",     period:"/mo",  features:["300 credits / month","Bulk send + export"], current: credits.plan === "sdr" },
+    { key:"salespro", label:"Sales Pro", price:"$29",     period:"/mo",  features:["2 000 credits / month","Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
+    { key:"team",     label:"Team",      price:"$59",     period:"/mo",  features:["10 000 credits / month","Up to 5 seats"], current: credits.plan === "team" },
+  ];
+  // Dev helper — switch plan locally (real app: redirect to Stripe)
+  const switchPlan = (key) => {
+    initCredits(key);
+    window.location.reload();
+  };
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box" style={{ maxWidth:700 }}>
+        <div className="modal-head">
+          <div>
+            <div className="modal-title">Upgrade your plan</div>
+            <div className="modal-sub">More credits, more deals closed.</div>
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:12 }}>
+            {plans.map(p => (
+              <div key={p.key} style={{
+                border: `1px solid ${p.highlight ? "rgba(26,130,255,0.5)" : "rgba(255,255,255,0.07)"}`,
+                borderRadius:14, padding:"18px 16px",
+                background: p.highlight ? "rgba(26,130,255,0.08)" : "rgba(255,255,255,0.02)",
+                display:"flex", flexDirection:"column", gap:10,
+              }}>
+                <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", color: p.highlight?"#5ba4ff":"rgba(255,255,255,0.4)", textTransform:"uppercase" }}>{p.label}</div>
+                <div style={{ fontSize:28, fontWeight:800, letterSpacing:"-1.5px", color:"#fff", lineHeight:1 }}>
+                  {p.price}<span style={{ fontSize:12, color:"var(--t3)", fontWeight:400 }}>{p.period}</span>
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6, flex:1 }}>
+                  {p.features.map((f,i) => (
+                    <div key={i} style={{ display:"flex", gap:7, alignItems:"flex-start" }}>
+                      <span style={{ color: p.highlight?"#5ba4ff":"var(--t3)", fontSize:11, marginTop:1 }}>✓</span>
+                      <span style={{ fontSize:12, color:"var(--t2)", lineHeight:1.45 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  disabled={p.current}
+                  onClick={() => switchPlan(p.key)}
+                  style={{
+                    background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
+                    color: p.current ? "var(--t4)" : "#fff",
+                    border: p.highlight?"none":"0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700,
+                    cursor: p.current ? "default" : "pointer", fontFamily:"inherit", width:"100%",
+                  }}>
+                  {p.current ? "Current plan" : `Switch to ${p.label}`}
+                </button>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize:11, color:"var(--t4)", textAlign:"center" }}>
+            In production, these buttons redirect to Stripe checkout. Connect Stripe webhook to auto-update plan.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
@@ -1455,7 +1851,7 @@ function App() {
       await new Promise((resolve, reject) => {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
+          scope: "openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
           callback: (resp) => {
             if (resp.error) { reject(resp.error); return; }
             fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -1517,6 +1913,7 @@ function App() {
   const [personalisedColors, setPersonalisedColors] = useState(false);
   const [brandColor, setBrandColor] = useState(null);
   const [colorToReplace, setColorToReplace] = useState("#ffffff");
+  const [eyedropperActive, setEyedropperActive] = useState(false);
   const [templates, setTemplates] = useState(() => { try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; } });
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -1528,6 +1925,8 @@ function App() {
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
   const [editingDomain, setEditingDomain] = useState({});
   const [editingContact, setEditingContact] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const { credits, spend, canBulk, topUp, plan: currentPlan } = useCredits();
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -1648,6 +2047,14 @@ function App() {
   const downloadZip = async () => {
     const ready = companies.filter(c => c.status === "ok");
     if (!ready.length || !baseImageRef.current) return;
+    // Credit check
+    if (!canBulk(ready.length)) {
+      if (credits.plan === "free" && ready.length > 1) {
+        showToast("Free plan: single export only. Upgrade for bulk."); setShowUpgradeModal(true); return;
+      }
+      showToast(`Not enough credits (need ${ready.length}, have ${credits.balance})`); setShowUpgradeModal(true); return;
+    }
+    if (!spend(ready.length)) { showToast("Out of credits"); setShowUpgradeModal(true); return; }
     setZipping(true); showToast("Creating zip…");
     const zip = new JSZip(); const folder = zip.folder("images");
     const { w, h } = canvasSizeRef.current;
@@ -1688,6 +2095,20 @@ function App() {
     if (!baseImageRef.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
+    // Eyedropper mode: sample color from canvas
+    if (eyedropperActive) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        const px = Math.round(mx), py = Math.round(my);
+        const [r, g, b] = ctx.getImageData(px, py, 1, 1).data;
+        const hex = "#" + [r,g,b].map(v => v.toString(16).padStart(2,"0")).join("");
+        setColorToReplace(hex);
+        setEyedropperActive(false);
+        showToast("Colour picked: " + hex);
+      }
+      e.preventDefault(); return;
+    }
     for (const sym of symbols) {
       if (mx >= sym.pos.x && mx <= sym.pos.x + sym.size && my >= sym.pos.y && my <= sym.pos.y + sym.size) {
         setDragging({ target:"symbol", id:sym.id, ox:mx-sym.pos.x, oy:my-sym.pos.y }); e.preventDefault(); return;
@@ -1734,7 +2155,7 @@ function App() {
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
           <div className="header-brand">
-            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".9"/></svg></div>
+            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".25"/></svg></div>
             <div><div className="header-name">LogoPlacer</div><div className="header-sub">Personalised demos</div></div>
           </div>
           <div className="header-btns">
@@ -1745,6 +2166,7 @@ function App() {
                 <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{fontSize:11,padding:"3px 8px"}}>Sign out</button>
               </div>
             )}
+            <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
             <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
               <span style={{display:"flex",alignItems:"center",gap:6}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1761,6 +2183,8 @@ function App() {
             </button>
           </div>
         </div>
+
+        {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
 
         <div className="mode-tabs">
           <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>Image</button>
@@ -1820,11 +2244,22 @@ function App() {
                 </label>
               </div>
               {personalisedColors && (
-                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap"}}>
                   <div style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>Replace:</div>
                   <input type="color" value={colorToReplace} onChange={e => setColorToReplace(e.target.value)}
                     style={{width:32,height:28,borderRadius:6,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none",flexShrink:0}} />
+                  <button onClick={() => setEyedropperActive(v => !v)} title="Pick colour from image"
+                    style={{display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6,
+                      border:`1.5px solid ${eyedropperActive?"var(--blue)":"var(--sep)"}`,
+                      background:eyedropperActive?"rgba(26,130,255,.15)":"var(--bg4)",
+                      cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive?"#5ba4ff":"var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33L20.84 9.5a5.5 5.5 0 0 0 0-7.78v-.91z"/>
+                      <line x1="18" y1="11.5" x2="6" y2="23.5"/>
+                    </svg>
+                  </button>
                   <div style={{fontSize:10,color:"var(--t4)",fontFamily:"monospace"}}>{colorToReplace}</div>
+                  {eyedropperActive && <div style={{fontSize:10,color:"var(--blue)",fontWeight:600}}>Click image to pick</div>}
                 </div>
               )}
             </div>
@@ -2000,7 +2435,7 @@ function App() {
                 </div>
               ) : (
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                  style={{ width:cw||"auto", height:ch||"auto", cursor:dragging?"grabbing":"default", transform:`scale(${canvasZoom})`, transformOrigin:"center center" }}>
+                  style={{ width:cw||"auto", height:ch||"auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform:`scale(${canvasZoom})`, transformOrigin:"center center" }}>
                   <canvas ref={canvasRef} />
                   {cw > 0 && (
                     <>
@@ -2097,21 +2532,39 @@ function App() {
             sharedToken={gmailToken}
             onTokenAcquired={t => { setGmailToken(t); sessionStorage.setItem("lp_gtoken", t); }}
             onClose={() => setShowSendModal(false)}
+            spendCredits={spend}
+            creditsBalance={credits.balance}
+            onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
           />
         )}
+        {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
       </div>
     </>
   );
 }
 
 export default function AppRouter() {
-  const [view, setView] = useState(() => window.location.hash === "#app" ? "app" : "landing");
+  const [view, setView] = useState(() => {
+    const hash = window.location.hash;
+    if (hash === "#app") return "app";
+    if (hash === "#blog") return "blog";
+    return "landing";
+  });
   useEffect(() => {
-    const onHash = () => setView(window.location.hash === "#app" ? "app" : "landing");
+    const onHash = () => {
+      const hash = window.location.hash;
+      if (hash === "#app") setView("app");
+      else if (hash === "#blog") setView("blog");
+      else setView("landing");
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
-  const goToApp = () => { window.location.hash = "app"; setView("app"); };
-  if (view === "landing") return <Landing onEnterApp={goToApp} />;
-  return <App />;
+  const goToApp  = () => { window.location.hash = "app";  setView("app"); };
+  const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
+  const goHome   = () => { window.location.hash = "";     setView("landing"); };
+
+  if (view === "app")  return <App />;
+  if (view === "blog") return <Blog onEnterApp={goToApp} onBack={goHome} />;
+  return <Landing onEnterApp={goToApp} onOpenBlog={goToBlog} />;
 }
