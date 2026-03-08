@@ -80,7 +80,7 @@ function Logo({ size = 36 }) {
       <rect x="17" y="4" width="11" height="11" rx="3" fill="white" opacity=".6"/>
       <rect x="4" y="17" width="11" height="11" rx="3" fill="white" opacity=".6"/>
       <rect x="17" y="17" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".28"/>
+      
     </svg>
   );
 }

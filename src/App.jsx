@@ -484,63 +484,68 @@ function extractContacts(raw) {
 async function fetchLogoDataURL(domain) {
   const d = domain.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase().trim();
 
-  // Fetch URL as blob → object URL → avoids CORS canvas taint
-  const tryFetch = async (url) => {
+  // Load an image URL → HTMLImageElement via blob URL (avoids canvas CORS taint)
+  const loadImg = (blobUrl) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img.naturalWidth > 8 ? img : null);
+    img.onerror = () => resolve(null);
+    img.src = blobUrl;
+  });
+
+  // Fetch through allorigins.win CORS proxy → returns blob → canvas-safe dataURL
+  const tryProxy = async (targetUrl) => {
     try {
-      const res = await fetch(url, { mode: "cors" });
+      const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+      const res = await fetch(proxy, { signal: AbortSignal.timeout(6000) });
       if (!res.ok) return null;
       const blob = await res.blob();
-      if (!blob.size) return null;
-      const objUrl = URL.createObjectURL(blob);
-      return await new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => { resolve(img.naturalWidth > 16 ? img : null); };
-        img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(null); };
-        img.src = objUrl;
-      });
+      if (!blob.size || blob.type === "text/html") return null;
+      const blobUrl = URL.createObjectURL(blob);
+      const img = await loadImg(blobUrl);
+      if (!img) { URL.revokeObjectURL(blobUrl); return null; }
+      // Draw to canvas → dataURL (no taint since blob: URL)
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(blobUrl);
+      try { return c.toDataURL("image/png"); } catch { return null; }
     } catch { return null; }
   };
 
-  // img tag fallback (no canvas export, but works for display)
-  const tryImgTag = (url) => new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img.naturalWidth > 16 ? img : null);
-    img.onerror = () => resolve(null);
-    setTimeout(() => resolve(null), 4000);
-    img.src = url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
-  });
-
-  const toDataURL = (img) => {
-    const c = document.createElement("canvas");
-    c.width = img.naturalWidth || 128;
-    c.height = img.naturalHeight || 128;
-    c.getContext("2d").drawImage(img, 0, 0);
-    try { return c.toDataURL("image/png"); } catch { return null; }
+  // Direct fetch fallback (works when server allows CORS, e.g. Google favicons)
+  const tryDirect = async (url) => {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      if (!blob.size) return null;
+      const blobUrl = URL.createObjectURL(blob);
+      const img = await loadImg(blobUrl);
+      if (!img) { URL.revokeObjectURL(blobUrl); return null; }
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(blobUrl);
+      try { return c.toDataURL("image/png"); } catch { return null; }
+    } catch { return null; }
   };
 
-  const sources = [
-    `https://logo.clearbit.com/${d}`,
-    `https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`,
-    `https://icons.duckduckgo.com/ip3/${d}.ico`,
-    `https://favicons.githubusercontent.com/${d}`,
-  ];
+  // 1. Try Clearbit through proxy (best quality logos)
+  const clearbit = await tryProxy(`https://logo.clearbit.com/${d}`);
+  if (clearbit) return clearbit;
 
-  for (const url of sources) {
-    const img = await tryFetch(url);
-    if (img) {
-      const data = toDataURL(img);
-      if (data) return data;
-    }
-  }
-  // Last resort: img tag (may not be exportable to canvas but good for preview)
-  for (const url of sources.slice(0, 2)) {
-    const img = await tryImgTag(url);
-    if (img) {
-      const data = toDataURL(img);
-      if (data) return data;
-    }
-  }
+  // 2. Try Google favicon directly (allows CORS)
+  const google = await tryDirect(`https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`);
+  if (google) return google;
+
+  // 3. Try DuckDuckGo through proxy
+  const duck = await tryProxy(`https://icons.duckduckgo.com/ip3/${d}.ico`);
+  if (duck) return duck;
+
+  // 4. Try favicon.ico directly through proxy
+  const favicon = await tryProxy(`https://${d}/favicon.ico`);
+  if (favicon) return favicon;
+
   throw new Error("no logo found for " + domain);
 }
 
@@ -1615,7 +1620,7 @@ function LoginPage({ onLogin, loading }) {
       <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52 }}>
           <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45)" }}>
-            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".55"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".55"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/></svg>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/></svg>
           </div>
           <div>
             <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px" }}>LogoPlacer</div>
@@ -2155,7 +2160,7 @@ function App() {
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
           <div className="header-brand">
-            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".25"/></svg></div>
+            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/></svg></div>
             <div><div className="header-name">LogoPlacer</div><div className="header-sub">Personalised demos</div></div>
           </div>
           <div className="header-btns">
@@ -2543,11 +2548,226 @@ function App() {
   );
 }
 
+// ─────────────────────────────────────────────
+// ADMIN PANEL
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// ADMIN PANEL
+// ─────────────────────────────────────────────
+// Add your email here to grant admin access
+const ADMIN_EMAILS = [
+  "YOUR_EMAIL@gmail.com",
+];
+
+function AdminPanel({ onBack }) {
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const u = JSON.parse(sessionStorage.getItem("lp_admin_user") || "null");
+      return u && ADMIN_EMAILS.includes(u.email) ? u : null;
+    } catch { return null; }
+  });
+  const [loading, setLoading] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [saved, setSaved] = useState("");
+
+  const PLANS = ["free", "sdr", "pro", "team"];
+  const PLAN_LIMITS = { free: 4, sdr: 300, pro: 2000, team: 10000 };
+
+  const loginWithGoogle = async () => {
+    setLoading(true); setDenied(false);
+    try {
+      await loadGIS();
+      await new Promise((resolve, reject) => {
+        window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid email profile",
+          callback: async (resp) => {
+            if (resp.error) { reject(resp.error); return; }
+            try {
+              const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                headers: { Authorization: `Bearer ${resp.access_token}` }
+              });
+              const u = await r.json();
+              if (ADMIN_EMAILS.includes(u.email)) {
+                sessionStorage.setItem("lp_admin_user", JSON.stringify(u));
+                setAdminUser(u);
+                resolve();
+              } else {
+                setDenied(true);
+                resolve();
+              }
+            } catch(e) { reject(e); }
+          },
+        }).requestAccessToken({ prompt: "select_account" });
+      });
+    } catch { /* cancelled */ }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!adminUser) return;
+    const found = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith("lp_credits_")) {
+        try {
+          const val = JSON.parse(localStorage.getItem(key));
+          found.push({ email: key.replace("lp_credits_", ""), ...val });
+        } catch {}
+      }
+    }
+    setUsers(found);
+  }, [adminUser]);
+
+  const saveEdit = () => {
+    if (!editing) return;
+    const key = `lp_credits_${editing.email}`;
+    const existing = JSON.parse(localStorage.getItem(key) || "{}");
+    const updated = { ...existing, plan: editing.plan, balance: Number(editing.balance), limit: PLAN_LIMITS[editing.plan] };
+    localStorage.setItem(key, JSON.stringify(updated));
+    setUsers(us => us.map(u => u.email === editing.email ? { ...u, ...updated } : u));
+    setSaved(editing.email); setTimeout(() => setSaved(""), 2000);
+    setEditing(null);
+  };
+
+  const addUser = () => {
+    const email = prompt("User email:");
+    if (!email?.trim()) return;
+    const key = `lp_credits_${email.trim()}`;
+    if (!localStorage.getItem(key)) {
+      const fresh = { plan: "free", balance: 4, limit: 4 };
+      localStorage.setItem(key, JSON.stringify(fresh));
+      setUsers(us => [...us, { email: email.trim(), ...fresh }]);
+    } else {
+      alert("User already exists");
+    }
+  };
+
+  const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
+
+  // ── Login screen ──────────────────────────────────────────────────────
+  if (!adminUser) return (
+    <div style={{minHeight:"100vh",background:"#070b12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
+      <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:24,padding:"44px 48px",width:360,display:"flex",flexDirection:"column",gap:20,alignItems:"center",textAlign:"center"}}>
+        <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1a82ff,#5b4fff)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 32px rgba(26,130,255,.35)"}}>
+          <svg width="24" height="24" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+            <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+            <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            <rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/>
+          </svg>
+        </div>
+        <div>
+          <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-1px",marginBottom:6}}>Admin</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.3)",lineHeight:1.6}}>Sign in with your Google account.<br/>Access is restricted to admins.</div>
+        </div>
+        {denied && <div style={{fontSize:12,color:"#ef4444",padding:"8px 14px",background:"rgba(239,68,68,.1)",borderRadius:8,width:"100%"}}>Access denied — your account is not an admin.</div>}
+        <button onClick={loginWithGoogle} disabled={loading}
+          style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px",borderRadius:12,border:"none",background:loading?"rgba(255,255,255,.7)":"rgba(255,255,255,.93)",color:"#111827",fontSize:14,fontWeight:600,fontFamily:"inherit",cursor:loading?"default":"pointer",transition:"all .15s"}}>
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+          {loading ? "Signing in…" : "Continue with Google"}
+        </button>
+        <button onClick={onBack} style={{background:"none",border:"none",color:"rgba(255,255,255,.25)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>← Back</button>
+      </div>
+    </div>
+  );
+
+  // ── Admin dashboard ───────────────────────────────────────────────────
+  return (
+    <div style={{minHeight:"100vh",background:"#070b12",color:"#fff",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",padding:"40px 32px"}}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+      <div style={{maxWidth:900,margin:"0 auto"}}>
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32,flexWrap:"wrap",gap:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <img src={adminUser.picture} alt="" style={{width:36,height:36,borderRadius:"50%",border:"2px solid rgba(255,255,255,.1)"}}/>
+            <div>
+              <div style={{fontSize:20,fontWeight:800,letterSpacing:"-1px"}}>Admin Panel</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>{adminUser.email}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={addUser} style={{padding:"8px 16px",background:"rgba(26,130,255,.15)",border:"1px solid rgba(26,130,255,.3)",color:"#5ba4ff",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>+ Add user</button>
+            <button onClick={() => { sessionStorage.removeItem("lp_admin_user"); setAdminUser(null); }}
+              style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Sign out</button>
+            <button onClick={onBack} style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>← App</button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10,marginBottom:24}}>
+          {[["Total users", users.length],
+            ["Free", users.filter(u=>u.plan==="free"||!u.plan).length],
+            ["SDR", users.filter(u=>u.plan==="sdr").length],
+            ["Pro", users.filter(u=>u.plan==="pro").length],
+            ["Team", users.filter(u=>u.plan==="team").length],
+          ].map(([label, val]) => (
+            <div key={label} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.06)",borderRadius:12,padding:"14px 16px"}}>
+              <div style={{fontSize:22,fontWeight:800,letterSpacing:"-1px"}}>{val}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2}}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Search */}
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by email…"
+          style={{width:"100%",padding:"10px 16px",borderRadius:10,border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.04)",color:"#fff",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+
+        {/* User rows */}
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {filtered.map(u => (
+            <div key={u.email} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px 18px"}}>
+              {editing?.email === u.email ? (
+                <div style={{display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
+                  <div style={{fontWeight:600,fontSize:13,flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.email}</div>
+                  <select value={editing.plan} onChange={e=>setEditing({...editing,plan:e.target.value})}
+                    style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit",cursor:"pointer"}}>
+                    {PLANS.map(p=><option key={p} value={p}>{p} ({PLAN_LIMITS[p].toLocaleString()}/mo)</option>)}
+                  </select>
+                  <input type="number" value={editing.balance} onChange={e=>setEditing({...editing,balance:e.target.value})}
+                    style={{width:88,padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit"}}
+                    placeholder="Credits"/>
+                  <button onClick={saveEdit} style={{padding:"6px 16px",background:"#1a82ff",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Save</button>
+                  <button onClick={()=>setEditing(null)} style={{padding:"6px 12px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                  <div style={{flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:13,fontWeight:500}}>{u.email}</div>
+                  <span style={{fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,
+                    background:u.plan==="free"||!u.plan?"rgba(255,255,255,.06)":u.plan==="sdr"?"rgba(26,130,255,.15)":u.plan==="pro"?"rgba(91,79,255,.2)":"rgba(16,185,129,.15)",
+                    color:u.plan==="free"||!u.plan?"rgba(255,255,255,.4)":u.plan==="sdr"?"#5ba4ff":u.plan==="pro"?"#a78bfa":"#34d399"
+                  }}>{u.plan||"free"}</span>
+                  <span style={{fontSize:13,color:"rgba(255,255,255,.4)"}}>{(u.balance??0).toLocaleString()} cr</span>
+                  {saved===u.email && <span style={{fontSize:11,color:"#34d399",fontWeight:600}}>✓ Saved</span>}
+                  <button onClick={()=>setEditing({email:u.email,plan:u.plan||"free",balance:u.balance??0})}
+                    style={{padding:"5px 13px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.45)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>
+                    Edit
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+          {filtered.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.2)",padding:"48px 0",fontSize:13}}>No users found</div>}
+        </div>
+
+        <div style={{marginTop:28,padding:"14px 18px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",borderRadius:10,fontSize:11,color:"rgba(255,255,255,.2)",lineHeight:1.7}}>
+          Credits live in each user's browser (localStorage). To manage all users centrally, connect Supabase.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AppRouter() {
   const [view, setView] = useState(() => {
     const hash = window.location.hash;
     if (hash === "#app") return "app";
     if (hash === "#blog") return "blog";
+    if (hash === "#admin") return "admin";
     return "landing";
   });
   useEffect(() => {
@@ -2555,6 +2775,7 @@ export default function AppRouter() {
       const hash = window.location.hash;
       if (hash === "#app") setView("app");
       else if (hash === "#blog") setView("blog");
+      else if (hash === "#admin") setView("admin");
       else setView("landing");
     };
     window.addEventListener("hashchange", onHash);
@@ -2564,7 +2785,8 @@ export default function AppRouter() {
   const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
   const goHome   = () => { window.location.hash = "";     setView("landing"); };
 
-  if (view === "app")  return <App />;
-  if (view === "blog") return <Blog onEnterApp={goToApp} onBack={goHome} />;
+  if (view === "app")   return <App />;
+  if (view === "blog")  return <Blog onEnterApp={goToApp} onBack={goHome} />;
+  if (view === "admin") return <AdminPanel onBack={goHome} />;
   return <Landing onEnterApp={goToApp} onOpenBlog={goToBlog} />;
 }
