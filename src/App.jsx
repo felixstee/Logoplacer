@@ -2556,7 +2556,7 @@ function App() {
 // ─────────────────────────────────────────────
 // Add your email here to grant admin access
 const ADMIN_EMAILS = [
-  "YOUR_EMAIL@gmail.com",
+  "adminlogoplacers@gmail.com", 
 ];
 
 function AdminPanel({ onBack }) {
