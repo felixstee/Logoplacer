@@ -1654,6 +1654,109 @@ async function sbGetAllUsers() {
   return sbFetch("/rest/v1/users?select=*&order=updated_at.desc") || [];
 }
 
+// ── Storage helpers (signed URLs) ────────────────────────────────────────
+async function sbUploadBaseImage(email, dataUrl) {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const path = `${email}/base-image.png`;
+    const res = await fetch(`${SB_URL}/storage/v1/object/base-images/${path}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "image/png", "x-upsert": "true" },
+      body: blob,
+    });
+    return res.ok ? path : null;
+  } catch { return null; }
+}
+
+async function sbGetSignedUrl(path) {
+  try {
+    const res = await fetch(`${SB_URL}/storage/v1/object/sign/base-images/${path}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ expiresIn: 3600 }),
+    });
+    const data = await res.json();
+    return data.signedURL ? `${SB_URL}/storage/v1${data.signedURL}` : null;
+  } catch { return null; }
+}
+
+// ── Project persistence ───────────────────────────────────────────────────
+async function sbSaveProject(email, data) {
+  // Upsert by email — one active project per user
+  const existing = await sbFetch(`/rest/v1/projects?email=eq.${encodeURIComponent(email)}&select=id`);
+  if (Array.isArray(existing) && existing.length > 0) {
+    return sbFetch(`/rest/v1/projects?id=eq.${existing[0].id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ ...data, updated_at: new Date().toISOString() }),
+    });
+  }
+  return sbFetch("/rest/v1/projects", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ email, ...data }),
+  });
+}
+
+async function sbLoadProject(email) {
+  const rows = await sbFetch(`/rest/v1/projects?email=eq.${encodeURIComponent(email)}&select=*&order=updated_at.desc&limit=1`);
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
+// ── Companies persistence ─────────────────────────────────────────────────
+async function sbSaveCompanies(projectId, companies) {
+  // Delete old, insert new
+  await sbFetch(`/rest/v1/companies?project_id=eq.${projectId}`, { method: "DELETE" });
+  if (!companies.length) return;
+  const rows = companies.map(c => ({
+    project_id: projectId,
+    email: c.email || "",
+    domain: c.domain || "",
+    name: c.companyName || "",
+    person: c.personName || "",
+    color: c.brandColor || null,
+    status: c.status === "ok" ? "needs-logo" : c.status,
+  }));
+  return sbFetch("/rest/v1/companies", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(rows),
+  });
+}
+
+async function sbLoadCompanies(projectId) {
+  const rows = await sbFetch(`/rest/v1/companies?project_id=eq.${projectId}&select=*&order=created_at.asc`);
+  if (!Array.isArray(rows)) return [];
+  return rows.map(r => ({
+    id: r.id,
+    email: r.email,
+    domain: r.domain,
+    companyName: r.name,
+    personName: r.person,
+    brandColor: r.color,
+    status: r.status || "idle",
+    logoEl: null,
+    logoDataUrl: null,
+  }));
+}
+
+// ── Template persistence ──────────────────────────────────────────────────
+async function sbSaveTemplate(email, tpl) {
+  return sbFetch("/rest/v1/templates", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ email, name: tpl.name, data: tpl }),
+  });
+}
+
+async function sbLoadTemplates(email) {
+  const rows = await sbFetch(`/rest/v1/templates?email=eq.${encodeURIComponent(email)}&select=*&order=created_at.desc`);
+  return Array.isArray(rows) ? rows.map(r => ({ ...r.data, id: r.id, name: r.name })) : [];
+}
+
+async function sbDeleteTemplate(id) {
+  return sbFetch(`/rest/v1/templates?id=eq.${id}`, { method: "DELETE" });
+}
+
 function loadGIS() {
   return new Promise(resolve => {
     if (window.google?.accounts?.oauth2) { resolve(); return; }
@@ -1784,17 +1887,39 @@ function CreditBadge({ credits, onUpgrade }) {
 
 // Modal shown when out of credits or trying to upgrade
 function UpgradeModal({ onClose, credits }) {
-  const plans = [
-    { key:"free",     label:"Free",      price:"Free",    period:"",     features:["4 credits / day","Single export only"], current: credits.plan === "free" },
-    { key:"sdr",      label:"SDR",       price:"$19",     period:"/mo",  features:["300 credits / month","Bulk send + export"], current: credits.plan === "sdr" },
-    { key:"salespro", label:"Sales Pro", price:"$29",     period:"/mo",  features:["2 000 credits / month","Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
-    { key:"team",     label:"Team",      price:"$59",     period:"/mo",  features:["10 000 credits / month","Up to 5 seats"], current: credits.plan === "team" },
-  ];
-  // Dev helper — switch plan locally (real app: redirect to Stripe)
-  const switchPlan = (key) => {
-    initCredits(key);
-    window.location.reload();
+  const [loading, setLoading] = useState(null);
+  const user = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
+
+  const STRIPE_PRICES = {
+    sdr:      "price_1T94U1A1MErAKbCi3MOZydEy",
+    salespro: "price_1T94U1A1MErAKbCiPMitkjPc",
+    team:     "price_1T94U0A1MErAKbCioJt6SdZa",
   };
+
+  const plans = [
+    { key:"free",     label:"Free",      price:"Free", period:"",    features:["4 credits / day","Single export only"], current: credits.plan === "free" },
+    { key:"sdr",      label:"SDR",       price:"$19",  period:"/mo", features:["300 credits / month","Bulk send + export"], current: credits.plan === "sdr" },
+    { key:"salespro", label:"Sales Pro", price:"$29",  period:"/mo", features:["2 000 credits / month","Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
+    { key:"team",     label:"Team",      price:"$59",  period:"/mo", features:["10 000 credits / month","Up to 5 seats"], current: credits.plan === "team" },
+  ];
+
+  const handleUpgrade = async (plan) => {
+    if (plan.key === "free" || plan.current) return;
+    const priceId = STRIPE_PRICES[plan.key];
+    if (!priceId) return;
+    setLoading(plan.key);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId, email: user.email }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {}
+    setLoading(null);
+  };
+
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-box" style={{ maxWidth:700 }}>
@@ -1827,8 +1952,8 @@ function UpgradeModal({ onClose, credits }) {
                   ))}
                 </div>
                 <button
-                  disabled={p.current}
-                  onClick={() => switchPlan(p.key)}
+                  disabled={p.current || loading === p.key}
+                  onClick={() => handleUpgrade(p)}
                   style={{
                     background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
                     color: p.current ? "var(--t4)" : "#fff",
@@ -1836,14 +1961,11 @@ function UpgradeModal({ onClose, credits }) {
                     borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700,
                     cursor: p.current ? "default" : "pointer", fontFamily:"inherit", width:"100%",
                   }}>
-                  {p.current ? "Current plan" : `Switch to ${p.label}`}
+                  {p.current ? "Current plan" : loading === p.key ? "Loading…" : `Get ${p.label}`}
                 </button>
               </div>
             ))}
           </div>
-          <p style={{ fontSize:11, color:"var(--t4)", textAlign:"center" }}>
-            In production, these buttons redirect to Stripe checkout. Connect Stripe webhook to auto-update plan.
-          </p>
         </div>
       </div>
     </div>
@@ -1875,15 +1997,21 @@ function App() {
               // Sync plan from Supabase
               sbGetUser(user.email).then(row => {
                 if (row) {
-                  // User exists — apply their plan to local credits
                   const existing = (() => { try { return JSON.parse(localStorage.getItem("lp_credits")) || {}; } catch { return {}; } })();
-                  if (existing.plan !== row.plan) {
-                    initCredits(row.plan);
-                  }
+                  if (existing.plan !== row.plan) initCredits(row.plan);
                 } else {
-                  // New user — create record
                   const creds = getOrInitCredits();
                   sbUpsertUser(user.email, { plan: creds.plan, name: user.name, picture: user.picture });
+                }
+                // If user came from pricing page, redirect to Stripe checkout
+                const pendingPrice = sessionStorage.getItem("lp_pending_price");
+                if (pendingPrice) {
+                  sessionStorage.removeItem("lp_pending_price");
+                  fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ priceId: pendingPrice, email: user.email }),
+                  }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
                 }
               }).catch(() => {});
               setAuthed(true); resolve();
@@ -1951,6 +2079,9 @@ function App() {
   const [editingContact, setEditingContact] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { credits, spend, canBulk, topUp, plan: currentPlan } = useCredits();
+  const [projectId, setProjectId] = useState(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -1959,7 +2090,79 @@ function App() {
 
   useEffect(() => {
     try { localStorage.setItem("lp_companies", JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch {}
+    if (sessionLoaded) triggerSave();
   }, [companies]);
+
+  useEffect(() => {
+    if (sessionLoaded) triggerSave();
+  }, [logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos]);
+
+  // ── Load session from Supabase on mount ──────────────────────────────────
+  useEffect(() => {
+    const email = sessionUser.email;
+    if (!email) { setSessionLoaded(true); return; }
+    sbLoadProject(email).then(async project => {
+      if (!project) { setSessionLoaded(true); return; }
+      setProjectId(project.id);
+      // Load settings
+      const s = project.settings || {};
+      if (s.logoInstances) setLogoInstances(s.logoInstances);
+      if (s.textLayers) setTextLayers(s.textLayers);
+      if (s.symbols) setSymbols(s.symbols);
+      if (s.canvasBg) setCanvasBg(s.canvasBg);
+      if (s.personalisedColors !== undefined) setPersonalisedColors(s.personalisedColors);
+      if (s.colorToReplace) setColorToReplace(s.colorToReplace);
+      if (s.myLogoSize) setMyLogoSize(s.myLogoSize);
+      if (s.myLogoPos) setMyLogoPos(s.myLogoPos);
+      // Load base image from Storage
+      if (project.base_image_url) {
+        const signedUrl = await sbGetSignedUrl(project.base_image_url);
+        if (signedUrl) {
+          const img = new Image();
+          img.onload = () => drawImageToCanvas(img);
+          img.src = signedUrl;
+        }
+      }
+      // Load companies (without logos)
+      const savedCompanies = await sbLoadCompanies(project.id);
+      if (savedCompanies.length > 0) setCompanies(savedCompanies);
+      // Load templates
+      sbLoadTemplates(email).then(tpls => { if (tpls.length > 0) setTemplates(tpls); });
+      setSessionLoaded(true);
+    }).catch(() => setSessionLoaded(true));
+  }, []);
+
+  // ── Autosave to Supabase (debounced 3s) ──────────────────────────────────
+  const saveTimerRef = useRef(null);
+  const triggerSave = () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => saveSession(), 3000);
+  };
+
+  const saveSession = async () => {
+    const email = sessionUser.email;
+    if (!email) return;
+    setSaving(true);
+    try {
+      // Upload base image if exists
+      let base_image_url = null;
+      if (baseImageRef.current) {
+        const canvas = document.createElement("canvas");
+        const { w, h } = canvasSizeRef.current;
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
+        base_image_url = await sbUploadBaseImage(email, canvas.toDataURL("image/png"));
+      }
+      const settings = { logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos };
+      const project = await sbSaveProject(email, { base_image_url, settings });
+      const pid = (Array.isArray(project) ? project[0]?.id : project?.id) || projectId;
+      if (pid) {
+        setProjectId(pid);
+        await sbSaveCompanies(pid, companies);
+      }
+    } catch {}
+    setSaving(false);
+  };
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
   const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
@@ -1984,7 +2187,11 @@ function App() {
     const name = templateName.trim() || `Template ${templates.length + 1}`;
     const tpl = { id: uid(), name, savedAt: Date.now(), logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace };
     const updated = [tpl, ...templates].slice(0, 20);
-    setTemplates(updated); localStorage.setItem("lp_templates", JSON.stringify(updated)); setTemplateName("");
+    setTemplates(updated);
+    localStorage.setItem("lp_templates", JSON.stringify(updated));
+    setTemplateName("");
+    // Save to Supabase
+    sbSaveTemplate(sessionUser.email, tpl).catch(() => {});
     showToast(`Template "${name}" saved`);
   };
 
@@ -2191,6 +2398,8 @@ function App() {
               </div>
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
+            {saving && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Saving…</span>}
+            {!saving && sessionLoaded && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Saved</span>}
             <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
               <span style={{display:"flex",alignItems:"center",gap:6}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -2334,7 +2543,7 @@ function App() {
                       <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
                     </div>
                     <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
-                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); }} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
+                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); sbDeleteTemplate(tpl.id).catch(()=>{}); }} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
                   </div>
                 ))}
               </div>
@@ -2575,7 +2784,7 @@ function App() {
 // ─────────────────────────────────────────────
 // Add your email here to grant admin access
 const ADMIN_EMAILS = [
-  "YOUR_EMAIL@gmail.com",
+  "adminlogoplacers@gmail.com",
 ];
 
 function AdminPanel({ onBack }) {
