@@ -2066,6 +2066,7 @@ function App() {
   const [openLogoId, setOpenLogoId] = useState(null);
   const [myLogoEl, setMyLogoEl] = useState(null);
   const [myLogoName, setMyLogoName] = useState(null);
+  const [baseImageName, setBaseImageName] = useState(null);
   const [myLogoSize, setMyLogoSize] = useState(100);
   const [myLogoPos, setMyLogoPos] = useState({ x: 200, y: 50 });
   const [textLayers, setTextLayers] = useState([defaultText()]);
