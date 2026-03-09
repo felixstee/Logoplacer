@@ -484,67 +484,58 @@ function extractContacts(raw) {
 async function fetchLogoDataURL(domain) {
   const d = domain.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase().trim();
 
-  // Load an image URL → HTMLImageElement via blob URL (avoids canvas CORS taint)
-  const loadImg = (blobUrl) => new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img.naturalWidth > 8 ? img : null);
-    img.onerror = () => resolve(null);
-    img.src = blobUrl;
-  });
+  // Safari-compatible timeout (AbortSignal.timeout not supported in Safari)
+  const withTimeout = (ms) => {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), ms);
+    return ctrl.signal;
+  };
 
-  // Fetch through allorigins.win CORS proxy → returns blob → canvas-safe dataURL
-  const tryProxy = async (targetUrl) => {
+  // Blob URL → canvas dataURL (avoids CORS canvas taint on all browsers)
+  const blobToDataURL = async (blob) => {
+    if (!blob?.size || blob.type === "text/html") return null;
+    const blobUrl = URL.createObjectURL(blob);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        if (img.naturalWidth < 8) { URL.revokeObjectURL(blobUrl); resolve(null); return; }
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext("2d").drawImage(img, 0, 0);
+        URL.revokeObjectURL(blobUrl);
+        try { resolve(c.toDataURL("image/png")); } catch { resolve(null); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
+      img.src = blobUrl;
+    });
+  };
+
+  const tryFetch = async (url) => {
     try {
-      const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxy, { signal: AbortSignal.timeout(6000) });
+      const res = await fetch(url, { signal: withTimeout(7000) });
       if (!res.ok) return null;
-      const blob = await res.blob();
-      if (!blob.size || blob.type === "text/html") return null;
-      const blobUrl = URL.createObjectURL(blob);
-      const img = await loadImg(blobUrl);
-      if (!img) { URL.revokeObjectURL(blobUrl); return null; }
-      // Draw to canvas → dataURL (no taint since blob: URL)
-      const c = document.createElement("canvas");
-      c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext("2d").drawImage(img, 0, 0);
-      URL.revokeObjectURL(blobUrl);
-      try { return c.toDataURL("image/png"); } catch { return null; }
+      return blobToDataURL(await res.blob());
     } catch { return null; }
   };
 
-  // Direct fetch fallback (works when server allows CORS, e.g. Google favicons)
-  const tryDirect = async (url) => {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      if (!blob.size) return null;
-      const blobUrl = URL.createObjectURL(blob);
-      const img = await loadImg(blobUrl);
-      if (!img) { URL.revokeObjectURL(blobUrl); return null; }
-      const c = document.createElement("canvas");
-      c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext("2d").drawImage(img, 0, 0);
-      URL.revokeObjectURL(blobUrl);
-      try { return c.toDataURL("image/png"); } catch { return null; }
-    } catch { return null; }
-  };
+  // corsproxy.io is more reliable than allorigins and works on Safari
+  const tryProxy = async (targetUrl) => tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
 
-  // 1. Try Clearbit through proxy (best quality logos)
-  const clearbit = await tryProxy(`https://logo.clearbit.com/${d}`);
-  if (clearbit) return clearbit;
+  // 1. Clearbit — best quality, needs proxy
+  const r1 = await tryProxy(`https://logo.clearbit.com/${d}`);
+  if (r1) return r1;
 
-  // 2. Try Google favicon directly (allows CORS)
-  const google = await tryDirect(`https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`);
-  if (google) return google;
+  // 2. Google favicons — allows CORS directly, works everywhere
+  const r2 = await tryFetch(`https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`);
+  if (r2) return r2;
 
-  // 3. Try DuckDuckGo through proxy
-  const duck = await tryProxy(`https://icons.duckduckgo.com/ip3/${d}.ico`);
-  if (duck) return duck;
+  // 3. DuckDuckGo via proxy
+  const r3 = await tryProxy(`https://icons.duckduckgo.com/ip3/${d}.ico`);
+  if (r3) return r3;
 
-  // 4. Try favicon.ico directly through proxy
-  const favicon = await tryProxy(`https://${d}/favicon.ico`);
-  if (favicon) return favicon;
+  // 4. Brand fetch API (good for well-known companies)
+  const r4 = await tryFetch(`https://img.logo.dev/${d}?token=pk_TCkNRFgaR0KBpHjCMi8xYQ&size=128`);
+  if (r4) return r4;
 
   throw new Error("no logo found for " + domain);
 }

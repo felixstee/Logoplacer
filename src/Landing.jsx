@@ -719,7 +719,6 @@ function LiveDemo() {
     if (!company.trim()) { setLogoEl(null); setAccentColor(null); return; }
     debounceRef.current = setTimeout(async () => {
       setFetching(true);
-      // Try .com first, then .se, then exact input as domain
       const input = company.trim();
       const isUrl = input.includes(".");
       const candidates = isUrl
@@ -729,12 +728,28 @@ function LiveDemo() {
             input.toLowerCase().replace(/\s+/g,"") + ".se",
             input.toLowerCase().replace(/\s+/g,"") + ".io",
           ];
+
+      const withTimeout = (ms) => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
+      const tryUrl = async (url) => {
+        try {
+          const res = await fetch(url, { signal: withTimeout(6000) });
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          if (!blob.size || blob.type === "text/html") return null;
+          return blob;
+        } catch { return null; }
+      };
+
       let found = false;
       for (const domain of candidates) {
-        try {
-          const res = await fetch(`/.netlify/functions/logo?domain=${encodeURIComponent(domain)}`);
-          if (res.ok) {
-            const blob = await res.blob();
+        const sources = [
+          `https://corsproxy.io/?${encodeURIComponent(`https://logo.clearbit.com/${domain}`)}`,
+          `https://www.google.com/s2/favicons?sz=128&domain_url=https://${domain}`,
+          `https://corsproxy.io/?${encodeURIComponent(`https://icons.duckduckgo.com/ip3/${domain}.ico`)}`,
+        ];
+        for (const src of sources) {
+          const blob = await tryUrl(src);
+          if (blob) {
             const url = URL.createObjectURL(blob);
             const img = new Image();
             img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
@@ -742,7 +757,8 @@ function LiveDemo() {
             found = true;
             break;
           }
-        } catch {}
+        }
+        if (found) break;
       }
       if (!found) { setLogoEl(null); setFetching(false); }
     }, 700);
