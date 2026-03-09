@@ -730,35 +730,22 @@ function LiveDemo() {
           ];
 
       const withTimeout = (ms) => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
-      const tryUrl = async (url) => {
-        try {
-          const res = await fetch(url, { signal: withTimeout(6000) });
-          if (!res.ok) return null;
-          const blob = await res.blob();
-          if (!blob.size || blob.type === "text/html") return null;
-          return blob;
-        } catch { return null; }
-      };
-
       let found = false;
       for (const domain of candidates) {
-        const sources = [
-          `https://corsproxy.io/?${encodeURIComponent(`https://logo.clearbit.com/${domain}`)}`,
-          `https://www.google.com/s2/favicons?sz=128&domain_url=https://${domain}`,
-          `https://corsproxy.io/?${encodeURIComponent(`https://icons.duckduckgo.com/ip3/${domain}.ico`)}`,
-        ];
-        for (const src of sources) {
-          const blob = await tryUrl(src);
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const img = new Image();
-            img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
-            img.src = url;
-            found = true;
-            break;
+        try {
+          const res = await fetch(`/api/logo?domain=${encodeURIComponent(domain)}`, { signal: withTimeout(8000) });
+          if (res.ok) {
+            const blob = await res.blob();
+            if (blob.size > 0) {
+              const url = URL.createObjectURL(blob);
+              const img = new Image();
+              img.onload = () => { setLogoEl(img); extractColor(img); setFetching(false); };
+              img.src = url;
+              found = true;
+              break;
+            }
           }
-        }
-        if (found) break;
+        } catch {}
       }
       if (!found) { setLogoEl(null); setFetching(false); }
     }, 700);

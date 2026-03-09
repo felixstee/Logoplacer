@@ -484,58 +484,33 @@ function extractContacts(raw) {
 async function fetchLogoDataURL(domain) {
   const d = domain.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase().trim();
 
-  // Safari-compatible timeout (AbortSignal.timeout not supported in Safari)
-  const withTimeout = (ms) => {
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), ms);
-    return ctrl.signal;
-  };
+  const withTimeout = (ms) => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
 
-  // Blob URL → canvas dataURL (avoids CORS canvas taint on all browsers)
-  const blobToDataURL = async (blob) => {
-    if (!blob?.size || blob.type === "text/html") return null;
-    const blobUrl = URL.createObjectURL(blob);
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        if (img.naturalWidth < 8) { URL.revokeObjectURL(blobUrl); resolve(null); return; }
-        const c = document.createElement("canvas");
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        c.getContext("2d").drawImage(img, 0, 0);
-        URL.revokeObjectURL(blobUrl);
-        try { resolve(c.toDataURL("image/png")); } catch { resolve(null); }
-      };
-      img.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
-      img.src = blobUrl;
-    });
-  };
+  const blobToDataURL = (blob) => new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < 8) { URL.revokeObjectURL(url); resolve(null); return; }
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      try { resolve(c.toDataURL("image/png")); } catch { resolve(null); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
 
-  const tryFetch = async (url) => {
-    try {
-      const res = await fetch(url, { signal: withTimeout(7000) });
-      if (!res.ok) return null;
-      return blobToDataURL(await res.blob());
-    } catch { return null; }
-  };
-
-  // corsproxy.io is more reliable than allorigins and works on Safari
-  const tryProxy = async (targetUrl) => tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
-
-  // 1. Clearbit — best quality, needs proxy
-  const r1 = await tryProxy(`https://logo.clearbit.com/${d}`);
-  if (r1) return r1;
-
-  // 2. Google favicons — allows CORS directly, works everywhere
-  const r2 = await tryFetch(`https://www.google.com/s2/favicons?sz=128&domain_url=https://${d}`);
-  if (r2) return r2;
-
-  // 3. DuckDuckGo via proxy
-  const r3 = await tryProxy(`https://icons.duckduckgo.com/ip3/${d}.ico`);
-  if (r3) return r3;
-
-  // 4. Brand fetch API (good for well-known companies)
-  const r4 = await tryFetch(`https://img.logo.dev/${d}?token=pk_TCkNRFgaR0KBpHjCMi8xYQ&size=128`);
-  if (r4) return r4;
+  try {
+    const res = await fetch(`/api/logo?domain=${encodeURIComponent(d)}`, { signal: withTimeout(8000) });
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.size > 0) {
+        const data = await blobToDataURL(blob);
+        if (data) return data;
+      }
+    }
+  } catch {}
 
   throw new Error("no logo found for " + domain);
 }
