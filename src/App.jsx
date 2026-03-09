@@ -1649,6 +1649,45 @@ function LoginPage({ onLogin, loading }) {
 
 const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com";
 
+// ─────────────────────────────────────────────
+// SUPABASE
+// ─────────────────────────────────────────────
+const SB_URL = "https://mnfrswuslktkrzgydvkg.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnJzd3VzbGt0a3J6Z3lkdmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTkxMDUsImV4cCI6MjA4ODYzNTEwNX0.WUVjrEnWp4VVi6Yx9TfYKK9Fke85EwiaNw_ozHddK9Q";
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SB_URL + path, {
+    ...opts,
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "",
+      ...opts.headers,
+    },
+  });
+  if (!res.ok) return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+async function sbGetUser(email) {
+  const rows = await sbFetch(`/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=*`);
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
+async function sbUpsertUser(email, data) {
+  return sbFetch("/rest/v1/users", {
+    method: "POST",
+    prefer: "resolution=merge-duplicates",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify({ email, ...data }),
+  });
+}
+
+async function sbGetAllUsers() {
+  return sbFetch("/rest/v1/users?select=*&order=updated_at.desc") || [];
+}
+
 function loadGIS() {
   return new Promise(resolve => {
     if (window.google?.accounts?.oauth2) { resolve(); return; }
@@ -1867,6 +1906,20 @@ function App() {
               sessionStorage.setItem("lp_authed", "1");
               sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
               sessionStorage.setItem("lp_gtoken", resp.access_token);
+              // Sync plan from Supabase
+              sbGetUser(user.email).then(row => {
+                if (row) {
+                  // User exists — apply their plan to local credits
+                  const existing = (() => { try { return JSON.parse(localStorage.getItem("lp_credits")) || {}; } catch { return {}; } })();
+                  if (existing.plan !== row.plan) {
+                    initCredits(row.plan);
+                  }
+                } else {
+                  // New user — create record
+                  const creds = getOrInitCredits();
+                  sbUpsertUser(user.email, { plan: creds.plan, name: user.name, picture: user.picture });
+                }
+              }).catch(() => {});
               setAuthed(true); resolve();
             })
             .catch(reject);
@@ -2556,7 +2609,7 @@ function App() {
 // ─────────────────────────────────────────────
 // Add your email here to grant admin access
 const ADMIN_EMAILS = [
-  "adminlogoplacers@gmail.com", 
+  "YOUR_EMAIL@gmail.com",
 ];
 
 function AdminPanel({ onBack }) {
@@ -2609,41 +2662,26 @@ function AdminPanel({ onBack }) {
 
   useEffect(() => {
     if (!adminUser) return;
-    const found = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith("lp_credits_")) {
-        try {
-          const val = JSON.parse(localStorage.getItem(key));
-          found.push({ email: key.replace("lp_credits_", ""), ...val });
-        } catch {}
-      }
-    }
-    setUsers(found);
+    sbGetAllUsers().then(rows => setUsers(Array.isArray(rows) ? rows : []));
   }, [adminUser]);
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editing) return;
-    const key = `lp_credits_${editing.email}`;
-    const existing = JSON.parse(localStorage.getItem(key) || "{}");
-    const updated = { ...existing, plan: editing.plan, balance: Number(editing.balance), limit: PLAN_LIMITS[editing.plan] };
-    localStorage.setItem(key, JSON.stringify(updated));
+    const updated = { plan: editing.plan, balance: Number(editing.balance) };
+    await sbUpsertUser(editing.email, updated);
     setUsers(us => us.map(u => u.email === editing.email ? { ...u, ...updated } : u));
     setSaved(editing.email); setTimeout(() => setSaved(""), 2000);
     setEditing(null);
   };
 
-  const addUser = () => {
+  const addUser = async () => {
     const email = prompt("User email:");
     if (!email?.trim()) return;
-    const key = `lp_credits_${email.trim()}`;
-    if (!localStorage.getItem(key)) {
-      const fresh = { plan: "free", balance: 4, limit: 4 };
-      localStorage.setItem(key, JSON.stringify(fresh));
-      setUsers(us => [...us, { email: email.trim(), ...fresh }]);
-    } else {
-      alert("User already exists");
-    }
+    const existing = users.find(u => u.email === email.trim());
+    if (existing) { alert("User already exists"); return; }
+    const fresh = { plan: "free", balance: 4 };
+    await sbUpsertUser(email.trim(), fresh);
+    setUsers(us => [...us, { email: email.trim(), ...fresh }]);
   };
 
   const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
