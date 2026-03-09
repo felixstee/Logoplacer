@@ -1997,11 +1997,15 @@ function App() {
               // Sync plan from Supabase
               sbGetUser(user.email).then(row => {
                 if (row) {
-                  const existing = (() => { try { return JSON.parse(localStorage.getItem("lp_credits")) || {}; } catch { return {}; } })();
-                  if (existing.plan !== row.plan) initCredits(row.plan);
+                  // Always trust Supabase plan, preserve balance if plan unchanged
+                  const existing = loadCredits();
+                  if (!existing || existing.plan !== row.plan) {
+                    initCredits(row.plan);
+                  }
                 } else {
-                  const creds = getOrInitCredits();
-                  sbUpsertUser(user.email, { plan: creds.plan, name: user.name, picture: user.picture });
+                  // New user → default to free plan
+                  initCredits("free");
+                  sbUpsertUser(user.email, { plan: "free", name: user.name, picture: user.picture });
                 }
                 // If user came from pricing page, redirect to Stripe checkout
                 const pendingPrice = sessionStorage.getItem("lp_pending_price");
