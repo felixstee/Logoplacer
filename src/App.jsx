@@ -1901,7 +1901,7 @@ function saveCredits(data) {
   localStorage.setItem("lp_credits", JSON.stringify(data));
 }
 function initCredits(plan = "free") {
-  const p = PLANS[plan];
+  const p = PLANS[plan] || PLANS["free"];
   const now = new Date();
   let resetAt, balance;
   if (p.creditsPerDay) {
@@ -1986,7 +1986,7 @@ function useCredits() {
   };
 
   const canBulk = (count) => {
-    const plan = PLANS[credits.plan];
+    const plan = PLANS[credits.plan] || PLANS["free"];
     if (count > plan.bulkMax) return false;       // Free = 1 max
     return credits.balance >= count;
   };
@@ -2003,9 +2003,7 @@ function useCredits() {
 
 // Credit badge shown in header
 function CreditBadge({ credits, onUpgrade }) {
-  const plan = PLANS[credits.plan];
-  const [pulse, setPulse] = useState(false);
-  const prevBalance = useRef(credits.balance);
+  const plan = PLANS[credits.plan] || PLANS["free"];
   useEffect(() => {
     if (credits.balance !== prevBalance.current) {
       setPulse(true);
@@ -2441,7 +2439,12 @@ function App() {
     let w = img.width, h = img.height;
     if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
     if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
-    canvasSizeRef.current = { w, h }; baseImageRef.current = img; setHasImage(true);
+    canvasSizeRef.current = { w, h }; baseImageRef.current = img;
+    if (canvasRef.current) {
+      canvasRef.current.width = w; canvasRef.current.height = h;
+      canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
+    }
+    setHasImage(true);
   };
 
   const redrawBaseCanvas = () => {
@@ -3147,8 +3150,8 @@ function AdminPanel({ onBack }) {
   const [editing, setEditing] = useState(null);
   const [saved, setSaved] = useState("");
 
-  const PLANS = ["free", "sdr", "pro", "team"];
-  const PLAN_LIMITS = { free: 4, sdr: 300, pro: 2000, team: 10000 };
+  const PLANS = ["free", "sdr", "salespro", "team"];
+  const PLAN_LIMITS = { free: 4, sdr: 300, salespro: 2000, team: 10000 };
 
   const loginWithGoogle = async () => {
     setLoading(true); setDenied(false);
