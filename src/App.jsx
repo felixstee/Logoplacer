@@ -1,4 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, createContext, useContext } from "react";
+import Landing from "./Landing";
+import Blog from "./Blog";
+import { LanguageProvider, useLang, useT } from "./i18n.jsx";
+import Legal from "./Legal";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -31,13 +35,15 @@ const style = `
   }
 
   body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
-  .app { min-height: 100vh; background: var(--bg); display: grid; grid-template-rows: auto auto 1fr; }
+  html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
+  .app { min-height: 100vh; width: 100vw; max-width: 100vw; overflow-x: hidden; background: var(--bg); display: grid; grid-template-rows: auto auto 1fr; }
 
   /* ── Header ─────────────────────────────────────────── */
-  .header { padding: 12px 20px; background: var(--bg2); border-bottom: 0.5px solid var(--sep); display: flex; align-items: center; justify-content: space-between; }
+  .header { padding: 12px 20px; background: var(--bg2); border-bottom: 0.5px solid var(--sep); display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .header::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(26,130,255,0.45) 30%, rgba(91,79,255,0.45) 70%, transparent); pointer-events: none; }
   .header-brand { display: flex; align-items: center; gap: 10px; }
-  .header-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-  .header-name { font-size: 16px; font-weight: 600; color: var(--t1); letter-spacing: -.3px; }
+  .header-icon { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#1a82ff,#5b4fff); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,130,255,0.3); }
+  .header-name { font-size: 16px; font-weight: 700; background: linear-gradient(135deg,#ffffff,#a5c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.3px; }
   .header-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
   .header-btns { display: flex; gap: 8px; }
 
@@ -45,15 +51,15 @@ const style = `
   .mode-tabs { display: flex; background: var(--bg2); border-bottom: 0.5px solid var(--sep); padding: 0 4px; }
   .mode-tab { flex: 1; padding: 11px 0; text-align: center; font-size: 13px; font-weight: 500; color: var(--t3); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; font-family: inherit; }
   .mode-tab:hover { color: var(--t2); }
-  .mode-tab.active { color: var(--t1); border-bottom-color: var(--blue); }
+  .mode-tab.active { color: #7db8ff; border-bottom-color: #1a82ff; text-shadow: 0 0 20px rgba(26,130,255,0.4); }
 
   /* ── Layout ──────────────────────────────────────────── */
   .workspace { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 101px); overflow: hidden; }
-  .sidebar { background: var(--bg2); border-right: 0.5px solid var(--sep); overflow-y: auto; padding-bottom: 40px; }
+  .sidebar { background: linear-gradient(180deg, rgba(26,15,50,0.4) 0%, var(--bg2) 120px); border-right: 0.5px solid rgba(91,79,255,0.12); overflow-y: auto; padding-bottom: 40px; }
   .sidebar::-webkit-scrollbar { width: 0; }
 
   /* ── Section titles ──────────────────────────────────── */
-  .s-label { font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--t3); padding: 20px 16px 7px; display: block; }
+  .s-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(167,139,250,0.7); padding: 20px 16px 7px; display: block; }
   .s-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 7px; }
   .s-row .s-label { padding: 0; }
 
@@ -75,6 +81,7 @@ const style = `
   .sl-head { display: flex; justify-content: space-between; margin-bottom: 5px; }
   .sl-label { font-size: 12px; color: var(--t2); }
   .sl-val { font-size: 12px; font-weight: 500; }
+  .sl-val-inp { font-size: 12px; font-weight: 500; background: var(--bg4); border: 0.5px solid var(--blue); color: var(--t1); font-family: inherit; border-radius: 4px; padding: 1px 4px; width: 52px; text-align: right; outline: none; }
   input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--bg4); outline: none; }
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--blue); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
 
@@ -100,22 +107,22 @@ const style = `
 
   /* ── Tag buttons ─────────────────────────────────────── */
   .tag-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-  .tag-btn { background: var(--blue-dim); border: 0.5px solid hsla(211 100% 58% / .25); color: var(--blue); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; }
-  .tag-btn:hover { background: hsla(211 100% 58% / .2); }
+  .tag-btn { background: linear-gradient(135deg,rgba(26,130,255,0.12),rgba(91,79,255,0.12)); border: 0.5px solid rgba(91,79,255,0.35); color: #a78bfa; font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .tag-btn:hover { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
 
   /* ── Controls grid ───────────────────────────────────── */
   .cg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .cg-cell { display: flex; flex-direction: column; gap: 3px; }
   .cg-label { font-size: 11px; color: var(--t3); }
 
-  /* ── Colour picker (hidden, triggered by swatch) ─────── */
+  /* ── Colour picker ───────────────────────────────────── */
   .color-swatch { width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--sep); cursor: pointer; padding: 0; flex-shrink: 0; position: relative; overflow: hidden; }
   .color-swatch input[type=color] { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
   /* ── Toggle buttons ──────────────────────────────────── */
   .trow { display: flex; gap: 5px; }
   .tbtn { flex: 1; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t3); font-family: inherit; font-size: 12px; padding: 6px; border-radius: 7px; cursor: pointer; transition: all .15s; }
-  .tbtn.on { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+  .tbtn.on { background: linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15)); border-color: rgba(91,79,255,0.5); color: #a78bfa; }
 
   /* ── Font-weight pills ───────────────────────────────── */
   .wrow { display: flex; gap: 4px; }
@@ -155,19 +162,19 @@ const style = `
   .auth-icon { width:52px; height:52px; border-radius:14px; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:24px; }
   .email-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
 
-  /* ── Primary / secondary buttons ────────────────────── */
-  .btn-p { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s; }
-  .btn-p:hover { opacity: .88; }
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn-p { background: linear-gradient(135deg, #1a82ff, #5b4fff); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s; box-shadow: 0 4px 16px rgba(26,130,255,0.25); }
+  .btn-p:hover { opacity: .92; box-shadow: 0 6px 22px rgba(26,130,255,0.38); }
   .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; }
   .btn-s { background: var(--bg4); color: var(--t1); border: 0.5px solid var(--sep); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; }
-  .btn-s:hover { background: hsl(220 8% 24%); }
+  .btn-s:hover { background: rgba(26,130,255,0.1); border-color: rgba(26,130,255,0.3); color: #7db8ff; }
   .btn-s:disabled { opacity: .38; cursor: not-allowed; }
   .btn-text { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--blue); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 3px; }
   .btn-text:hover { opacity: .8; }
   .btn-text-red { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--red); cursor: pointer; padding: 0; }
   .btn-text-red:hover { opacity: .8; }
 
-  /* ── Paste textarea ──────────────────────────────────── */
+  /* ── Paste area ──────────────────────────────────────── */
   .paste-area { width: 100%; height: 100px; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-size: 12px; padding: 9px 11px; border-radius: var(--r-sm); resize: none; outline: none; line-height: 1.6; font-family: "SF Mono", "Fira Code", monospace; }
   .paste-area:focus { border-color: var(--blue); }
   .paste-area::placeholder { color: var(--t4); }
@@ -196,18 +203,25 @@ const style = `
   .badge-err { font-size: 12px; color: var(--red); cursor: pointer; background: none; border: none; }
   .ico-rm { background: none; border: none; color: var(--t4); font-size: 16px; cursor: pointer; line-height: 1; }
   .ico-rm:hover { color: var(--red); }
+  .ico-edit { background:none; border:none; color:var(--t4); cursor:pointer; font-size:12px; padding:2px 3px; border-radius:4px; line-height:1; flex-shrink:0; }
+  .ico-edit:hover { color:var(--blue); }
+  .domain-inp { background:var(--bg); border:0.5px solid var(--blue); color:var(--t1); font-family:"SF Mono","Fira Code",monospace; font-size:11px; padding:3px 7px; border-radius:5px; outline:none; width:100%; min-width:0; }
 
   /* ── Canvas area ─────────────────────────────────────── */
   .canvas-area { display: flex; flex-direction: column; overflow: hidden; }
   .canvas-toolbar { padding: 10px 18px; border-bottom: 0.5px solid var(--sep); background: var(--bg2); display: flex; align-items: center; gap: 10px; }
-  .canvas-wrapper { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 40px; background: hsl(220 13% 6%); background-image: radial-gradient(circle at 1px 1px, hsl(220 8% 14%) 1px, transparent 0); background-size: 22px 22px; }
+  .canvas-wrapper { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 40px; background: hsl(220 13% 6%); background-image: radial-gradient(circle at 1px 1px, hsl(220 8% 14%) 1px, transparent 0); background-size: 22px 22px; position: relative; }
+  .zoom-controls { position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 6px; background: var(--bg2); border: 0.5px solid var(--sep); border-radius: 10px; padding: 5px 8px; z-index: 10; }
+  .zoom-btn { background: none; border: none; color: var(--t2); font-size: 16px; cursor: pointer; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: 600; }
+  .zoom-btn:hover { background: var(--bg4); color: var(--t1); }
+  .zoom-label { font-size: 11px; color: var(--t3); min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
   .canvas-container { position: relative; border-radius: var(--r-lg); overflow: hidden; user-select: none; box-shadow: 0 24px 80px rgba(0,0,0,.7), 0 0 0 0.5px rgba(255,255,255,.07); }
   .canvas-container canvas { display: block; }
   .canvas-footer { font-size: 12px; color: var(--t4); padding: 9px 20px; text-align: center; background: var(--bg2); border-top: 0.5px solid var(--sep); }
 
   /* ── Overlay boxes ───────────────────────────────────── */
-  .overlay-box { position: absolute; border: 1.5px dashed; cursor: move; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-  .overlay-box.text-box { padding: 4px 7px; min-width: 50px; min-height: 20px; align-items: flex-start; justify-content: flex-start; }
+  .overlay-box { position: absolute; border: 1.5px dashed; cursor: move; display: flex; align-items: center; justify-content: center; border-radius: 0; }
+  .overlay-box.text-box { padding: 4px 7px; min-width: 20px; min-height: 10px; align-items: flex-start; justify-content: flex-start; border-radius: 4px; }
   .inner-text { pointer-events: none; white-space: pre; line-height: 1.4; }
   .ov-pill { position: absolute; top: -20px; left: 0; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 100px; color: #fff; pointer-events: none; white-space: nowrap; }
 
@@ -225,8 +239,11 @@ const style = `
   .timing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
   .timing-cell { display: flex; flex-direction: column; gap: 4px; }
   .timing-label { font-size: 11px; color: var(--t3); }
-  .timing-input { background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 6px 9px; border-radius: var(--r-sm); outline: none; width: 100%; }
+  .timing-input { background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 6px 9px; border-radius: var(--r-sm); outline: none; width: 100%; transition: border-color .15s; }
   .timing-input:focus { border-color: var(--blue); }
+  .font-select { appearance: none; -webkit-appearance: none; background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 12px; padding: 7px 28px 7px 10px; border-radius: var(--r-sm); outline: none; cursor: pointer; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color .15s; }
+  .font-select:focus { border-color: var(--blue); }
+  .font-select option { background: var(--bg2); color: var(--t1); }
   .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--sep); }
   .contact-row:last-child { border-bottom: none; }
   .contact-row-name { flex: 1; font-size: 13px; color: var(--t1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -237,8 +254,80 @@ const style = `
   .open-link-btn:hover { opacity: .75; }
   .gen-btn { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
   .gen-btn:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; }
-  .gen-btn.generating { background: var(--orange); }
+  .gen-btn.generating { background: linear-gradient(135deg,#1a82ff,#5b4fff); }
 
+  /* ─────────────────────────────────────────────────────
+     MOBILE RESPONSIVE  (max-width: 768px)
+  ───────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    /* Header */
+    .header { padding: 10px 12px; }
+    .header-sub { display: none; }
+    .header-name { font-size: 14px; }
+    .header-icon { width: 28px; height: 28px; font-size: 14px; }
+    .header-btns { gap: 4px; }
+    .header-btns .btn-s { display: none; }
+    .header-btns .btn-p { font-size: 11px; padding: 6px 10px; white-space: nowrap; }
+
+    /* Mode tabs */
+    .mode-tab { font-size: 12px; padding: 9px 0; }
+
+    /* Main workspace: stack vertically */
+    .workspace {
+      grid-template-columns: 1fr !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .sidebar {
+      max-height: 40vh;
+      border-right: none;
+      border-bottom: 0.5px solid var(--sep);
+      overflow-y: auto;
+    }
+    .canvas-area { height: 52vh; }
+    .canvas-wrapper { padding: 14px; }
+    .canvas-footer { font-size: 11px; padding: 7px 12px; }
+    .zoom-controls { bottom: 8px; right: 8px; padding: 4px 6px; }
+
+    /* Modal */
+    .modal-overlay { padding: 10px; }
+    .modal-box { max-height: 95vh; }
+    .modal-head { padding: 12px 14px; }
+    .modal-body { padding: 12px 14px; gap: 10px; }
+    .modal-foot { padding: 10px 14px; gap: 6px; }
+    .modal-title { font-size: 14px; }
+
+    /* Sidebar cards */
+    .card { margin: 0 8px; }
+    .lcard { margin: 0 8px 6px; }
+    .co-list-wrap { margin: 0 8px; }
+    .s-label { padding: 14px 14px 6px; }
+    .s-row { padding: 14px 14px 6px; }
+    .cg { grid-template-columns: 1fr 1fr; }
+    .upload-zone { padding: 14px 10px; }
+
+    /* Toast */
+    .toast {
+      font-size: 12px;
+      padding: 8px 14px;
+      white-space: normal;
+      text-align: center;
+      max-width: 88vw;
+    }
+
+    /* Video mode */
+    .video-workspace {
+      grid-template-columns: 1fr !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .video-workspace .sidebar {
+      max-height: 38vh;
+      border-right: none;
+      border-bottom: 0.5px solid var(--sep);
+    }
+    .video-workspace > div:last-child { height: 52vh; overflow: hidden; }
+  }
 `;
 
 const COLOR_PRESETS = [
@@ -266,39 +355,37 @@ const FONT_OPTIONS = [
   { label: "Verdana", value: "Verdana" },
 ];
 
-const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "", "~"];
-
-// Layer colors cycling
+const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "~"];
 const LAYER_COLORS = ["#c8f04c","#60a5fa","#f87171","#a78bfa","#fbbf24","#34d399","#f97316","#e879f9"];
 
 function domainToCompanyName(domain) {
   let name = domain.replace(/^www\./, "").split(".")[0];
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  name = name.charAt(0).toUpperCase() + name.slice(1);
+  return cleanCompanyName(name);
 }
 
-function guessDomain(input) {
+function cleanCompanyName(name) {
+  return name
+    .replace(/\s+(AB|Aktiebolag|Publ|AB\.|Inc\.?|LLC|Ltd\.?|GmbH|BV|AS|ApS|Oy|SAS|SRL|Corp\.?|Co\.?)$/i, "")
+    .trim();
+}
+
+function guessDomain(input, email = null) {
   let s = input.trim().toLowerCase();
   if (s.includes(".")) return s.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  s = s.replace(/\s+(ab|aktiebolag|publ|inc\.?|llc|ltd\.?|gmbh|bv|as|aps|oy|sas|srl|corp\.?|co\.?)$/i, "").trim();
+  s = s.replace(/\s+/g, "");
   const known = { google:"google.com", apple:"apple.com", microsoft:"microsoft.com", amazon:"amazon.com", meta:"meta.com", facebook:"facebook.com", netflix:"netflix.com", spotify:"spotify.com", uber:"uber.com", tesla:"tesla.com", ikea:"ikea.com", volvo:"volvo.com", klarna:"klarna.com" };
-  return known[s.replace(/\s+/g, "")] || s.replace(/\s+/g, "") + ".com";
+  if (known[s]) return known[s];
+  if (email) {
+    const emailDomain = email.split("@")[1];
+    if (emailDomain) {
+      const tld = emailDomain.slice(emailDomain.lastIndexOf("."));
+      return s + tld;
+    }
+  }
+  return s + ".com";
 }
-
-// Junk lines to always skip
-const SKIP_LINE = [
-  /^request phone/i, /^click to/i, /^access /i, /^fair\d/i,
-  /^\+\d/, /^[A-Z]$/, /^\d+$/, /^\d+,/.test,
-  /^sweden$/i, /^gothenburg/i, /^stockholm/i, /^saevsjoe/i, /^malmoe/i,
-  /^financial services/i, /^accounting/i, /^retail$/i, /^investments/i,
-  /^outdoor equipment/i, /^information technology/i, /^software$/i,
-  /^health/i, /^medical/i, /^telecommunications/i, /^packaging/i,
-  /^maskin/i, /^entrepren/i, /^foerpackning/i,
-];
-
-const ROLE_WORDS = [
-  "ceo","cfo","coo","cto","cpo","vp","vice","chief","officer",
-  "founder","co-founder","director","manager","head","president",
-  "partner","lead","controller","advisor",
-];
 
 const SKIP_RE = new RegExp(
   "^(request|click to|access |fair\\d|\\+\\d|sweden|gothenburg|stockholm|" +
@@ -308,10 +395,15 @@ const SKIP_RE = new RegExp(
   "manager|head|president|partner|controller|advisor|\\d+)", "i"
 );
 
+const ROLE_WORDS = [
+  "ceo","cfo","coo","cto","cpo","vp","vice","chief","officer",
+  "founder","co-founder","director","manager","head","president",
+  "partner","lead","controller","advisor",
+];
+
 function isSkipLine(line) {
   if (!line || line.length < 2) return true;
   if (SKIP_RE.test(line.trim())) return true;
-  // Single-character lines like "G", "C", "J"
   if (/^[A-Z]$/.test(line.trim())) return true;
   return false;
 }
@@ -321,7 +413,6 @@ function looksLikeName(line) {
   if (words.length < 1 || words.length > 4) return false;
   if (/\d/.test(line) || /@/.test(line) || /,/.test(line)) return false;
   if (isSkipLine(line)) return false;
-  // Each word starts with capital, followed by at least one lowercase
   return words.every(w => /^[A-ZÅÄÖ][a-zåäö]{1,}/.test(w));
 }
 
@@ -330,9 +421,7 @@ function looksLikeCompany(line) {
   if (/^\d+$/.test(line) || /@/.test(line) || /http/i.test(line)) return false;
   if (isSkipLine(line)) return false;
   const lower = line.toLowerCase().trim();
-  // Pure role title = skip
   if (ROLE_WORDS.some(w => lower === w)) return false;
-  // Starts with a role word followed by space and more = title, not company
   if (ROLE_WORDS.some(w => lower.startsWith(w + " ") && lower.length < 30)) return false;
   return true;
 }
@@ -342,49 +431,41 @@ function extractContacts(raw) {
   const lines = raw.split("\n").map(l => l.trim());
   const EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
-  // Strategy A: Find __Company__ markers, look UP for name & email
-  const companyIdxs = lines.reduce((acc, line, i) => {
-    if (/^__[^_]{1,80}__$/.test(line)) acc.push(i);
-    return acc;
-  }, []);
+  const emailIdxs = lines.reduce((a, l, i) => { if (EMAIL_RE.test(l)) a.push(i); return a; }, []);
 
-  if (companyIdxs.length > 0) {
-    for (const ci of companyIdxs) {
-      const companyName = lines[ci].replace(/^__|__$/g, "").trim();
-      if (!looksLikeCompany(companyName)) continue;
-      let personName = "", email = null;
+  if (emailIdxs.length > 0) {
+    for (const ei of emailIdxs) {
+      const email = lines[ei].toLowerCase();
+      let personName = "", companyName = "";
       for (let back = 1; back <= 12; back++) {
-        const candidate = (lines[ci - back] || "").trim();
-        if (!candidate) continue;
-        if (!email && EMAIL_RE.test(candidate)) { email = candidate.toLowerCase(); continue; }
-        if (!personName && looksLikeName(candidate) && !isSkipLine(candidate)) { personName = candidate; }
+        const c = (lines[ei - back] || "").trim();
+        if (!c) continue;
+        if (/^request phone/i.test(c)) continue;
+        if (/^\+\d/.test(c)) continue;
+        if (/^\d+$/.test(c)) continue;
+        if (/^(click to|access |fair\d|sweden|gothenburg|stockholm|malmoe|saevsjoe)/i.test(c)) continue;
+        if (/^(financial services|accounting|retail|investments|outdoor|information tech|software|health|medical|telecom|packaging|renewables|defense|hospital|marketing|food|research)/i.test(c)) continue;
+        if (/^[A-Z]$/.test(c)) continue;
+        if (EMAIL_RE.test(c)) break;
+        if (back === 1 && !isSkipLine(c) && looksLikeCompany(c)) { companyName = c; continue; }
+        if (back === 2 && !companyName && !isSkipLine(c) && looksLikeCompany(c)) { companyName = c; continue; }
+        if (!personName && looksLikeName(c)) { personName = c; }
+        if (personName && companyName) break;
       }
-      // also scan a few lines forward for email
-      for (let fwd = 1; fwd <= 4; fwd++) {
-        const c = (lines[ci + fwd] || "").trim();
-        if (!email && EMAIL_RE.test(c)) { email = c.toLowerCase(); }
+      if (!companyName) {
+        for (let fwd = 1; fwd <= 3; fwd++) {
+          const c = (lines[ei + fwd] || "").trim();
+          if (!c || EMAIL_RE.test(c)) break;
+          if (!isSkipLine(c) && looksLikeCompany(c)) { companyName = c; break; }
+        }
       }
+      if (!companyName) continue;
       const key = companyName.toLowerCase();
       if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email }); }
     }
-    return results;
+    if (results.length > 0) return results;
   }
 
-  // Strategy B: __Name__ __Company__ bold pairs
-  const clean = raw.replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/__([^_]+)__/g, (_, m) => `§§§${m.trim()}§§§`);
-  const boldTokens = [...clean.matchAll(/§§§([^§]+)§§§/g)].map(m => m[1].trim());
-  for (let i = 0; i < boldTokens.length - 1; i++) {
-    const a = boldTokens[i], b = boldTokens[i + 1];
-    if (looksLikeName(a) && looksLikeCompany(b)) {
-      const key = b.toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: a, companyName: b, email: null }); }
-      i++;
-    }
-  }
-  if (results.length > 0) return results;
-
-  // Strategy C: parse blocks separated by blank lines — pick up email inside block
   const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
   for (const block of blocks) {
     const bLines = block.split("\n").map(l => l.trim()).filter(Boolean);
@@ -399,63 +480,45 @@ function extractContacts(raw) {
       if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email }); }
     }
   }
-  if (results.length > 0) return results;
-
-  // Strategy D: simple "Firstname , Company" or two-word lines
-  for (const line of lines) {
-    const cm = line.match(/^([A-Za-zÅÄÖåäö]+)\s*,\s*(.+)$/);
-    if (cm && looksLikeCompany(cm[2].trim())) {
-      const key = cm[2].trim().toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: cm[1].trim(), companyName: cm[2].trim(), email: null }); }
-      continue;
-    }
-    const parts = line.split(/\s+/);
-    if (parts.length === 2 && looksLikeName(parts[0]) && looksLikeCompany(parts[1])) {
-      const key = parts[1].toLowerCase();
-      if (!seen.has(key)) { seen.add(key); results.push({ personName: parts[0], companyName: parts[1], email: null }); }
-    }
-  }
   return results;
 }
 
-async function fetchAsDataURL(url) {
-  for (const src of [url, `https://corsproxy.io/?${encodeURIComponent(url)}`]) {
-    try { const res = await fetch(src); if (!res.ok) continue; const blob = await res.blob(); return await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(blob); }); } catch { continue; }
-  }
-  throw new Error("failed");
-}
-
 async function fetchLogoDataURL(domain) {
-  // Try multiple sources in order — more fallbacks for smaller companies
-  const sources = [
-    `https://logo.clearbit.com/${domain}`,
-    `https://logo.clearbit.com/www.${domain}`,
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-    `https://www.google.com/s2/favicons?domain=www.${domain}&sz=64`,
-    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
-  ];
-  for (const url of sources) {
-    try {
-      const dataUrl = await fetchAsDataURL(url);
-      await new Promise((res, rej) => {
-        const img = new Image();
-        img.onload = () => {
-          // Reject tiny 1x1 placeholder images (some favicon APIs return these for unknown domains)
-          if (img.width <= 2 && img.height <= 2) { rej(new Error("placeholder")); return; }
-          res();
-        };
-        img.onerror = rej;
-        img.src = dataUrl;
-      });
-      return dataUrl;
-    } catch { continue; }
-  }
+  const d = domain.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase().trim();
+
+  const withTimeout = (ms) => { const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal; };
+
+  const blobToDataURL = (blob) => new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < 8) { URL.revokeObjectURL(url); resolve(null); return; }
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      try { resolve(c.toDataURL("image/png")); } catch { resolve(null); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+
+  try {
+    const res = await fetch(`/api/logo?domain=${encodeURIComponent(d)}`, { signal: withTimeout(8000) });
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.size > 0) {
+        const data = await blobToDataURL(blob);
+        if (data) return data;
+      }
+    }
+  } catch {}
+
   throw new Error("no logo found for " + domain);
 }
 
 function resolveTemplate(template, personName, companyName) {
   const firstName = (personName || "").split(" ")[0];
-  // ((name))s → smart possessive: "Lars" stays "Lars", "Kasper" → "Kaspers"
   const possessive = /[sxzSXZ]$/.test(firstName) ? firstName : firstName + "s";
   return template
     .replace(/\(\(name\)\)s/gi, possessive)
@@ -464,15 +527,58 @@ function resolveTemplate(template, personName, companyName) {
     .replace(/\(\(company\)\)/gi, companyName || "");
 }
 
-function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, displayW, displayH, textLayers, symbols, personName, companyName, companyLogoEl) {
+function PxInput({ value, onChange, color, suffix = "px", min = 1, max = 2000 }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value));
+  const commit = () => {
+    const n = parseInt(draft, 10);
+    if (!isNaN(n)) onChange(Math.max(min, Math.min(max, n)));
+    setEditing(false);
+  };
+  if (editing) return (
+    <input className="sl-val-inp" autoFocus value={draft}
+      style={{ color: color || "var(--t1)" }}
+      onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }} />
+  );
+  return (
+    <span className="sl-val" style={{ color, cursor: "pointer", textDecoration: "underline dotted", textUnderlineOffset: 2 }}
+      title="Click to edit" onClick={() => { setDraft(String(value)); setEditing(true); }}>
+      {value}{suffix}
+    </span>
+  );
+}
+
+function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, displayW, displayH, textLayers, symbols, personName, companyName, companyLogoEl, canvasBg, addWatermark = false) {
   const off = document.createElement("canvas");
   off.width = baseImg.width; off.height = baseImg.height;
   const ctx = off.getContext("2d");
+  if (canvasBg?.enabled) { ctx.fillStyle = canvasBg.color; ctx.fillRect(0, 0, off.width, off.height); }
   ctx.drawImage(baseImg, 0, 0);
+  if (canvasBg?.personalisedColors && canvasBg?.brandColor && canvasBg?.colorToReplace) {
+    try {
+      const { r: br, g: bg2, b: bb } = canvasBg.brandColor;
+      const hex = canvasBg.colorToReplace.replace("#","");
+      const tr = parseInt(hex.slice(0,2),16), tg = parseInt(hex.slice(2,4),16), tb = parseInt(hex.slice(4,6),16);
+      const imgData = ctx.getImageData(0, 0, off.width, off.height);
+      const d = imgData.data;
+      const tolerance = 60;
+      for (let i = 0; i < d.length; i += 4) {
+        const dr2 = Math.abs(d[i]-tr), dg2 = Math.abs(d[i+1]-tg), db2 = Math.abs(d[i+2]-tb);
+        if (dr2 < tolerance && dg2 < tolerance && db2 < tolerance) {
+          const strength = 1 - Math.sqrt(dr2*dr2+dg2*dg2+db2*db2) / (tolerance * Math.sqrt(3));
+          d[i]   = Math.round(d[i]   * (1-strength) + br * strength);
+          d[i+1] = Math.round(d[i+1] * (1-strength) + bg2 * strength);
+          d[i+2] = Math.round(d[i+2] * (1-strength) + bb * strength);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch(e) { console.warn("Colour replace failed:", e); }
+  }
   const scaleX = baseImg.width / displayW, scaleY = baseImg.height / displayH;
   const scale = Math.max(scaleX, scaleY);
 
-  // Draw each logo instance (company logo at different sizes/positions)
   logoInstances.forEach(inst => {
     if (!companyLogoEl) return;
     const x = inst.pos.x * scaleX, y = inst.pos.y * scaleY;
@@ -481,7 +587,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     ctx.drawImage(companyLogoEl, x, y, ar >= 1 ? s : s * ar, ar >= 1 ? s / ar : s);
   });
 
-  // My logo
   if (myLogoEl) {
     const x = myLogoPos.x * scaleX, y = myLogoPos.y * scaleY;
     const s = myLogoSize * scale;
@@ -489,7 +594,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     ctx.drawImage(myLogoEl, x, y, ar >= 1 ? s : s * ar, ar >= 1 ? s / ar : s);
   }
 
-  // Text layers
   textLayers.forEach(cfg => {
     if (!cfg.enabled || !cfg.template.trim()) return;
     const resolved = resolveTemplate(cfg.template, personName, companyName);
@@ -502,7 +606,6 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     resolved.split("\n").forEach((line, i) => ctx.fillText(line, x, y + i * fontSize * 1.4));
   });
 
-  // Symbols
   symbols.forEach(sym => {
     const fontSize = sym.size * scale;
     ctx.font = `bold ${fontSize}px Arial`;
@@ -510,7 +613,65 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
     ctx.fillText(sym.char, sym.pos.x * scaleX, sym.pos.y * scaleY + fontSize);
   });
 
+  // ── Preview watermark (removed on download/send) ──────────────────────────
+  if (addWatermark) {
+    const W = off.width, H = off.height;
+    // Semi-transparent overlay stripe across the middle
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, H * 0.38, W, H * 0.24);
+    ctx.restore();
+    // Main watermark text
+    const wSize = Math.max(18, Math.round(W * 0.045));
+    ctx.save();
+    ctx.globalAlpha = 0.72;
+    ctx.font = `700 ${wSize}px "DM Sans", "Helvetica Neue", Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    // Shadow for readability on any background
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("Created with Logoplacers", W / 2, H / 2);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+    // Subtle repeat watermark in corners
+    const sSize = Math.max(11, Math.round(W * 0.022));
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.font = `600 ${sSize}px "DM Sans", "Helvetica Neue", Arial`;
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#fff";
+    ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 6;
+    ctx.fillText("logoplacers.com", 16 * scale, H - 16 * scale);
+    ctx.textAlign = "right";
+    ctx.fillText("logoplacers.com", W - 16 * scale, 28 * scale);
+    ctx.restore();
+  }
+
   return off;
+}
+
+function extractDominantColor(img) {
+  try {
+    const tmp = document.createElement("canvas");
+    tmp.width = 48; tmp.height = 48;
+    const ctx2 = tmp.getContext("2d");
+    ctx2.drawImage(img, 0, 0, 48, 48);
+    const data = ctx2.getImageData(0, 0, 48, 48).data;
+    let r = 0, g = 0, b = 0, count = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const a = data[i+3]; if (a < 30) continue;
+      const rv = data[i], gv = data[i+1], bv = data[i+2];
+      const brightness = (rv + gv + bv) / 3;
+      const sat = Math.max(rv,gv,bv) - Math.min(rv,gv,bv);
+      if (brightness > 230 || brightness < 25 || sat < 18) continue;
+      r += rv; g += gv; b += bv; count++;
+    }
+    if (count < 10) return null;
+    return { r: Math.round(r/count), g: Math.round(g/count), b: Math.round(b/count) };
+  } catch { return null; }
 }
 
 function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle }) {
@@ -528,47 +689,47 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div className="layer-dot" style={{ background: color }} />
+        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
         <span className="lcard-title">Text {idx + 1}</span>
-        <span className="lcard-prev">{layer.template || "tom"}</span>
+        <span className="lcard-prev">{layer.template || "empty"}</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
         {total > 1 && <button className="lrm" onClick={e => { e.stopPropagation(); onRemove(); }}>×</button>}
       </div>
       {isOpen && (
         <div className="lcard-bd">
-          <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hej ((name)) på ((company))!"
+          <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hi ((name)) at ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
-            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ förnamn</button>
-            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ fullnamn</button>
-            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ bolag</button>
+            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
+            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
+            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
-              <span className="cg-label">Storlek</span>
-              <input className="inp sm" type="number" min={8} max={300} value={layer.fontSize} onChange={e => onChange({ fontSize: Number(e.target.value) })} />
+              <span className="cg-label">Size</span>
+              <PxInput value={layer.fontSize} onChange={v => onChange({ fontSize: v })} color="var(--t1)" min={1} max={1000} />
             </div>
             <div className="cg-cell">
               <span className="cg-label">Font</span>
-              <select className="inp sm" value={layer.fontFamily} onChange={e => onChange({ fontFamily: e.target.value })} style={{background:"var(--bg4)",color:"var(--t1)"}}>
+              <select className="font-select" value={layer.fontFamily} onChange={e => onChange({ fontFamily: e.target.value })}>
                 {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
               </select>
             </div>
             <div style={{gridColumn:"span 2",display:"flex",flexDirection:"column",gap:4}}>
-              <span className="cg-label">Tjocklek</span>
+              <span className="cg-label">Weight</span>
               <div className="wrow">
-                {[["normal","Regular"],["600","Semi-bold"],["bold","Bold"]].map(([val,lbl]) => {
+                {[["normal","Regular"],["600","Semi"],["bold","Bold"]].map(([val,lbl]) => {
                   const isOn = (layer.fontWeight ?? (layer.bold ? "bold" : "normal")) === val;
                   return <button key={val} className={`wbtn${isOn?" on":""}`} style={{fontWeight:val}} onClick={() => onChange({ fontWeight: val, bold: val==="bold" })}>{lbl}</button>;
                 })}
               </div>
             </div>
             <div className="trow" style={{gridColumn:"span 2"}}>
-              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{fontStyle:"italic"}} onClick={() => onChange({ italic: !layer.italic })}>Kursiv</button>
-              <button className={`tbtn${layer.enabled ? " on" : ""}`} onClick={() => onChange({ enabled: !layer.enabled })}>{layer.enabled ? "Synlig" : "Dold"}</button>
+              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{fontStyle:"italic"}} onClick={() => onChange({ italic: !layer.italic })}>Italic</button>
+              <button className={`tbtn${layer.enabled ? " on" : ""}`} onClick={() => onChange({ enabled: !layer.enabled })}>{layer.enabled ? "Visible" : "Hidden"}</button>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8,gridColumn:"span 2"}}>
-              <span style={{fontSize:11,color:"var(--t3)"}}>Färg</span>
+              <span style={{fontSize:11,color:"var(--t3)"}}>Colour</span>
               <div className="color-swatch" style={{background:layer.color}}>
                 <input type="color" value={layer.color} onChange={e => onChange({color: e.target.value})} />
               </div>
@@ -586,7 +747,7 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div className="layer-dot" style={{ background: color }} />
+        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
         <span className="lcard-title">Logo {idx + 1}</span>
         <span className="lcard-prev">{inst.size}px</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
@@ -595,12 +756,12 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
       {isOpen && (
         <div className="lcard-bd">
           <div className="sl-wrap">
-            <div className="sl-head"><span className="sl-label">Storlek</span><span className="sl-val" style={{color}}>{inst.size}px</span></div>
-            <input type="range" min={20} max={500} value={inst.size} onChange={e => onChange({ size: Number(e.target.value) })} style={{ accentColor: color }} />
+            <div className="sl-head"><span className="sl-label">Size</span><PxInput value={inst.size} onChange={v => onChange({ size: v })} color={color} /></div>
+            <input type="range" min={1} max={1000} value={inst.size} onChange={e => onChange({ size: Number(e.target.value) })} style={{ accentColor: color }} />
           </div>
           <div className="sl-wrap">
-            <div className="sl-head"><span className="sl-label">Opacitet</span>
-            <span className="sl-val" style={{color}}>{inst.opacity ?? 100}%</span></div>
+            <div className="sl-head"><span className="sl-label">Opacity</span>
+            <PxInput value={inst.opacity ?? 100} onChange={v => onChange({ opacity: v })} color={color} suffix="%" min={1} max={100} /></div>
             <input type="range" min={10} max={100} value={inst.opacity ?? 100} onChange={e => onChange({ opacity: Number(e.target.value) })} style={{ accentColor: color }} />
           </div>
         </div>
@@ -609,9 +770,8 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
   );
 }
 
-
 const DEFAULT_VIDEO_OVERLAY = {
-  text: "((name))s framtida IR",
+  text: "((name))'s future IR",
   fontSize: 28,
   fontFamily: "Inter",
   color: "#ffffff",
@@ -620,22 +780,13 @@ const DEFAULT_VIDEO_OVERLAY = {
   bold: false,
 };
 
-// Drag-and-drop upload helper
-function DropZone({ accept, onFile, children, className, style }) {
+function DropZone({ accept, onFile, children, className, style: styleProp }) {
   const [over, setOver] = useState(false);
-  const handleDrop = e => {
-    e.preventDefault(); setOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) onFile(file);
-  };
   return (
-    <div
-      className={className}
-      style={{ ...style, borderColor: over ? "var(--blue)" : undefined, background: over ? "var(--blue-dim)" : undefined }}
+    <div className={className} style={{ ...styleProp, borderColor: over ? "var(--blue)" : undefined, background: over ? "var(--blue-dim)" : undefined }}
       onDragOver={e => { e.preventDefault(); setOver(true); }}
       onDragLeave={() => setOver(false)}
-      onDrop={handleDrop}
-    >
+      onDrop={e => { e.preventDefault(); setOver(false); const file = e.dataTransfer.files[0]; if (file) onFile(file); }}>
       {children}
     </div>
   );
@@ -645,25 +796,15 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const [myVideo, setMyVideo] = useState(null);
   const [myVideoName, setMyVideoName] = useState(null);
   const [overlay, setOverlay] = useState(DEFAULT_VIDEO_OVERLAY);
-  // timings: how long demo-image and screenshot each show (seconds)
   const [timings, setTimings] = useState({ demoImg: 7, screenshot: 8 });
-  // phaseOrder: ["demo","screenshot"] or ["screenshot","demo"]
   const [phaseOrder, setPhaseOrder] = useState(["demo", "screenshot"]);
   const [screenshots, setScreenshots] = useState({});
   const [generating, setGenerating] = useState(null);
   const [generated, setGenerated] = useState({});
-
   const videoRef = useRef(null);
-  const offCanvasRef = useRef(null);
 
   const updateOverlay = p => setOverlay(o => ({ ...o, ...p }));
   const readyCompanies = companies.filter(c => c.status === "ok");
-
-  const handleVideoFile = file => {
-    if (!file || !file.type.startsWith("video/")) return;
-    setMyVideoName(file.name);
-    setMyVideo(file); // store the File object, not a blob URL
-  };
 
   const handleScreenshotFile = (companyId, file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -673,109 +814,79 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   };
 
   const previewC = readyCompanies[0];
-  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Gustav", previewC?.companyName || "Lysa");
-  const totalSec = timings.demoImg + timings.screenshot; // overlay is on top of first image, not extra time
-
-  const noDemoImg = !renderIngredients?.baseImg;
+  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Alex", previewC?.companyName || "Acme Corp");
+  const totalSec = timings.demoImg + timings.screenshot;
 
   const generateVideo = async (company) => {
     if (!myVideo) return;
     setGenerating(company.id);
-
-    // ── Snapshot everything NOW so concurrent/sequential runs never bleed ──
-    const ovSnap  = { ...overlay };
-    const phSnap  = [...phaseOrder];
-    const tmSnap  = { ...timings };
+    const ovSnap = { ...overlay };
+    const phSnap = [...phaseOrder];
+    const tmSnap = { ...timings };
     const ssImg = screenshots[company.id] || null;
 
-    // Render demo image for THIS specific company (logo, text, etc. personalized)
     let demoImg = null;
-    if (renderIngredients && renderIngredients.baseImg) {
+    if (renderIngredients?.baseImg) {
       const { baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols } = renderIngredients;
-      const off = renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl);
+      const off = renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, null);
       demoImg = await new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = off.toDataURL(); });
     }
 
     const imgA = phSnap[0] === "demo" ? demoImg : ssImg;
-    const imgB = phSnap[0] === "demo" ? ssImg   : demoImg;
-
+    const imgB = phSnap[0] === "demo" ? ssImg : demoImg;
     const resolvedText = resolveTemplateFn(ovSnap.text, company.personName, company.companyName);
 
-    // Read the video File into an ArrayBuffer once — then create fresh URLs per element
-    // This is the only reliable way to give each isolated <video> its own src
     const videoArrayBuffer = await myVideo.arrayBuffer();
     const videoBlob = new Blob([videoArrayBuffer], { type: myVideo.type || "video/mp4" });
-    const videoUrl  = URL.createObjectURL(videoBlob);
+    const videoUrl = URL.createObjectURL(videoBlob);
 
-    // ── Isolated <video> with its own fresh blob URL ───────────────────────
     const vid = document.createElement("video");
-    vid.loop  = false;   // never loop — video plays once and holds last frame
-    vid.muted = true;
-    vid.src   = videoUrl;
-    vid.load();
-    await new Promise(r => {
-      vid.onloadedmetadata = () => r();
-      vid.onerror = () => r();
-      setTimeout(r, 8000);
-    });
+    vid.loop = false; vid.muted = true; vid.src = videoUrl; vid.load();
+    await new Promise(r => { vid.onloadedmetadata = () => r(); vid.onerror = () => r(); setTimeout(r, 8000); });
 
-    const VW = vid.videoWidth  || 1280;
+    const VW = vid.videoWidth || 1280;
     const VH = vid.videoHeight || 720;
     const vidDurMs = (vid.duration && isFinite(vid.duration)) ? vid.duration * 1000 : 999999;
 
-    // ── Isolated canvas ────────────────────────────────────────────────────
     const canvas = document.createElement("canvas");
     canvas.width = VW; canvas.height = VH;
     const ctx = canvas.getContext("2d");
     const stream = canvas.captureStream(30);
 
-    // ── Audio: decode from the same ArrayBuffer ────────────────────────────
     let audioRes = null;
     try {
-      const actx  = new AudioContext();
-      const abuf  = await actx.decodeAudioData(videoArrayBuffer.slice(0)); // slice = copy
-      const dest  = actx.createMediaStreamDestination();
+      const actx = new AudioContext();
+      const abuf = await actx.decodeAudioData(videoArrayBuffer.slice(0));
+      const dest = actx.createMediaStreamDestination();
       const anode = actx.createBufferSource();
-      anode.buffer = abuf;
-      anode.loop   = true;
-      anode.connect(dest);
-      anode.connect(actx.destination);
-      anode.start(0);
+      anode.buffer = abuf; anode.loop = true;
+      anode.connect(dest); anode.connect(actx.destination); anode.start(0);
       dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
       audioRes = { actx, anode };
-    } catch (e) { console.warn("Audio skipped:", e.message); }
+    } catch(e) { console.warn("Audio skipped:", e.message); }
 
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9" : "video/webm";
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     const recorder = new MediaRecorder(stream, { mimeType });
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-    // Fix 1: overlay text shows ON TOP of first image — not extra time
-    // So total = dur2 + dur3. dur1 is just how long text is visible within dur2.
-    const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000); // text overlay capped to phase 2
-    const dur2 = tmSnap.demoImg    * 1000;
+    const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000);
+    const dur2 = tmSnap.demoImg * 1000;
     const dur3 = tmSnap.screenshot * 1000;
-    const total = Math.min(dur2 + dur3, vidDurMs); // Fix 5: never exceed original video length
+    const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000);
 
-    // PiP geometry
     const pipW = Math.round(VW * 0.22);
     const pipH = Math.round(pipW * (VH / VW));
     const pipX = VW - pipW - 20;
     const pipY = VH - pipH - 20;
-    const R    = 12;
+    const R = 12;
 
     const rrect = (x, y, w, h, r) => {
       ctx.beginPath();
-      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-      ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-      ctx.lineTo(x+w,y+h-r);
-      ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-      ctx.lineTo(x+r,y+h);
-      ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-      ctx.lineTo(x,y+r);
-      ctx.quadraticCurveTo(x,y,x+r,y);
-      ctx.closePath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
     };
 
     const drawPip = () => {
@@ -788,24 +899,18 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     };
 
     const drawText = () => {
-      const fs   = Math.round(ovSnap.fontSize * (VW / 760));
+      const fs = Math.round(ovSnap.fontSize * (VW / 760));
       const font = `${ovSnap.bold?"bold ":""}${fs}px "${ovSnap.fontFamily}", sans-serif`;
       const maxW = VW * 0.72;
       ctx.font = font;
-      const tw   = Math.min(ctx.measureText(resolvedText).width, maxW);
-      const pw   = tw + 44;
-      const ph   = fs + 24;
-      const px   = (VW - pw) / 2;
-      const py   = VH * 0.038;
-      ctx.save();
-      ctx.globalAlpha = Math.min(ovSnap.bgOpacity / 100, 0.88);
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      rrect(px,py,pw,ph,ph/2); ctx.fill();
-      ctx.restore();
+      const tw = Math.min(ctx.measureText(resolvedText).width, maxW);
+      const pw = tw + 44; const ph = fs + 24;
+      const px = (VW - pw) / 2; const py = VH * 0.038;
+      ctx.save(); ctx.globalAlpha = Math.min(ovSnap.bgOpacity / 100, 0.88);
+      ctx.fillStyle = "rgba(0,0,0,0.85)"; rrect(px,py,pw,ph,ph/2); ctx.fill(); ctx.restore();
       ctx.save(); ctx.font=font; ctx.fillStyle=ovSnap.color;
       ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText(resolvedText, VW/2, py+ph/2, maxW);
-      ctx.restore();
+      ctx.fillText(resolvedText, VW/2, py+ph/2, maxW); ctx.restore();
     };
 
     const drawImg = (img) => {
@@ -819,124 +924,79 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     vid.currentTime = 0;
     await vid.play().catch(()=>{});
 
-    // Use performance.now() for accurate timing — setInterval drifts significantly
     const blob = await new Promise(resolve => {
-      const t0 = performance.now();
-      let done = false;
-
+      const t0 = performance.now(); let done = false;
       const drawFrame = () => {
         if (done) return;
         const el = performance.now() - t0;
-
         ctx.clearRect(0, 0, VW, VH);
-        // Phase logic: text overlay sits ON TOP of imgA for first dur1 ms
-        if (el < dur2) {
-          drawImg(imgA);
-          if (el < dur1) drawText(); // overlay visible during intro period only
-          drawPip();
-        } else if (el < total) {
-          drawImg(imgB);
-          drawPip();
-        }
-
+        if (el < dur2) { drawImg(imgA); if (el < dur1) drawText(); drawPip(); }
+        else if (el < total) { drawImg(imgB); drawPip(); }
         if (el >= total && !done) {
-          done = true;
-          clearInterval(timerId);
-          recorder.stop();
-          vid.pause();
+          done = true; clearInterval(timerId); recorder.stop(); vid.pause();
           if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
         }
       };
-
       recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
       recorder.start(200);
       const timerId = setInterval(drawFrame, 1000 / 30);
+      setTimeout(() => {
+        if (!done) {
+          done = true; clearInterval(timerId);
+          try { recorder.stop(); } catch(_) {} vid.pause();
+          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
+        }
+      }, total + 8000);
     });
 
-    URL.revokeObjectURL(videoUrl); // free video src memory
+    URL.revokeObjectURL(videoUrl);
     const url = URL.createObjectURL(blob);
-    // Fix 2: don't auto-download — store URL so user can preview/download manually
     setGenerated(g => ({ ...g, [company.id]: url }));
     setGenerating(null);
   };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "calc(100vh - 101px)", overflow: "hidden" }}>
-      {/* Sidebar */}
+    <div className="video-workspace" style={{ display:"grid", gridTemplateColumns:"320px 1fr", height:"calc(100vh - 101px)", overflow:"hidden" }}>
       <div className="sidebar">
-
-        {/* Video upload */}
-        <span className="s-label">Din video</span>
+        <span className="s-label">Your video</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
-            <DropZone
-              accept="video/*"
-              onFile={handleVideoFile}
-              className="upload-zone"
-              style={{}}
-            >
+            <DropZone accept="video/*" onFile={f => { if (f.type.startsWith("video/")) { setMyVideoName(f.name); setMyVideo(f); } }} className="upload-zone" style={{}}>
               <label style={{cursor:"pointer",display:"block"}}>
-                <input type="file" accept="video/*" style={{display:"none"}} onChange={e => handleVideoFile(e.target.files[0])} />
-                <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg></div>
-                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Klicka eller dra hit din video</p>}
+                <input type="file" accept="video/*" style={{display:"none"}} onChange={e => { const f=e.target.files[0]; if(f){setMyVideoName(f.name);setMyVideo(f);} }} />
+                <div className="uz-icon" style={{color:"var(--t3)"}}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg>
+                </div>
+                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag video here</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
             <video ref={videoRef} style={{display:"none"}} playsInline muted={false} />
-            <canvas ref={offCanvasRef} style={{display:"none"}} />
           </div>
         </div>
 
-        {/* Demo image status */}
-        <span className="s-label">Personlig demobild</span>
-        <div className="card" style={{margin:"0 10px"}}>
-          <div className="card-pad">
-            {renderIngredients?.baseImg ? (
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0"}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"var(--green)",flexShrink:0}} />
-                <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Demobild redo</div>
-                  <div style={{fontSize:11,color:"var(--t3)"}}>Renderas unikt per bolag vid generering</div>
-                </div>
-              </div>
-            ) : (
-              <div style={{padding:"10px 0",display:"flex",alignItems:"flex-start",gap:10}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:"var(--orange)",marginTop:4,flexShrink:0}} />
-                <div>
-                  <div style={{fontSize:13,color:"var(--t1)",fontWeight:500}}>Ingen demobild</div>
-                  <div style={{fontSize:11,color:"var(--t3)",marginTop:2,lineHeight:1.4}}>Gå till Bild-läget och lägg till logga + text. Den renderas automatiskt per bolag.</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Overlay text */}
-        <span className="s-label">Introtext (fas 1)</span>
+        <span className="s-label">Intro text overlay</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
-            <input className="inp" value={overlay.text} placeholder="((name))s framtida IR"
+            <input className="inp" value={overlay.text} placeholder="((name))'s future IR"
               onChange={e => updateOverlay({ text: e.target.value })} />
             <div className="tag-btns">
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ förnamn</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((fullname))" })}>+ fullnamn</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ bolag</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ first name</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ company</button>
             </div>
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Storlek (px)</span>
-                <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize}
-                  onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
+                <span className="timing-label">Font size</span>
+                <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize} onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Font</span>
-                <select className="timing-input" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })}
-                  style={{background:"var(--bg4)",color:"var(--t1)"}}>
+                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })} style={{background:"var(--bg4)"}}>
                   {["Inter","Syne","Montserrat","Oswald","Bebas Neue","Raleway","Arial"].map(f => <option key={f}>{f}</option>)}
                 </select>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Textfärg</span>
+                <span className="timing-label">Text colour</span>
                 <div style={{display:"flex",alignItems:"center",gap:7}}>
                   <div className="color-swatch" style={{background:overlay.color}}>
                     <input type="color" value={overlay.color} onChange={e => updateOverlay({color:e.target.value})} />
@@ -945,113 +1005,58 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 </div>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Textbakgrund</span>
-                <div className="sl-wrap" style={{marginTop:0}}>
-                  <div className="sl-head"><span className="sl-label">Opacitet</span><span className="sl-val">{overlay.bgOpacity}%</span></div>
-                  <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"var(--blue)"}} />
-                </div>
+                <span className="timing-label">BG opacity</span>
+                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"#1a82ff"}} />
               </div>
-            </div>
-            <div className="trow">
-              <button className={`tbtn${overlay.bold ? " on" : ""}`} onClick={() => updateOverlay({bold:!overlay.bold})}>B  Bold</button>
-              <button className="tbtn" style={{color:"var(--t3)",cursor:"default",pointerEvents:"none"}}>Längd nedan</button>
             </div>
           </div>
         </div>
 
-        {/* Timing + order */}
-        <span className="s-label">Timing (sekunder)</span>
+        <span className="s-label">Timing (seconds)</span>
         <div className="card" style={{margin:"0 10px"}}>
           <div className="card-pad">
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Intro (text overlay)</span>
-                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration}
-                  onChange={e => updateOverlay({duration:Number(e.target.value)})} />
+                <span className="timing-label">Intro text duration</span>
+                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({duration:Number(e.target.value)})} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">{phaseOrder[0] === "demo" ? "Demobild" : "Hemsida"} (fas 2)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg}
-                  onChange={e => setTimings(t => ({...t, demoImg: Number(e.target.value)}))} />
+                <span className="timing-label">Phase 2 (demo)</span>
+                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg} onChange={e => setTimings(t => ({...t, demoImg: Number(e.target.value)}))} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">{phaseOrder[0] === "demo" ? "Hemsida" : "Demobild"} (fas 3)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot}
-                  onChange={e => setTimings(t => ({...t, screenshot: Number(e.target.value)}))} />
+                <span className="timing-label">Phase 3 (website)</span>
+                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot} onChange={e => setTimings(t => ({...t, screenshot: Number(e.target.value)}))} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Totalt</span>
+                <span className="timing-label">Total</span>
                 <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",padding:"6px 0"}}>{totalSec}s</div>
               </div>
             </div>
-
-            {/* Phase order */}
-            <div style={{marginTop:12,borderTop:"0.5px solid var(--sep)",paddingTop:12}}>
-              <span style={{fontSize:11,color:"var(--t3)",display:"block",marginBottom:8,letterSpacing:.4,textTransform:"uppercase",fontWeight:600}}>Bildordning</span>
-              <div style={{display:"flex",gap:6}}>
-                <button
-                  onClick={() => setPhaseOrder(["demo","screenshot"])}
-                  style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
-                    background: phaseOrder[0]==="demo" ? "var(--blue-dim)" : "var(--bg4)",
-                    borderColor: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="demo" ? "var(--blue)" : "var(--t2)"
-                  }}>
-                  <div style={{fontWeight:600,marginBottom:2}}>Demo → Hemsida</div>
-                  <div style={{fontSize:10,opacity:.7}}>Personlig bild först</div>
-                </button>
-                <button
-                  onClick={() => setPhaseOrder(["screenshot","demo"])}
-                  style={{flex:1,padding:"8px 6px",borderRadius:8,border:"0.5px solid",fontSize:12,fontFamily:"inherit",cursor:"pointer",transition:"all .15s",
-                    background: phaseOrder[0]==="screenshot" ? "var(--blue-dim)" : "var(--bg4)",
-                    borderColor: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--sep)",
-                    color: phaseOrder[0]==="screenshot" ? "var(--blue)" : "var(--t2)"
-                  }}>
-                  <div style={{fontWeight:600,marginBottom:2}}>Hemsida → Demo</div>
-                  <div style={{fontSize:10,opacity:.7}}>Hemsida först</div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-
       </div>
 
-      {/* Right panel */}
       <div style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
-
-        {/* Toolbar */}
         <div style={{padding:"10px 18px",borderBottom:"0.5px solid var(--sep)",background:"var(--bg2)",display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} bolag redo</span>
-          {noDemoImg && (
-            <span style={{fontSize:12,color:"var(--orange)",display:"flex",alignItems:"center",gap:5}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:"var(--orange)",display:"inline-block"}} />
-              Ingen demobild — gå till Bild-läget
-            </span>
-          )}
+          <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} companies ready</span>
           <button className="btn-p" style={{marginLeft:"auto",width:"auto",padding:"8px 16px",fontSize:13}}
             disabled={readyCompanies.length===0||!myVideo||generating!==null}
             onClick={async()=>{for(const c of readyCompanies)await generateVideo(c);}}>
-            Generera alla ({readyCompanies.length})
+            Generate all ({readyCompanies.length})
           </button>
         </div>
 
-        {/* Preview strip */}
-        <div style={{padding:"12px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",position:"relative",minHeight:56,display:"flex",alignItems:"center",gap:12}}>
-          <div style={{flex:1,fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"5px 14px",borderRadius:100,maxWidth:"60%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+        <div style={{padding:"10px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",display:"flex",alignItems:"center",gap:12,minHeight:48}}>
+          <div style={{fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"4px 14px",borderRadius:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"60%"}}>
             {previewText}
           </div>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--blue)",display:"inline-block"}}/>{overlay.duration}s intro</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--purple)",display:"inline-block"}}/>{timings.demoImg}s {phaseOrder[0]==="demo"?"demo":"hemsida"}</span>
-          <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--green)",display:"inline-block"}}/>{timings.screenshot}s {phaseOrder[0]==="demo"?"hemsida":"demo"}</span>
-          <span style={{fontSize:11,color:"var(--blue)",fontWeight:600}}>{totalSec}s totalt</span>
+          <span style={{fontSize:11,color:"var(--t3)",marginLeft:"auto"}}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{color:"var(--blue)"}}>{totalSec}s</strong></span>
         </div>
 
-        {/* Contact list */}
         <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
           {readyCompanies.length === 0 && (
-            <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>
-              Lägg till bolag i Bild-läget först
-            </div>
+            <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>Add companies in Image mode first</div>
           )}
           {readyCompanies.map(c => (
             <div key={c.id} className="contact-row">
@@ -1062,16 +1067,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div className="contact-row-name">{c.personName || "—"}</div>
                 <div className="contact-row-company">{c.companyName}</div>
               </div>
-              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")} title="Öppna hemsida">
+              <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 {c.domain}
               </button>
-              {/* Screenshot — click or drop */}
-              <DropZone
-                accept="image/*"
-                onFile={file => handleScreenshotFile(c.id, file)}
-                style={{cursor:"pointer"}}
-              >
+              <DropZone accept="image/*" onFile={file => handleScreenshotFile(c.id, file)} style={{cursor:"pointer"}}>
                 <label style={{cursor:"pointer"}}>
                   <input type="file" accept="image/*" style={{display:"none"}} onChange={e => handleScreenshotFile(c.id, e.target.files[0])} />
                   {screenshots[c.id]
@@ -1084,29 +1084,471 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               <div style={{display:"flex",gap:5,alignItems:"center"}}>
                 {generated[c.id] && (
                   <>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}}
-                      onClick={() => { const v=document.createElement("video");v.src=generated[c.id];v.controls=true;v.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";const ov=document.createElement("div");ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";ov.onclick=()=>{ov.remove();v.remove();};document.body.append(ov,v); }}>
-                      Spela
-                    </button>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}}
-                      onClick={() => { const a=document.createElement("a");a.href=generated[c.id];a.download=c.companyName.toLowerCase().replace(/\s+/g,"_")+"_video.webm";a.click(); }}>
-                      Spara
-                    </button>
+                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
+                      const v=document.createElement("video"); v.src=generated[c.id]; v.controls=true;
+                      v.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
+                      const ov=document.createElement("div"); ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
+                      ov.onclick=()=>{ov.remove();v.remove();}; document.body.append(ov,v);
+                    }}>Play</button>
+                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
+                      const a=document.createElement("a"); a.href=generated[c.id];
+                      a.download=c.companyName.toLowerCase().replace(/\s+/g,"_")+"_video.webm"; a.click();
+                    }}>Save</button>
                   </>
                 )}
-                <button
-                  className={`gen-btn${generating === c.id ? " generating" : ""}`}
+                <button className={`gen-btn${generating === c.id ? " generating" : ""}`}
                   disabled={!myVideo || generating !== null}
                   onClick={() => generateVideo(c)}>
-                  {generating === c.id ? "Arbetar..." : generated[c.id] ? "Gör om" : "Skapa"}
+                  {generating === c.id ? "Creating…" : generated[c.id] ? "Redo" : "Create"}
                 </button>
               </div>
             </div>
           ))}
         </div>
+        <div className="canvas-footer">Click or drag a screenshot · Creates .webm per company</div>
+      </div>
+    </div>
+  );
+}
 
-        <div className="canvas-footer">
-          Klicka eller dra hemsidescreenshot till rutan · Skapa genererar en .webm-video per bolag
+function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
+  return new Promise(async (resolve) => {
+    const boundary = "MP_" + Math.random().toString(36).slice(2);
+    const subjB64 = btoa(unescape(encodeURIComponent(subject)));
+    const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
+    const attB64 = await new Promise((res, rej) => {
+      const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
+      r.readAsDataURL(attachBlob);
+    });
+    const chunk76 = s => { const r=[]; for (let i=0;i<s.length;i+=76) r.push(s.slice(i,i+76)); return r; };
+    const raw = [
+      `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
+      "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
+      `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
+      ...chunk76(bodyB64), "",
+      `--${boundary}`, `Content-Type: image/png; name="${filename}"`, "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${filename}"`, "", ...chunk76(attB64), "",
+      `--${boundary}--`,
+    ].join("\r\n");
+    resolve(btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+  });
+}
+
+
+// ─────────────────────────────────────────────
+// GOOGLE DRIVE UPLOAD
+// ─────────────────────────────────────────────
+function DriveUploadField({ token, videoLink, setVideoLink }) {
+  const [uploading, setUploading] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState("");
+  const fileRef = useRef(null);
+
+  const uploadToDrive = async (file) => {
+    setUploading(true); setError(""); setProgress(0);
+    setFileName(file.name);
+    try {
+      // 1. Initiate resumable upload
+      const meta = { name: file.name, mimeType: file.type };
+      const initRes = await fetch(
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "X-Upload-Content-Type": file.type,
+            "X-Upload-Content-Length": file.size,
+          },
+          body: JSON.stringify(meta),
+        }
+      );
+      if (!initRes.ok) throw new Error("Upload init failed: " + initRes.status);
+      const uploadUrl = initRes.headers.get("Location");
+
+      // 2. Upload file in chunks (5MB)
+      const chunkSize = 5 * 1024 * 1024;
+      let offset = 0;
+      let fileId = null;
+      while (offset < file.size) {
+        const chunk = file.slice(offset, offset + chunkSize);
+        const end = Math.min(offset + chunkSize, file.size);
+        const chunkRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`,
+            "Content-Type": file.type,
+          },
+          body: chunk,
+        });
+        setProgress(Math.round((end / file.size) * 100));
+        if (chunkRes.status === 200 || chunkRes.status === 201) {
+          const data = await chunkRes.json();
+          fileId = data.id;
+          break;
+        } else if (chunkRes.status !== 308) {
+          throw new Error("Upload chunk failed: " + chunkRes.status);
+        }
+        offset = end;
+      }
+      if (!fileId) throw new Error("Upload completed but no file ID returned");
+
+      // 3. Make file shareable (anyone with link can view)
+      await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "reader", type: "anyone" }),
+      });
+
+      // 4. Get shareable link
+      const infoRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=webViewLink`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const info = await infoRes.json();
+      setVideoLink(info.webViewLink || `https://drive.google.com/file/d/${fileId}/view`);
+    } catch (e) {
+      setError(e.message || "Upload failed");
+    } finally {
+      setUploading(false); setProgress(0);
+    }
+  };
+
+  const handleFile = (e) => {
+    const f = e.target.files?.[0];
+    if (f) uploadToDrive(f);
+    e.target.value = "";
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (f) uploadToDrive(f);
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <label className="field-lbl">
+        Video link
+        <span style={{fontWeight:400,color:"var(--t4)",marginLeft:4}}>(optional — adds a Watch demo button)</span>
+      </label>
+
+      {/* Manual link OR uploaded link */}
+      <div style={{display:"flex",gap:6,alignItems:"center"}}>
+        <input className="modal-inp" style={{flex:1}}
+          placeholder="Paste Loom / Drive link, or upload below…"
+          value={videoLink} onChange={e => setVideoLink(e.target.value)} />
+        {videoLink && (
+          <button onClick={() => { setVideoLink(""); setFileName(""); }}
+            style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:16,padding:"0 4px",flexShrink:0}}>×</button>
+        )}
+      </div>
+
+      {/* Drive upload zone */}
+      {!videoLink && (
+        <div
+          onDragOver={e => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => !uploading && fileRef.current?.click()}
+          style={{
+            border:"1.5px dashed var(--sep)", borderRadius:10, padding:"14px 16px",
+            display:"flex", alignItems:"center", gap:12, cursor: uploading ? "default" : "pointer",
+            background:"var(--bg3)", transition:"border-color .15s",
+          }}
+          onMouseEnter={e => !uploading && (e.currentTarget.style.borderColor = "var(--blue)")}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--sep)")}
+        >
+          <input ref={fileRef} type="file" accept="video/*,.mp4,.mov,.webm,.gif"
+            onChange={handleFile} style={{display:"none"}} />
+
+          {uploading ? (
+            <>
+              <div style={{width:18,height:18,borderRadius:"50%",border:"2.5px solid var(--blue)",borderTopColor:"transparent",animation:"spin 0.7s linear infinite",flexShrink:0}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,color:"var(--t2)",marginBottom:4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fileName}</div>
+                <div style={{height:4,borderRadius:2,background:"var(--bg4)",overflow:"hidden"}}>
+                  <div style={{height:"100%",width:progress+"%",background:"var(--blue)",transition:"width .3s"}}/>
+                </div>
+              </div>
+              <span style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>{progress}%</span>
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              </svg>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Upload to Google Drive</div>
+                <div style={{fontSize:11,color:"var(--t4)"}}>MP4, MOV, WebM, GIF · drag & drop or click</div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {videoLink && (
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:"rgba(26,130,255,.08)",border:"1px solid rgba(26,130,255,.2)",borderRadius:8}}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style={{fontSize:11,color:"var(--t2)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{videoLink}</span>
+          <a href={videoLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--blue)",textDecoration:"none",flexShrink:0}}>Preview ↗</a>
+        </div>
+      )}
+
+      {error && <div style={{fontSize:11,color:"var(--red)"}}>{error}</div>}
+    </div>
+  );
+}
+
+function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade }) {
+  const [step, setStep] = useState(sharedToken ? "compose" : "auth");
+  const token = sharedToken;
+  const [subject, setSubject] = useState("A personal demo for ((company))");
+  const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
+  const [videoLink, setVideoLink] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [previews, setPreviews] = useState({});
+  const [results, setResults] = useState({});
+  const [countdown, setCountdown] = useState(null);
+  const subjectRef = useRef(null);
+  const bodyRef = useRef(null);
+
+  const withEmail = companies.filter(c => c.status === "ok" && c.email);
+
+  useEffect(() => { setSelected(new Set(withEmail.map(c => c.id))); }, []);
+  useEffect(() => { loadGIS(); }, []);
+
+  const login = async () => {
+    await loadGIS();
+    if (!window.google?.accounts?.oauth2) { alert("Google Sign-In failed to load. Check popup blockers."); return; }
+    window.google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
+      callback: (r) => {
+        if (r.access_token) { onTokenAcquired(r.access_token); setStep("compose"); }
+        else alert("Login failed: " + (r.error || "unknown"));
+      },
+    }).requestAccessToken({ prompt: "select_account" });
+  };
+
+  const selectedContacts = withEmail.filter(c => selected?.has(c.id));
+  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
+
+  useEffect(() => {
+    if (step !== "approve" && step !== "sending" && step !== "done") return;
+    for (const c of selectedContacts) {
+      if (previews[c.id]) continue;
+      getImageBlob(c).then(blob => {
+        const url = URL.createObjectURL(blob);
+        setPreviews(p => ({ ...p, [c.id]: url }));
+      }).catch(() => {});
+    }
+  }, [step]);
+
+  const insertAtCursor = (ref, setter, tag) => {
+    const el = ref?.current;
+    if (!el) { setter(v => v + tag); return; }
+    const s = el.selectionStart ?? el.value.length;
+    const e = el.selectionEnd ?? el.value.length;
+    const next = el.value.slice(0, s) + tag + el.value.slice(e);
+    setter(next);
+    setTimeout(() => { el.focus(); el.setSelectionRange(s+tag.length, s+tag.length); }, 0);
+  };
+
+  const sendAll = async () => {
+    // Credit check: 1 credit per send
+    if (spendCredits && !spendCredits(selectedContacts.length)) {
+      onUpgrade?.();
+      return;
+    }
+    setStep("sending");
+    for (let si = 0; si < selectedContacts.length; si++) {
+      const c = selectedContacts[si];
+      if (si > 0) {
+        const delay = Math.floor(Math.random() * 31) + 15;
+        for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
+        setCountdown(null);
+      }
+      setResults(r => ({ ...r, [c.id]: "ing" }));
+      try {
+        const subj = resolveStr(subject, c);
+        const videoBtn = videoLink.trim()
+          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#1a82ff;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+          : "";
+        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}${videoBtn}</div>`;
+        const blob = await getImageBlob(c);
+        const filename = `${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`;
+        const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
+        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ raw }),
+        });
+        setResults(r => ({ ...r, [c.id]: res.ok ? "ok" : "err" }));
+      } catch { setResults(r => ({ ...r, [c.id]: "err" })); }
+    }
+    setCountdown(null); setStep("done");
+  };
+
+  const doneOk = Object.values(results).filter(v => v === "ok").length;
+  const doneErr = Object.values(results).filter(v => v === "err").length;
+
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-box">
+        <div className="modal-head">
+          <div>
+            <div className="modal-title">
+              {step === "auth" && "Send email"}{step === "compose" && "Compose message"}
+              {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
+              {step === "sending" && "Sending…"}{step === "done" && "Done!"}
+            </div>
+            <div className="modal-sub">
+              {step === "compose" && "((name)) and ((company)) are replaced per recipient. Image attached automatically."}
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="modal-body">
+          {step === "auth" && (
+            <div className="auth-center">
+              <div className="auth-icon">📧</div>
+              <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Connect Gmail</div>
+              <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
+                Logoplacers skickar mejl via ditt Gmail-konto. Vi begär <strong>enbart</strong> sändningsbehörighet (gmail.send) — vi läser aldrig din inkorg, dina kontakter eller din historik.
+              </div>
+              {withEmail.length === 0 ? (
+                <div style={{fontSize:13,color:"var(--orange)",padding:"10px 16px",background:"hsla(31,92%,58%,.1)",borderRadius:8}}>
+                  No contacts have email addresses. Add them first.
+                </div>
+              ) : (
+                <>
+                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} contacts with email ready</div>
+                  <button className="google-btn" onClick={login}>
+                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z"/><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z"/></svg>
+                    Continue with Google
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {step === "compose" && (
+            <>
+              <div style={{fontSize:13,color:"var(--green)",display:"flex",alignItems:"center",gap:6,fontWeight:500}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Gmail connected
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                <label className="field-lbl">Subject</label>
+                <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)} />
+                <div className="tag-btns">
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((name))")}>+ name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((company))")}>+ company</button>
+                </div>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                <label className="field-lbl">Message body</label>
+                <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
+                <div className="tag-btns">
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((name))")}>+ name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
+                </div>
+                <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personalised image attached automatically as .png per recipient.</p>
+              </div>
+              <DriveUploadField token={token} videoLink={videoLink} setVideoLink={setVideoLink} />
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                <label className="field-lbl">Recipients ({selectedContacts.length}/{withEmail.length})</label>
+                <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
+                  {withEmail.map(c => (
+                    <label key={c.id} className="rcpt-row" style={{cursor:"pointer"}}>
+                      <input type="checkbox" checked={selected?.has(c.id) || false}
+                        onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(c.id) : n.delete(c.id); return n; })}
+                        style={{accentColor:"#1a82ff",width:14,height:14,flexShrink:0}} />
+                      <div style={{width:26,height:26,background:"#fff",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
+                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"contain",padding:2}} /> : <span style={{fontSize:11,color:"#888"}}>{c.companyName[0]}</span>}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:500,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.personName || c.companyName}</div>
+                        <div style={{fontSize:11,color:"var(--t3)"}}>{c.email}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === "approve" && (
+            <>
+              <p style={{fontSize:13,color:"var(--t2)"}}>Each person gets their personalised image attached. Review below:</p>
+              {selectedContacts.map(c => (
+                <div key={c.id} className="send-row">
+                  {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
+                  <div className="send-info">
+                    <div className="send-name">{c.personName || c.companyName}</div>
+                    <div className="send-detail">{c.email}</div>
+                    <div className="send-detail" style={{color:"var(--t2)"}}><strong>{resolveStr(subject, c)}</strong></div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {(step === "sending" || step === "done") && (
+            <>
+              {step === "sending" && countdown !== null && (
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"hsla(31,92%,58%,.1)",border:"0.5px solid hsla(31,92%,58%,.35)",borderRadius:"var(--r-sm)"}}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span style={{fontSize:13,color:"var(--orange)"}}>Waiting {countdown}s before next send — anti-spam protection</span>
+                </div>
+              )}
+              {selectedContacts.map(c => (
+                <div key={c.id} className="send-row">
+                  {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
+                  <div className="send-info"><div className="send-name">{c.personName || c.companyName}</div><div className="send-detail">{c.email}</div></div>
+                  <div className={`send-st ${results[c.id] || ""}`}>
+                    {!results[c.id] && <span style={{color:"var(--t4)"}}>waiting</span>}
+                    {results[c.id] === "ing" && "sending…"}
+                    {results[c.id] === "ok" && "✓ Sent"}
+                    {results[c.id] === "err" && "✕ Error"}
+                  </div>
+                </div>
+              ))}
+              {step === "done" && (
+                <div style={{textAlign:"center",padding:"12px 0"}}>
+                  <div style={{fontSize:28}}>{doneErr === 0 ? "🎉" : "⚠️"}</div>
+                  <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} of {selectedContacts.length} sent</div>
+                  {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed — check token expiry</div>}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="modal-foot">
+          {step === "compose" && (
+            <>
+              <button className="btn-s" onClick={onClose}>Cancel</button>
+              <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
+                disabled={!selectedContacts.length} onClick={() => setStep("approve")}>
+                Preview ({selectedContacts.length}) →
+              </button>
+            </>
+          )}
+          {step === "approve" && (
+            <>
+              <button className="btn-s" onClick={() => setStep("compose")}>← Back</button>
+              <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={sendAll}>
+                ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
+              </button>
+            </>
+          )}
+          {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Close</button>}
+          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>Cancel</button>}
         </div>
       </div>
     </div>
@@ -1114,8 +1556,288 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 }
 
 
-// ── Gmail helpers ─────────────────────────────────────────────────────────────
+// ── Language Toggle ───────────────────────────────────────────────────────────
+function LangToggle() {
+  const { lang, setLang } = useLang();
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:2,background:"rgba(255,255,255,.05)",border:"0.5px solid var(--sep)",borderRadius:8,padding:2,flexShrink:0}}>
+      {["en","sv"].map(l => (
+        <button key={l} onClick={()=>setLang(l)} style={{
+          background: lang===l ? "rgba(26,130,255,.25)" : "none",
+          border: "none", borderRadius:6, padding:"3px 8px",
+          color: lang===l ? "#60a5fa" : "var(--t3)",
+          fontSize:11, fontWeight:700, cursor:"pointer",
+          fontFamily:"inherit", textTransform:"uppercase", letterSpacing:"0.5px",
+          transition:"all .15s",
+        }}>{l}</button>
+      ))}
+    </div>
+  );
+}
+
+function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
+  const canvasRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    let raf;
+    const onResize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
+    window.addEventListener("resize", onResize);
+
+    const COUNT = 260;
+    const particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W, y: Math.random() * H, z: Math.random() * 3 + 0.2,
+      vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+      r: Math.random() * 1.8 + 0.3, alpha: Math.random() * 0.6 + 0.15,
+      pulse: Math.random() * Math.PI * 2, pulseSpeed: 0.008 + Math.random() * 0.022,
+      color: Math.random() > 0.8 ? "rgba(91,79,255," : Math.random() > 0.5 ? "rgba(26,130,255," : "rgba(180,210,255,",
+    }));
+
+    const orbs = Array.from({ length: 5 }, () => ({
+      x: Math.random() * W, y: Math.random() * H, r: 60 + Math.random() * 120,
+      vx: (Math.random() - 0.5) * 0.09, vy: (Math.random() - 0.5) * 0.09,
+      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255", alpha: 0.025 + Math.random() * 0.035,
+    }));
+
+    const draw = () => {
+      raf = requestAnimationFrame(draw);
+      ctx.fillStyle = "#070b12"; ctx.fillRect(0, 0, W, H);
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if (o.x < -o.r) o.x = W+o.r; if (o.x > W+o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = H+o.r; if (o.y > H+o.r) o.y = -o.r;
+        const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        g.addColorStop(0, `rgba(${o.color},${o.alpha})`); g.addColorStop(1, `rgba(${o.color},0)`);
+        ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+      });
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
+        if (p.x < 0) p.x=W; if (p.x > W) p.x=0; if (p.y < 0) p.y=H; if (p.y > H) p.y=0;
+        const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
+        const r = p.r / p.z;
+        const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3);
+        g.addColorStop(0, `${p.color}${a})`); g.addColorStop(1, `${p.color}0)`);
+        ctx.beginPath(); ctx.arc(p.x,p.y,r*3,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=`${p.color}${Math.min(a*2,1)})`; ctx.fill();
+      });
+      for (let i=0; i<particles.length; i++) {
+        for (let j=i+1; j<particles.length; j++) {
+          const a=particles[i], b=particles[j];
+          const dx=a.x-b.x, dy=a.y-b.y, dist=Math.sqrt(dx*dx+dy*dy);
+          if (dist < 90) {
+            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+            ctx.strokeStyle=`rgba(26,130,255,${(1-dist/90)*0.07})`; ctx.lineWidth=0.5; ctx.stroke();
+          }
+        }
+      }
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
+  }, []);
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
+      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
+      <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52 }}>
+          <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45)" }}>
+            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/></svg>
+          </div>
+          <div>
+            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px" }}>LogoPlacer</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
+          </div>
+        </div>
+        <div style={{ background:"rgba(10,16,26,0.8)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:24, padding:"40px 44px", width:"100%", maxWidth:390, display:"flex", flexDirection:"column", alignItems:"center", gap:26, boxShadow:"0 48px 96px rgba(0,0,0,0.7)" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>Sign in</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>Use your Google account to<br/>access the app.</div>
+          </div>
+          <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
+          {/* GDPR Consent */}
+          <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",width:"100%"}}>
+            <input type="checkbox" checked={gdprConsent} onChange={e=>onSetGdprConsent(e.target.checked)}
+              style={{marginTop:2,accentColor:"#1a82ff",flexShrink:0,width:14,height:14,cursor:"pointer"}} />
+            <span style={{fontSize:11,color:"rgba(255,255,255,0.32)",lineHeight:1.6}}>
+              Jag godkänner att Logoplacers lagrar min e-post och plan för att hantera mitt konto.
+              Läs vår <a href="#privacy" style={{color:"rgba(100,180,255,0.7)",textDecoration:"underline"}}>integritetspolicy</a>.
+            </span>
+          </label>
+          <button onClick={onLogin} disabled={loading || !gdprConsent}
+            onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 20px", borderRadius:12, border:"none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize:14, fontWeight:600, fontFamily:"inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition:"all .18s" }}>
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent||loading)?"#aaa":"#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill={(!gdprConsent||loading)?"#aaa":"#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill={(!gdprConsent||loading)?"#aaa":"#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill={(!gdprConsent||loading)?"#aaa":"#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+            {loading ? "Loggar in..." : gdprConsent ? "Fortsätt med Google" : "Godkänn för att fortsätta"}
+          </button>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center", marginTop:-10 }}>
+            Vi läser aldrig din inkorg — vi skickar bara mejl <em>från</em> dig.
+          </div>
+        </div>
+      </div>
+      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }`}</style>
+    </div>
+  );
+}
+
 const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com";
+
+// ─────────────────────────────────────────────
+// SUPABASE
+// ─────────────────────────────────────────────
+const SB_URL = "https://mnfrswuslktkrzgydvkg.supabase.co";
+// SECURITY NOTE: SB_KEY is the public anon key — safe to expose in frontend
+// IMPORTANT: RLS (Row Level Security) must be enabled on all Supabase tables
+// to prevent unauthorized data access. Verify at: Supabase → Authentication → Policies
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnJzd3VzbGt0a3J6Z3lkdmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTkxMDUsImV4cCI6MjA4ODYzNTEwNX0.WUVjrEnWp4VVi6Yx9TfYKK9Fke85EwiaNw_ozHddK9Q";
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SB_URL + path, {
+    ...opts,
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "",
+      ...opts.headers,
+    },
+  });
+  if (!res.ok) return null;
+  try { return await res.json(); } catch { return null; }
+}
+
+async function sbGetUser(email) {
+  const rows = await sbFetch(`/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=*`);
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
+async function sbUpsertUser(email, data) {
+  // First try PATCH (update existing row)
+  const res = await sbFetch(`/rest/v1/users?email=eq.${encodeURIComponent(email)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(data),
+  });
+  // If no row existed (res is empty array), fall back to INSERT
+  if (!res || (Array.isArray(res) && res.length === 0)) {
+    return sbFetch("/rest/v1/users", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ email, ...data }),
+    });
+  }
+  return res;
+}
+
+async function sbGetAllUsers() {
+  return sbFetch("/rest/v1/users?select=*&order=updated_at.desc") || [];
+}
+
+// ── Storage helpers (signed URLs) ────────────────────────────────────────
+async function sbUploadBaseImage(email, dataUrl) {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const path = `${email}/base-image.png`;
+    const res = await fetch(`${SB_URL}/storage/v1/object/base-images/${path}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "image/png", "x-upsert": "true" },
+      body: blob,
+    });
+    return res.ok ? path : null;
+  } catch { return null; }
+}
+
+async function sbGetSignedUrl(path) {
+  try {
+    const res = await fetch(`${SB_URL}/storage/v1/object/sign/base-images/${path}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ expiresIn: 3600 }),
+    });
+    const data = await res.json();
+    return data.signedURL ? `${SB_URL}/storage/v1${data.signedURL}` : null;
+  } catch { return null; }
+}
+
+// ── Project persistence ───────────────────────────────────────────────────
+async function sbSaveProject(email, data) {
+  // Upsert by email — one active project per user
+  const existing = await sbFetch(`/rest/v1/projects?email=eq.${encodeURIComponent(email)}&select=id`);
+  if (Array.isArray(existing) && existing.length > 0) {
+    return sbFetch(`/rest/v1/projects?id=eq.${existing[0].id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ ...data, updated_at: new Date().toISOString() }),
+    });
+  }
+  return sbFetch("/rest/v1/projects", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ email, ...data }),
+  });
+}
+
+async function sbLoadProject(email) {
+  const rows = await sbFetch(`/rest/v1/projects?email=eq.${encodeURIComponent(email)}&select=*&order=updated_at.desc&limit=1`);
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+}
+
+// ── Companies persistence ─────────────────────────────────────────────────
+async function sbSaveCompanies(projectId, companies) {
+  // Delete old, insert new
+  await sbFetch(`/rest/v1/companies?project_id=eq.${projectId}`, { method: "DELETE" });
+  if (!companies.length) return;
+  const rows = companies.map(c => ({
+    project_id: projectId,
+    email: c.email || "",
+    domain: c.domain || "",
+    name: c.companyName || "",
+    person: c.personName || "",
+    color: c.brandColor || null,
+    status: c.status === "ok" ? "needs-logo" : c.status,
+  }));
+  return sbFetch("/rest/v1/companies", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify(rows),
+  });
+}
+
+async function sbLoadCompanies(projectId) {
+  const rows = await sbFetch(`/rest/v1/companies?project_id=eq.${projectId}&select=*&order=created_at.asc`);
+  if (!Array.isArray(rows)) return [];
+  return rows.map(r => ({
+    id: r.id,
+    email: r.email,
+    domain: r.domain,
+    companyName: r.name,
+    personName: r.person,
+    brandColor: r.color,
+    status: r.status || "idle",
+    logoEl: null,
+    logoDataUrl: null,
+  }));
+}
+
+// ── Template persistence ──────────────────────────────────────────────────
+async function sbSaveTemplate(email, tpl) {
+  return sbFetch("/rest/v1/templates", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({ email, name: tpl.name, data: tpl }),
+  });
+}
+
+async function sbLoadTemplates(email) {
+  const rows = await sbFetch(`/rest/v1/templates?email=eq.${encodeURIComponent(email)}&select=*&order=created_at.desc`);
+  return Array.isArray(rows) ? rows.map(r => ({ ...r.data, id: r.id, name: r.name })) : [];
+}
+
+async function sbDeleteTemplate(id) {
+  return sbFetch(`/rest/v1/templates?id=eq.${id}`, { method: "DELETE" });
+}
 
 function loadGIS() {
   return new Promise(resolve => {
@@ -1127,405 +1849,601 @@ function loadGIS() {
   });
 }
 
-async function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
-  const boundary = "MP_" + Math.random().toString(36).slice(2);
-  const subjB64 = btoa(unescape(encodeURIComponent(subject)));
-  const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
-  const attB64 = await new Promise((res, rej) => {
-    const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
-    r.readAsDataURL(attachBlob);
-  });
-  const raw = [
-    `To: ${to}`,
-    `Subject: =?UTF-8?B?${subjB64}?=`,
-    "MIME-Version: 1.0",
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    "",
-    `--${boundary}`,
-    "Content-Type: text/html; charset=UTF-8",
-    "Content-Transfer-Encoding: base64",
-    "",
-    ...chunk76(bodyB64),
-    "",
-    `--${boundary}`,
-    `Content-Type: image/png; name="${filename}"`,
-    "Content-Transfer-Encoding: base64",
-    `Content-Disposition: attachment; filename="${filename}"`,
-    "",
-    ...chunk76(attB64),
-    "",
-    `--${boundary}--`,
-  ].join("\r\n");
-  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+let idCounter = 1;
+const uid = () => idCounter++;
+const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
+
+// ─────────────────────────────────────────────
+// CREDIT SYSTEM
+// ─────────────────────────────────────────────
+const PLANS = {
+  free:       { label: "Free",       creditsPerDay: 4,    monthly: null, bulkMax: 1 },
+  sdr:        { label: "SDR",        creditsPerDay: null, monthly: 300,  bulkMax: Infinity },
+  salespro:   { label: "Sales Pro",  creditsPerDay: null, monthly: 2000, bulkMax: Infinity },
+  team:       { label: "Team",       creditsPerDay: null, monthly: 10000,bulkMax: Infinity },
+};
+
+// Credits stored in localStorage: { plan, balance, resetAt (ISO date string) }
+// lp_verified_plan in sessionStorage = plan confirmed by Supabase this session
+function loadCredits() {
+  try {
+    const raw = localStorage.getItem("lp_credits");
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Override plan with session-verified plan to prevent flash
+    const verifiedPlan = sessionStorage.getItem("lp_verified_plan");
+    if (verifiedPlan && data.plan !== verifiedPlan) {
+      data.plan = verifiedPlan;
+    }
+    return data;
+  } catch { return null; }
+}
+function saveCredits(data) {
+  localStorage.setItem("lp_credits", JSON.stringify(data));
+}
+function initCredits(plan = "free") {
+  const p = PLANS[plan];
+  const now = new Date();
+  let resetAt, balance;
+  if (p.creditsPerDay) {
+    // Reset daily at midnight
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0,0,0,0);
+    resetAt = tomorrow.toISOString();
+    balance = p.creditsPerDay;
+  } else {
+    // Reset monthly
+    const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth() + 1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
+    resetAt = nextMonth.toISOString();
+    balance = p.monthly;
+  }
+  const data = { plan, balance, resetAt };
+  saveCredits(data);
+  return data;
+}
+function getOrInitCredits() {
+  let data = loadCredits();
+  if (!data) return initCredits("free");
+  // Check if reset is due
+  if (new Date() >= new Date(data.resetAt)) {
+    return initCredits(data.plan);
+  }
+  return data;
 }
 
-function chunk76(s) {
-  const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r;
-}
+function useCredits() {
+  const [credits, setCredits] = useState(() => getOrInitCredits());
 
-// ── SendModal ─────────────────────────────────────────────────────────────────
-function SendModal({ companies, getImageBlob, generateVideoBlob, onClose }) {
-  const [step, setStep] = useState("auth"); // auth | compose | approve | sending | done
-  const [token, setToken] = useState(null);
-  const [subject, setSubject] = useState("En personlig demo för ((company))");
-  const [bodyText, setBodyText] = useState("Hej ((name)),\n\nHär är en personlig demo vi satt ihop speciellt för er på ((company)).\n\nHör gärna av dig!\n\nMvh");
-  const [attachType, setAttachType] = useState("bild"); // "bild" | "video"
-  const [selected, setSelected] = useState(null); // Set of ids, init on step change
-  const [previews, setPreviews] = useState({});
-  const [results, setResults] = useState({});
+  const refresh = () => setCredits(getOrInitCredits());
 
-  const withEmail = companies.filter(c => c.status === "ok" && c.email);
-  const noEmail   = companies.filter(c => c.status === "ok" && !c.email);
-
-  // Init selection on mount
+  // ── Listen for plan changes from admin panel (same browser) ──
   useEffect(() => {
-    const sel = new Set(withEmail.map(c => c.id));
-    setSelected(sel);
+    const onStorage = (e) => {
+      if (e.key === "lp_credits") {
+        setCredits(getOrInitCredits());
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  useEffect(() => { loadGIS(); }, []);
-
-  // Load preview thumbnails when reaching approve/sending/done
+  // ── Also poll Supabase every 30s to catch changes from other devices ──
   useEffect(() => {
-    if (step !== "approve" && step !== "sending" && step !== "done") return;
-    for (const c of withEmail.filter(c => selected?.has(c.id))) {
-      if (previews[c.id]) continue;
-      getImageBlob(c).then(blob => {
-        const url = URL.createObjectURL(blob);
-        setPreviews(p => ({ ...p, [c.id]: url }));
-      }).catch(() => {});
-    }
-  }, [step]);
-
-  const login = async () => {
-    await loadGIS();
-    if (!window.google?.accounts?.oauth2) {
-      alert("Google Sign-In kunde inte laddas. Kontrollera att popup-blockerare är av och försök igen.");
-      return;
-    }
-    window.google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/gmail.send",
-      callback: (r) => {
-        if (r.access_token) { setToken(r.access_token); setStep("compose"); }
-        else alert("Inloggning misslyckades: " + (r.error || "okänt fel"));
-      },
-    }).requestAccessToken();
-  };
-
-  const selectedContacts = withEmail.filter(c => selected?.has(c.id));
-
-  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
-
-  const sendAll = async () => {
-    setStep("sending");
-    for (const c of selectedContacts) {
-      setResults(r => ({ ...r, [c.id]: "ing" }));
+    const email = (() => { try { return JSON.parse(sessionStorage.getItem("lp_user") || "{}").email; } catch { return null; } })();
+    if (!email) return;
+    const interval = setInterval(async () => {
       try {
-        const subj = resolveStr(subject, c);
-        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}</div>`;
-        const blob = await getImageBlob(c);
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`;
-        const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
-        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ raw }),
-        });
-        setResults(r => ({ ...r, [c.id]: res.ok ? "ok" : "err" }));
-      } catch {
-        setResults(r => ({ ...r, [c.id]: "err" }));
-      }
-    }
-    setStep("done");
+        const row = await sbGetUser(email);
+        if (!row) return;
+        let effectivePlan = row.plan;
+        if (row.trial_until && new Date(row.trial_until) > new Date()) effectivePlan = "pro";
+        const current = getOrInitCredits();
+        const planChanged = current.plan !== effectivePlan;
+        // Also sync balance if admin changed it (row.balance exists and differs)
+        const sbBalance = typeof row.balance === "number" ? row.balance : null;
+        const balanceChanged = sbBalance !== null && current.balance !== sbBalance;
+        if (planChanged || balanceChanged) {
+          sessionStorage.setItem("lp_verified_plan", effectivePlan);
+          const updated = {
+            ...current,
+            plan: effectivePlan,
+            balance: balanceChanged ? sbBalance : current.balance,
+          };
+          saveCredits(updated);
+          setCredits(updated);
+        }
+      } catch { /* silent */ }
+    }, 30000); // every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // 1 credit per image generated, 1 credit per email sent
+  const spend = (amount = 1) => {
+    const current = getOrInitCredits();
+    if (current.balance < amount) return false;
+    const updated = { ...current, balance: current.balance - amount };
+    saveCredits(updated);
+    setCredits(updated);
+    return true;
   };
 
-  const doneOk  = Object.values(results).filter(v => v === "ok").length;
-  const doneErr = Object.values(results).filter(v => v === "err").length;
+  const canBulk = (count) => {
+    const plan = PLANS[credits.plan];
+    if (count > plan.bulkMax) return false;       // Free = 1 max
+    return credits.balance >= count;
+  };
 
-  const insertTag = (setter, tag) => setter(v => v + tag);
+  const topUp = (amount) => {
+    const current = getOrInitCredits();
+    const updated = { ...current, balance: current.balance + amount };
+    saveCredits(updated);
+    setCredits(updated);
+  };
+
+  return { credits, spend, canBulk, topUp, refresh, plan: PLANS[credits.plan] };
+}
+
+// Credit badge shown in header
+function CreditBadge({ credits, onUpgrade }) {
+  const plan = PLANS[credits.plan];
+  const [pulse, setPulse] = useState(false);
+  const prevBalance = useRef(credits.balance);
+  useEffect(() => {
+    if (credits.balance !== prevBalance.current) {
+      setPulse(true);
+      setTimeout(() => setPulse(false), 600);
+      prevBalance.current = credits.balance;
+    }
+  }, [credits.balance]);
+  const total = plan.creditsPerDay ?? plan.monthly;
+  const pct   = total ? Math.round((credits.balance / total) * 100) : 100;
+  const low   = pct <= 20;
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:8, cursor: low ? "pointer" : "default" }}
+      onClick={low ? onUpgrade : undefined}
+      title={`${credits.balance} credits remaining`} style={{transition:"transform .1s",transform:pulse?"scale(1.15)":"scale(1)"}}>
+      <div style={{
+        background: low ? "rgba(239,68,68,0.12)" : "rgba(26,130,255,0.1)",
+        border: `0.5px solid ${low ? "rgba(239,68,68,0.35)" : "rgba(26,130,255,0.25)"}`,
+        borderRadius: 8, padding: "4px 10px", display:"flex", alignItems:"center", gap:6,
+      }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low?"#ef4444":"#5ba4ff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span style={{ fontSize:12, fontWeight:600, color: low?"#ef4444":"#7db8ff", fontVariantNumeric:"tabular-nums" }}>
+          {credits.balance.toLocaleString()}
+        </span>
+        <span style={{ fontSize:10, color:"var(--t4)" }}>/ {plan.label}</span>
+      </div>
+      {low && (
+        <button onClick={onUpgrade} style={{
+          background:"linear-gradient(135deg,#1a82ff,#5b4fff)", color:"#fff", border:"none",
+          borderRadius:7, padding:"4px 10px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+        }}>Upgrade</button>
+      )}
+    </div>
+  );
+}
+
+// Modal shown when out of credits or trying to upgrade
+function UpgradeModal({ onClose, credits }) {
+  const [loading, setLoading] = useState(null);
+  const user = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
+
+  const STRIPE_PRICES = {
+    sdr:      "price_1T94U1A1MErAKbCi3MOZydEy",
+    salespro: "price_1T94U1A1MErAKbCiPMitkjPc",
+    team:     "price_1T94U0A1MErAKbCioJt6SdZa",
+  };
+
+  const plans = [
+    { key:"free",     label:"Free",      price:"Free", period:"",    features:["4 credits / day","Single export only"], current: credits.plan === "free" },
+    { key:"sdr",      label:"SDR",       price:"$19",  period:"/mo", features:["300 credits / month","Bulk send + export"], current: credits.plan === "sdr" },
+    { key:"salespro", label:"Sales Pro", price:"$29",  period:"/mo", features:["2 000 credits / month","Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
+    { key:"team",     label:"Team",      price:"$59",  period:"/mo", features:["10 000 credits / month","Up to 5 seats"], current: credits.plan === "team" },
+  ];
+
+  const handleUpgrade = async (plan) => {
+    if (plan.key === "free" || plan.current) return;
+    const priceId = STRIPE_PRICES[plan.key];
+    if (!priceId) return;
+    setLoading(plan.key);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId, email: user.email }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {}
+    setLoading(null);
+  };
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal-box">
-        {/* Head */}
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box" style={{ maxWidth:700 }}>
         <div className="modal-head">
           <div>
-            <div className="modal-title">
-              { step === "auth"    && "Skicka e-post" }
-              { step === "compose" && "Skriv meddelande" }
-              { step === "approve" && `Godkänn utskick — ${selectedContacts.length} mottagare` }
-              { step === "sending" && "Skickar…" }
-              { step === "done"    && "Klart!" }
-            </div>
-            <div className="modal-sub">
-              { step === "auth"    && "Logga in med Google för att skicka via Gmail" }
-              { step === "compose" && "((name)) och ((company)) ersätts per mottagare. Bilden bifogas automatiskt." }
-              { step === "approve" && "Granska nedan och bekräfta innan skickning." }
-              { (step === "sending" || step === "done") && "Skickar personaliserade bilder via Gmail API" }
-            </div>
+            <div className="modal-title">{t("upgrade.title")}</div>
+            <div className="modal-sub">{t("upgrade.sub")}</div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-
-        {/* Body */}
         <div className="modal-body">
-
-          {/* AUTH */}
-          {step === "auth" && (
-            <div className="auth-center">
-              <div className="auth-icon">📧</div>
-              <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Anslut Gmail</div>
-              <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
-                LogoPlacer skickar e-post via ditt Gmail-konto. Inga meddelanden läses — appen har bara skicka-behörighet.
-              </div>
-              {withEmail.length === 0 ? (
-                <div style={{fontSize:13,color:"var(--orange)",padding:"10px 16px",background:"hsla(31,92%,58%,.1)",borderRadius:8}}>
-                  Inga kontakter har e-postadress.<br/>
-                  <span style={{fontSize:12,color:"var(--t3)"}}>Klistra in text med e-postadresser, eller lägg till manuellt.</span>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:12 }}>
+            {plans.map(p => (
+              <div key={p.key} style={{
+                border: `1px solid ${p.highlight ? "rgba(26,130,255,0.5)" : "rgba(255,255,255,0.07)"}`,
+                borderRadius:14, padding:"18px 16px",
+                background: p.highlight ? "rgba(26,130,255,0.08)" : "rgba(255,255,255,0.02)",
+                display:"flex", flexDirection:"column", gap:10,
+              }}>
+                <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", color: p.highlight?"#5ba4ff":"rgba(255,255,255,0.4)", textTransform:"uppercase" }}>{p.label}</div>
+                <div style={{ fontSize:28, fontWeight:800, letterSpacing:"-1.5px", color:"#fff", lineHeight:1 }}>
+                  {p.price}<span style={{ fontSize:12, color:"var(--t3)", fontWeight:400 }}>{p.period}</span>
                 </div>
-              ) : (
-                <>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} kontakter med e-post redo</div>
-                  <button className="google-btn" onClick={login}>
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z"/><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z"/></svg>
-                    Fortsätt med Google
-                  </button>
-                </>
-              )}
-              {noEmail.length > 0 && <div style={{fontSize:11,color:"var(--t4)"}}>{noEmail.length} kontakter saknar e-post och hoppas över</div>}
-            </div>
-          )}
-
-          {/* COMPOSE */}
-          {step === "compose" && (
-            <>
-              <div style={{fontSize:13,color:"var(--green)",display:"flex",alignItems:"center",gap:6,fontWeight:500}}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                Gmail ansluten
-              </div>
-
-              {/* Ämne */}
-              <div>
-                <label className="field-lbl">Ämnesrad</label>
-                <input className="modal-inp" value={subject} onChange={e => setSubject(e.target.value)} />
-              </div>
-
-              {/* Meddelande */}
-              <div>
-                <label className="field-lbl">Meddelande</label>
-                <textarea className="modal-ta" value={bodyText} onChange={e => setBodyText(e.target.value)} />
-                <div className="tag-btns" style={{marginTop:6}}>
-                  <button className="tag-btn" onClick={() => insertTag(setBodyText,"((name))")}>+ förnamn</button>
-                  <button className="tag-btn" onClick={() => insertTag(setBodyText,"((fullname))")}>+ fullnamn</button>
-                  <button className="tag-btn" onClick={() => insertTag(setBodyText,"((company))")}>+ bolag</button>
-                </div>
-                <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Personaliserad bild bifogas automatiskt som .png per mottagare.</p>
-              </div>
-
-              {/* Mottagare */}
-              <div>
-                <label className="field-lbl">Mottagare</label>
-                <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
-                  {withEmail.map(c => (
-                    <label key={c.id} className="rcpt-row" style={{cursor:"pointer"}}>
-                      <input type="checkbox" checked={selected?.has(c.id) || false}
-                        onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(c.id) : n.delete(c.id); return n; })}
-                        style={{accentColor:"var(--blue)",width:14,height:14,flexShrink:0}} />
-                      <div style={{width:26,height:26,background:"#fff",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
-                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"contain",padding:2}} /> : <span style={{fontSize:11,color:"#888"}}>{c.companyName[0]}</span>}
-                      </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:500,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.personName || c.companyName}</div>
-                        <div style={{fontSize:11,color:"var(--t3)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.email}</div>
-                      </div>
-                    </label>
+                <div style={{ display:"flex", flexDirection:"column", gap:6, flex:1 }}>
+                  {p.features.map((f,i) => (
+                    <div key={i} style={{ display:"flex", gap:7, alignItems:"flex-start" }}>
+                      <span style={{ color: p.highlight?"#5ba4ff":"var(--t3)", fontSize:11, marginTop:1 }}>✓</span>
+                      <span style={{ fontSize:12, color:"var(--t2)", lineHeight:1.45 }}>{f}</span>
+                    </div>
                   ))}
                 </div>
+                <button
+                  disabled={p.current || loading === p.key}
+                  onClick={() => handleUpgrade(p)}
+                  style={{
+                    background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
+                    color: p.current ? "var(--t4)" : "#fff",
+                    border: p.highlight?"none":"0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700,
+                    cursor: p.current ? "default" : "pointer", fontFamily:"inherit", width:"100%",
+                  }}>
+                  {p.current ? "Current plan" : loading === p.key ? "Loading…" : `Get ${p.label}`}
+                </button>
               </div>
-            </>
-          )}
-
-          {/* APPROVE */}
-          {step === "approve" && (
-            <>
-              <p style={{fontSize:13,color:"var(--t2)"}}>Varje person får sin personaliserade bild bifogad. Granska nedan:</p>
-              {selectedContacts.map(c => (
-                <div key={c.id} className="send-row">
-                  {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
-                  <div className="send-info">
-                    <div className="send-name">{c.personName || c.companyName}</div>
-                    <div className="send-detail">{c.email}</div>
-                    <div className="send-detail" style={{color:"var(--t2)"}}>
-                      <strong>{resolveStr(subject, c)}</strong>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* SENDING / DONE */}
-          {(step === "sending" || step === "done") && (
-            <>
-              {selectedContacts.map(c => (
-                <div key={c.id} className="send-row">
-                  {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
-                  <div className="send-info">
-                    <div className="send-name">{c.personName || c.companyName}</div>
-                    <div className="send-detail">{c.email}</div>
-                  </div>
-                  <div className={`send-st ${results[c.id] || ""}`}>
-                    {!results[c.id] && <span style={{color:"var(--t4)"}}>väntar</span>}
-                    {results[c.id] === "ing" && "skickar…"}
-                    {results[c.id] === "ok"  && "✓ Skickat"}
-                    {results[c.id] === "err" && "✕ Fel"}
-                  </div>
-                </div>
-              ))}
-              {step === "done" && (
-                <div style={{textAlign:"center",padding:"12px 0"}}>
-                  <div style={{fontSize:28}}>{doneErr === 0 ? "🎉" : "⚠️"}</div>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} av {selectedContacts.length} skickade</div>
-                  {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} misslyckades — kontrollera att token inte gått ut</div>}
-                </div>
-              )}
-            </>
-          )}
+            ))}
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className="modal-foot">
-          {step === "compose" && (
-            <>
-              <button className="btn-s" onClick={onClose}>Avbryt</button>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
-                disabled={!selectedContacts.length}
-                onClick={() => setStep("approve")}>
-                Förhandsgranska ({selectedContacts.length}) →
-              </button>
-            </>
-          )}
-          {step === "approve" && (
-            <>
-              <button className="btn-s" onClick={() => setStep("compose")}>← Tillbaka</button>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}}
-                onClick={sendAll}>
-                ✓ Skicka {selectedContacts.length} e-post
-              </button>
-            </>
-          )}
-          {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Stäng</button>}
-          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>Avbryt</button>}
-        </div>
+        {credits.plan !== "free" && (
+          <div style={{padding:"16px 24px",borderTop:"0.5px solid var(--sep)",textAlign:"center"}}>
+            <button onClick={async () => {
+              const user = JSON.parse(sessionStorage.getItem("lp_user")||"{}");
+              if (!user.email) return;
+              const res = await fetch("/api/portal", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: user.email }) });
+              const data = await res.json();
+              if (data.url) window.location.href = data.url;
+            }} style={{background:"none",border:"none",color:"var(--t3)",fontSize:13,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}>
+              Manage or cancel subscription
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-let idCounter = 1;
-const uid = () => idCounter++;
+function App() {
+  const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
+  const [authLoading, setAuthLoading] = useState(false);
+  const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
 
-const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
-const defaultLogoInst = (w = 400, h = 300) => ({ id: uid(), size: 120, opacity: 100, pos: { x: Math.floor(w / 2) - 60, y: Math.floor(h / 2) - 60 } });
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    try {
+      await loadGIS();
+      await new Promise((resolve, reject) => {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
+          callback: (resp) => {
+            if (resp.error) { reject(resp.error); return; }
+            fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+              headers: { Authorization: `Bearer ${resp.access_token}` }
+            })
+            .then(r => r.json())
+            .then(user => {
+              sessionStorage.setItem("lp_authed", "1");
+              sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
+              sessionStorage.setItem("lp_gtoken", resp.access_token);
+              // Set free plan immediately to prevent flash, Supabase will override below
+              sessionStorage.setItem("lp_verified_plan", "free");
+              // Sync plan from Supabase
+              sbGetUser(user.email).then(row => {
+                if (row) {
+                  // Check trial — if trial_until is in the future, upgrade to salespro temporarily
+                  let effectivePlan = row.plan;
+                  if (row.trial_until && new Date(row.trial_until) > new Date()) {
+                    effectivePlan = "pro";
+                  }
+                  sessionStorage.setItem("lp_verified_plan", effectivePlan);
+                  const existing = loadCredits();
+                  if (!existing || existing.plan !== effectivePlan) {
+                    initCredits(effectivePlan);
+                  }
+                } else {
+                  // New user → create with free plan
+                  sessionStorage.setItem("lp_verified_plan", "free");
+                  initCredits("free");
+                  sbUpsertUser(user.email, { plan: "free", name: user.name, picture: user.picture });
+                }
+                // If user came from pricing page, redirect to Stripe checkout
+                const pendingPrice = sessionStorage.getItem("lp_pending_price");
+                if (pendingPrice) {
+                  sessionStorage.removeItem("lp_pending_price");
+                  fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ priceId: pendingPrice, email: user.email }),
+                  }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
+                }
+              }).catch(() => {});
+              setAuthed(true);
+              // Small delay so React re-renders before hash change (prevents white screen)
+              setTimeout(() => {
+                if (window.location.hash !== "#app") window.location.hash = "app";
+              }, 50);
+              resolve();
+            })
+            .catch(reject);
+          },
+        });
+        client.requestAccessToken({ prompt: "select_account" });
+      });
+    } catch { /* cancelled */ }
+    setAuthLoading(false);
+  };
 
-export default function App() {
-  const [baseImageName, setBaseImageName] = useState(null);
+  const sessionUser = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
+  const t = useT();
+
+  // If user arrived via pricing page and is already logged in → go to Stripe
+  useEffect(() => {
+    if (!authed) return;
+    const pendingPrice = sessionStorage.getItem("lp_pending_price");
+    if (!pendingPrice || !sessionUser.email) return;
+    sessionStorage.removeItem("lp_pending_price");
+    fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId: pendingPrice, email: sessionUser.email }),
+    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
+  }, [authed]);
+
   const [converting, setConverting] = useState(false);
-  const [companies, setCompanies] = useState([]);
+  const companiesKey = sessionUser.email ? `lp_companies_${sessionUser.email}` : "lp_companies";
+  const [companies, setCompanies] = useState(() => {
+    try {
+      const key = sessionUser.email ? `lp_companies_${sessionUser.email}` : "lp_companies";
+      const saved = localStorage.getItem(key);
+      if (!saved) return [];
+      return JSON.parse(saved).map(c => {
+        if (c.logoDataUrl && c.status === "ok") {
+          const img = new Image(); img.src = c.logoDataUrl;
+          return { ...c, logoEl: img };
+        }
+        return { ...c, logoEl: null, status: c.status === "loading" ? "error" : c.status };
+      });
+    } catch { return []; }
+  });
   const [pasteText, setPasteText] = useState("");
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
-
-  // Multiple logo instances for company logo
   const [logoInstances, setLogoInstances] = useState([{ id: uid(), size: 120, opacity: 100, pos: { x: 50, y: 50 } }]);
-  const [openLogoId, setOpenLogoId] = useState(logoInstances[0].id);
-
-  // My logo
+  const [openLogoId, setOpenLogoId] = useState(null);
   const [myLogoEl, setMyLogoEl] = useState(null);
   const [myLogoName, setMyLogoName] = useState(null);
+  const [baseImageName, setBaseImageName] = useState(null);
   const [myLogoSize, setMyLogoSize] = useState(100);
   const [myLogoPos, setMyLogoPos] = useState({ x: 200, y: 50 });
-  const [myLogoOpen, setMyLogoOpen] = useState(false);
-
-  // Multiple text layers
   const [textLayers, setTextLayers] = useState([defaultText()]);
   const [openTextId, setOpenTextId] = useState(textLayers[0].id);
-
-  // Symbols
   const [symbols, setSymbols] = useState([]);
-
-  const [mode, setMode] = useState("bild"); // "bild" | "video"
+  const [mode, setMode] = useState("image");
   const [dragging, setDragging] = useState(null);
   const [toast, setToast] = useState(null);
   const [zipping, setZipping] = useState(false);
   const [hasImage, setHasImage] = useState(false);
-  const [personalImgEl, setPersonalImgEl] = useState(null);
+  const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
+  const [personalisedColors, setPersonalisedColors] = useState(false);
+  const [brandColor, setBrandColor] = useState(null);
+  const [colorToReplace, setColorToReplace] = useState("#ffffff");
+  const [eyedropperActive, setEyedropperActive] = useState(false);
+  const [templates, setTemplates] = useState(() => { try { return JSON.parse(localStorage.getItem("lp_templates") || "[]"); } catch { return []; } });
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [canvasZoom, setCanvasZoom] = useState(1);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [allPreviews, setAllPreviews] = useState([]);
+  const [previewIdx, setPreviewIdx] = useState(0);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
+  const [editingDomain, setEditingDomain] = useState({});
+  const [editingContact, setEditingContact] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showManual, setShowManual] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackImg, setFeedbackImg] = useState(null);
+  const [feedbackSent, setFeedbackSent] = useState(false);
+  const { credits, spend, canBulk, topUp, plan: currentPlan } = useCredits();
+  const [projectId, setProjectId] = useState(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // ── Handle pending Stripe checkout from pricing page ─────────────────────
+  useEffect(() => {
+    const pendingPrice = sessionStorage.getItem("lp_pending_price");
+    if (!pendingPrice || !sessionUser.email) return;
+    sessionStorage.removeItem("lp_pending_price");
+    fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId: pendingPrice, email: sessionUser.email }),
+    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
+  }, []);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const baseImageRef = useRef(null);
   const canvasSizeRef = useRef({ w: 0, h: 0 });
+  const pendingLoadImgRef = useRef(null); // base image waiting for canvas to mount
+
+  useEffect(() => {
+    try { localStorage.setItem(companiesKey, JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch {}
+    if (sessionLoaded) triggerSave();
+  }, [companies]);
+
+  useEffect(() => {
+    if (sessionLoaded) triggerSave();
+  }, [logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos]);
+
+  // ── Load session from Supabase on mount ──────────────────────────────────
+  useEffect(() => {
+    const email = sessionUser.email;
+    if (!email) { setSessionLoaded(true); return; }
+    sbLoadProject(email).then(async project => {
+      if (!project) { setSessionLoaded(true); return; }
+      setProjectId(project.id);
+      // Load settings
+      const s = project.settings || {};
+      if (s.logoInstances) setLogoInstances(s.logoInstances);
+      if (s.textLayers) setTextLayers(s.textLayers);
+      if (s.symbols) setSymbols(s.symbols);
+      if (s.canvasBg) setCanvasBg(s.canvasBg);
+      if (s.personalisedColors !== undefined) setPersonalisedColors(s.personalisedColors);
+      if (s.colorToReplace) setColorToReplace(s.colorToReplace);
+      if (s.myLogoSize) setMyLogoSize(s.myLogoSize);
+      if (s.myLogoPos) setMyLogoPos(s.myLogoPos);
+      // Load base image from Storage
+      if (project.base_image_url) {
+        const signedUrl = await sbGetSignedUrl(project.base_image_url);
+        if (signedUrl) {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            if (canvasRef.current) {
+              drawImageToCanvas(img);
+            } else {
+              // Canvas not mounted yet — store for later
+              pendingLoadImgRef.current = img;
+            }
+          };
+          img.src = signedUrl;
+        }
+      }
+      // Load companies (without logos)
+      const savedCompanies = await sbLoadCompanies(project.id);
+      if (savedCompanies.length > 0) setCompanies(savedCompanies);
+      // Load templates
+      sbLoadTemplates(email).then(tpls => { if (tpls.length > 0) setTemplates(tpls); });
+      setSessionLoaded(true);
+    }).catch(() => setSessionLoaded(true));
+  }, []);
+
+  // ── Autosave to Supabase (debounced 3s) ──────────────────────────────────
+  const saveTimerRef = useRef(null);
+  const triggerSave = () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => saveSession(), 3000);
+  };
+
+  const saveSession = async () => {
+    const email = sessionUser.email;
+    if (!email) return;
+    setSaving(true);
+    try {
+      // Upload base image if exists
+      let base_image_url = undefined; // undefined = don't overwrite existing
+      if (baseImageRef.current && canvasSizeRef.current.w > 0) {
+        const canvas = document.createElement("canvas");
+        const { w, h } = canvasSizeRef.current;
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
+        const uploaded = await sbUploadBaseImage(email, canvas.toDataURL("image/png"));
+        if (uploaded) base_image_url = uploaded;
+      }
+      const settings = { logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos };
+      const saveData = base_image_url !== undefined ? { base_image_url, settings } : { settings };
+      const project = await sbSaveProject(email, saveData);
+      const pid = (Array.isArray(project) ? project[0]?.id : project?.id) || projectId;
+      if (pid) {
+        setProjectId(pid);
+        await sbSaveCompanies(pid, companies);
+      }
+    } catch {}
+    setSaving(false);
+  };
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
-  // Logo instance helpers
   const updateLogoInst = (id, patch) => setLogoInstances(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
   const addLogoInst = () => {
-    const { w, h } = canvasSizeRef.current;
+    const { w } = canvasSizeRef.current;
     const inst = { id: uid(), size: 80, opacity: 100, pos: { x: Math.min(50 + logoInstances.length * 40, w - 100), y: 100 } };
-    setLogoInstances(ls => [...ls, inst]);
-    setOpenLogoId(inst.id);
+    setLogoInstances(ls => [...ls, inst]); setOpenLogoId(inst.id);
   };
-  const removeLogoInst = (id) => { setLogoInstances(ls => ls.filter(l => l.id !== id)); };
-
-  // Text layer helpers
   const updateTextLayer = (id, patch) => setTextLayers(ls => ls.map(l => l.id === id ? { ...l, ...patch } : l));
   const addTextLayer = () => {
-    const { w, h } = canvasSizeRef.current;
     const t = { ...defaultText(), pos: { x: 50, y: 180 + textLayers.length * 50 } };
-    setTextLayers(ls => [...ls, t]);
-    setOpenTextId(t.id);
+    setTextLayers(ls => [...ls, t]); setOpenTextId(t.id);
   };
-  const removeTextLayer = (id) => { setTextLayers(ls => ls.filter(l => l.id !== id)); };
-
-  // Symbol helpers
   const addSymbol = (char) => {
     const { w, h } = canvasSizeRef.current;
-    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
+    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w/2)-20, y: Math.floor(h/2)-30 } }]);
   };
   const updateSymbol = (id, patch) => setSymbols(s => s.map(x => x.id === id ? { ...x, ...patch } : x));
   const removeSymbol = (id) => setSymbols(s => s.filter(x => x.id !== id));
+
+  const saveTemplate = () => {
+    const name = templateName.trim() || `Template ${templates.length + 1}`;
+    const tpl = { id: uid(), name, savedAt: Date.now(), logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace };
+    const updated = [tpl, ...templates].slice(0, 20);
+    setTemplates(updated);
+    localStorage.setItem("lp_templates", JSON.stringify(updated));
+    setTemplateName("");
+    // Save to Supabase
+    sbSaveTemplate(sessionUser.email, tpl).catch(() => {});
+    showToast(`Template "${name}" saved`);
+  };
+
+  const loadTemplate = (tpl) => {
+    if (tpl.logoInstances) setLogoInstances(tpl.logoInstances);
+    if (tpl.textLayers) setTextLayers(tpl.textLayers);
+    if (tpl.symbols) setSymbols(tpl.symbols);
+    if (tpl.canvasBg) setCanvasBg(tpl.canvasBg);
+    if (tpl.personalisedColors !== undefined) setPersonalisedColors(tpl.personalisedColors);
+    if (tpl.colorToReplace) setColorToReplace(tpl.colorToReplace);
+    setShowTemplates(false); showToast(`Template "${tpl.name}" loaded`);
+  };
 
   const drawImageToCanvas = (img) => {
     const maxW = 760, maxH = 520;
     let w = img.width, h = img.height;
     if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
     if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
-    canvasSizeRef.current = { w, h };
-    baseImageRef.current = img;
-    setHasImage(true);
+    canvasSizeRef.current = { w, h }; baseImageRef.current = img; setHasImage(true);
   };
 
-  // Re-render personal image for video mode whenever canvas state changes
-  useEffect(() => {
-    if (!hasImage || !baseImageRef.current) return;
-    const { w, h } = canvasSizeRef.current;
-    const first = companies.find(c => c.status === "ok");
-    if (!first) { setPersonalImgEl(null); return; }
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first.personName, first.companyName, first.logoEl);
-    const img = new Image();
-    img.onload = () => setPersonalImgEl(img);
-    img.src = off.toDataURL();
-  }, [hasImage, companies, logoInstances, myLogoEl, myLogoPos, myLogoSize, textLayers, symbols]);
-
-  useEffect(() => {
-    if (!hasImage || !canvasRef.current || !baseImageRef.current) return;
-    const img = baseImageRef.current;
+  const redrawBaseCanvas = () => {
+    if (!canvasRef.current || !baseImageRef.current) return;
     const { w, h } = canvasSizeRef.current;
     canvasRef.current.width = w; canvasRef.current.height = h;
-    canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
+    canvasRef.current.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
+  };
+
+  useEffect(() => {
+    if (!hasImage) return;
+    redrawBaseCanvas();
   }, [hasImage]);
+
+  // Apply pending base image once canvas is mounted
+  useEffect(() => {
+    if (canvasRef.current && pendingLoadImgRef.current) {
+      drawImageToCanvas(pendingLoadImgRef.current);
+      pendingLoadImgRef.current = null;
+    }
+  });
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
@@ -1533,27 +2451,21 @@ export default function App() {
     const isHEIC = name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
     setBaseImageName(file.name);
     if (isHEIC) {
-      setConverting(true); showToast("Konverterar HEIC...");
+      setConverting(true); showToast("Converting HEIC...");
       try {
         const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
         const blob = Array.isArray(converted) ? converted[0] : converted;
-        const img = new Image(); img.onload = () => { drawImageToCanvas(img); setConverting(false); showToast("HEIC konverterad"); }; img.src = URL.createObjectURL(blob);
-      } catch { setConverting(false); showToast("Kunde inte konvertera HEIC-filen"); }
+        const img = new Image(); img.onload = () => { drawImageToCanvas(img); setConverting(false); showToast("HEIC converted"); }; img.src = URL.createObjectURL(blob);
+      } catch { setConverting(false); showToast("Could not convert HEIC"); }
       return;
     }
     const img = new Image(); img.onload = () => drawImageToCanvas(img); img.src = URL.createObjectURL(file);
   };
 
-  const handleMyLogoUpload = (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    setMyLogoName(file.name);
-    const img = new Image(); img.onload = () => setMyLogoEl(img); img.src = URL.createObjectURL(file);
-  };
-
   const addContact = (personName, companyRaw, email = null) => {
     const trimmed = companyRaw.trim(); if (!trimmed) return;
-    const domain = guessDomain(trimmed);
-    const companyName = trimmed.includes(".") ? domainToCompanyName(domain) : trimmed;
+    const domain = guessDomain(trimmed, email);
+    const companyName = trimmed.includes(".") ? domainToCompanyName(domain) : cleanCompanyName(trimmed);
     if (companies.find(c => c.companyName.toLowerCase() === companyName.toLowerCase())) return;
     const entry = { id: Date.now() + Math.random(), personName: personName.trim(), companyName, domain, email: email || null, status: "loading", logoDataUrl: null, logoEl: null };
     setCompanies(cs => [...cs, entry]);
@@ -1569,77 +2481,105 @@ export default function App() {
       .catch(() => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "error" } : c)));
   };
 
-  const handlePaste = () => {
-    const contacts = extractContacts(pasteText);
-    if (contacts.length === 0) { showToast("Inga kontakter — prova manuellt"); return; }
-    contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
-    const withEmail = contacts.filter(c => c.email).length;
-    showToast(`${contacts.length} kontakter tillagda${withEmail ? ` · ${withEmail} med e-post` : ""}`);
-    setPasteText("");
+  const commitDomain = (id, raw) => {
+    const domain = guessDomain(raw.trim() || "x.com");
+    setEditingDomain(ed => { const n = {...ed}; delete n[id]; return n; });
+    setCompanies(cs => cs.map(c => c.id === id ? { ...c, domain, status: "loading", logoDataUrl: null, logoEl: null } : c));
+    fetchLogoDataURL(domain)
+      .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
+      .catch(() => setCompanies(cs => cs.map(c => c.id === id ? { ...c, status: "error" } : c)));
   };
 
-  const getCompanyLogoEl = () => companies.find(c => c.status === "ok")?.logoEl || null;
+  const handlePaste = () => {
+    const contacts = extractContacts(pasteText);
+    if (contacts.length === 0) { showToast("No contacts found — try manual"); return; }
+    contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+    showToast(`${contacts.length} contacts added${contacts.filter(c=>c.email).length ? ` · ${contacts.filter(c=>c.email).length} with email` : ""}`);
+    setPasteText("");
+  };
 
   const downloadZip = async () => {
     const ready = companies.filter(c => c.status === "ok");
     if (!ready.length || !baseImageRef.current) return;
-    setZipping(true); showToast("Skapar zip-fil...");
-    const zip = new JSZip(); const folder = zip.folder("loggor");
+    // Credit check
+    if (!canBulk(ready.length)) {
+      if (credits.plan === "free" && ready.length > 1) {
+        showToast("Free plan: single export only. Upgrade for bulk."); setShowUpgradeModal(true); return;
+      }
+      showToast(`Not enough credits (need ${ready.length}, have ${credits.balance})`); setShowUpgradeModal(true); return;
+    }
+    if (!spend(ready.length)) { showToast("Out of credits"); setShowUpgradeModal(true); return; }
+    setZipping(true); showToast("Creating zip…");
+    const zip = new JSZip(); const folder = zip.folder("images");
     const { w, h } = canvasSizeRef.current;
     for (const c of ready) {
-      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl);
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl, canvasBg);
       const blob = await new Promise(res => off.toBlob(res, "image/png"));
-      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`, blob);
+      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`, blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(zipBlob); a.download = "loggor.zip"; a.click();
-    setZipping(false); showToast(`${ready.length} bilder sparade`);
+    const a = document.createElement("a"); a.href = URL.createObjectURL(zipBlob); a.download = "images.zip"; a.click();
+    setZipping(false); showToast(`${ready.length} images saved`);
   };
-
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [showSendModal, setShowSendModal] = useState(false);
 
   const getImageBlob = async (company) => {
     if (!baseImageRef.current) throw new Error("no base image");
     const { w, h } = canvasSizeRef.current;
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl);
+    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, canvasBg);
     return new Promise(res => off.toBlob(res, "image/png"));
   };
 
   const showPreview = () => {
     if (!baseImageRef.current) return;
-    const first = companies.find(c => c.status === "ok");
     const { w, h } = canvasSizeRef.current;
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, first?.personName || "Felix", first?.companyName || "Findex", first?.logoEl || null);
-    off.toBlob(blob => setPreviewUrl(URL.createObjectURL(blob)));
+    const ready = companies.filter(c => c.status === "ok");
+    const targets = ready.length > 0 ? ready : [{ personName: "Alex", companyName: "Acme Corp", logoEl: null }];
+    const previews = []; let done = 0;
+    targets.forEach((comp, i) => {
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null }, true /* watermark */);
+      off.toBlob(blob => {
+        previews[i] = { name: comp.companyName || "Preview", url: URL.createObjectURL(blob) };
+        done++;
+        if (done === targets.length) { setAllPreviews(previews); setPreviewIdx(0); setPreviewUrl(previews[0].url); }
+      });
+    });
   };
 
   const onMouseDown = (e) => {
     if (!baseImageRef.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-
-    // Symbols
+    const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
+    // Eyedropper mode: sample color from canvas
+    if (eyedropperActive) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        const px = Math.round(mx), py = Math.round(my);
+        const [r, g, b] = ctx.getImageData(px, py, 1, 1).data;
+        const hex = "#" + [r,g,b].map(v => v.toString(16).padStart(2,"0")).join("");
+        setColorToReplace(hex);
+        setEyedropperActive(false);
+        showToast("Colour picked: " + hex);
+      }
+      e.preventDefault(); return;
+    }
     for (const sym of symbols) {
       if (mx >= sym.pos.x && mx <= sym.pos.x + sym.size && my >= sym.pos.y && my <= sym.pos.y + sym.size) {
-        setDragging({ target: "symbol", id: sym.id, ox: mx - sym.pos.x, oy: my - sym.pos.y }); e.preventDefault(); return;
+        setDragging({ target:"symbol", id:sym.id, ox:mx-sym.pos.x, oy:my-sym.pos.y }); e.preventDefault(); return;
       }
     }
-    // My logo
     if (myLogoEl && mx >= myLogoPos.x && mx <= myLogoPos.x + myLogoSize && my >= myLogoPos.y && my <= myLogoPos.y + myLogoSize) {
-      setDragging({ target: "mylogo", ox: mx - myLogoPos.x, oy: my - myLogoPos.y }); e.preventDefault(); return;
+      setDragging({ target:"mylogo", ox:mx-myLogoPos.x, oy:my-myLogoPos.y }); e.preventDefault(); return;
     }
-    // Logo instances
     for (const inst of logoInstances) {
       if (mx >= inst.pos.x && mx <= inst.pos.x + inst.size && my >= inst.pos.y && my <= inst.pos.y + inst.size) {
-        setDragging({ target: "logo", id: inst.id, ox: mx - inst.pos.x, oy: my - inst.pos.y }); e.preventDefault(); return;
+        setDragging({ target:"logo", id:inst.id, ox:mx-inst.pos.x, oy:my-inst.pos.y }); e.preventDefault(); return;
       }
     }
-    // Text layers
     for (const layer of textLayers) {
       if (layer.enabled && layer.template) {
         if (mx >= layer.pos.x && mx <= layer.pos.x + 300 && my >= layer.pos.y && my <= layer.pos.y + 70) {
-          setDragging({ target: "text", id: layer.id, ox: mx - layer.pos.x, oy: my - layer.pos.y }); e.preventDefault(); return;
+          setDragging({ target:"text", id:layer.id, ox:mx-layer.pos.x, oy:my-layer.pos.y }); e.preventDefault(); return;
         }
       }
     }
@@ -1648,20 +2588,31 @@ export default function App() {
   const onMouseMove = (e) => {
     if (!dragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
     const { w, h } = canvasSizeRef.current;
     const clamp = (v, max) => Math.max(0, Math.min(v, max));
-    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
-    else if (dragging.target === "mylogo") setMyLogoPos({ x: clamp(mx - dragging.ox, w - myLogoSize), y: clamp(my - dragging.oy, h - myLogoSize) });
-    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
-    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
+    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
+    else if (dragging.target === "mylogo") setMyLogoPos({ x:clamp(mx-dragging.ox,w-myLogoSize), y:clamp(my-dragging.oy,h-myLogoSize) });
+    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
+    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
   };
 
   const { w: cw, h: ch } = canvasSizeRef.current;
   const readyCount = companies.filter(c => c.status === "ok").length;
-  const previewPerson = companies[0]?.personName || "Felix";
-  const previewCompany = companies[0]?.companyName || "Findex";
-  const companyLogoEl = getCompanyLogoEl();
+  const previewPerson = companies[0]?.personName || "Alex";
+  const previewCompany = companies[0]?.companyName || "Acme Corp";
+  const companyLogoEl = companies.find(c => c.status === "ok")?.logoEl || null;
+
+  if (!authed) return <LoginPage
+    onLogin={handleLogin}
+    loading={authLoading}
+    gdprConsent={gdprConsent}
+    onSetGdprConsent={(v) => {
+      setGdprConsent(v);
+      if (v) localStorage.setItem("lp_gdpr_consent", "1");
+      else localStorage.removeItem("lp_gdpr_consent");
+    }}
+  />;
 
   return (
     <>
@@ -1669,126 +2620,273 @@ export default function App() {
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
           <div className="header-brand">
-            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".9"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".9"/></svg></div>
-            <div>
-              <div className="header-name">LogoPlacer</div>
-              <div className="header-sub">Personaliserade demos</div>
-            </div>
+            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/></svg></div>
+            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0,22)}…</div></div>
           </div>
           <div className="header-btns">
-            <button className="btn-s" disabled={!hasImage || zipping} onClick={showPreview}><span style={{display:"flex",alignItems:"center",gap:6}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Förhandsvisa</span></button>
+            <LangToggle />
+            {sessionUser?.picture && (
+              <div style={{display:"flex",alignItems:"center",gap:8,marginRight:4}}>
+                <img src={sessionUser.picture} alt="" style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--sep)"}} />
+                <span style={{fontSize:12,color:"var(--t3)"}}>{sessionUser.name?.split(" ")[0]}</span>
+                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{fontSize:11,padding:"3px 8px"}}>{t("app.sign_out")}</button>
+              </div>
+            )}
+            <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
+            {saving && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>{t("app.saving")}</span>}
+            {!saving && sessionLoaded && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{t("app.saved")}</span>}
+            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{background:"rgba(255,255,255,.06)",border:"0.5px solid var(--sep)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--t2)",fontSize:15,fontWeight:700,flexShrink:0}}>?</button>
+            <button onClick={() => setShowFeedback(true)} style={{background:"rgba(255,255,255,.06)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"0 10px",height:30,display:"flex",alignItems:"center",gap:5,cursor:"pointer",color:"var(--t2)",fontSize:12,fontWeight:600,fontFamily:"inherit",flexShrink:0}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              {t("app.feedback")}
+            </button>
+            <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
+              <span style={{display:"flex",alignItems:"center",gap:6}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                {t("app.preview")}
+              </span>
+            </button>
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-              Skicka
+              {t("app.send")}
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
             <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
-              {zipping ? "Packar..." : `Ladda ner (${readyCount})`}
+              {zipping ? "Packing..." : `${t("app.download")} (${readyCount})`}
             </button>
           </div>
         </div>
 
+        {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
+
+        {/* USER MANUAL MODAL */}
+        {showManual && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setShowManual(false)}>
+            <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"85vh",overflow:"auto",padding:"32px 36px"}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+                <h2 style={{margin:0,fontSize:20,fontWeight:800,letterSpacing:"-1px"}}>{t("manual.title")}</h2>
+                <button onClick={()=>setShowManual(false)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22,lineHeight:1}}>×</button>
+              </div>
+              {[
+                { step:"1", tkey:"manual.step1" },
+                { step:"2", tkey:"manual.step2" },
+                { step:"3", tkey:"manual.step3" },
+                { step:"4", tkey:"manual.step4" },
+                { step:"5", tkey:"manual.step5" },
+                { step:"6", tkey:"manual.step6" },
+              ].map(s => (
+                <div key={s.step} style={{display:"flex",gap:16,marginBottom:20}}>
+                  <div style={{width:28,height:28,borderRadius:8,background:"var(--blue-dim)",border:"1px solid rgba(26,130,255,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"var(--blue)",flexShrink:0}}>{s.step}</div>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--t1)",marginBottom:4}}>{t(`${s.tkey}.title`)}</div>
+                    <div style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>{t(`${s.tkey}.body`)}</div>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:8,padding:"14px 18px",background:"rgba(26,130,255,.06)",border:"1px solid rgba(26,130,255,.15)",borderRadius:12,fontSize:13,color:"var(--t2)",lineHeight:1.7}}>
+                Credits are spent when you generate personalised images or send emails. Free plan: 4/day. Upgrade anytime for more.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FEEDBACK MODAL */}
+        {showFeedback && (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>{setShowFeedback(false);setFeedbackSent(false);}}>
+            <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:480,padding:"32px 36px"}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+                <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("feedback.title")}</h2>
+                <button onClick={()=>{setShowFeedback(false);setFeedbackSent(false);}} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22,lineHeight:1}}>×</button>
+              </div>
+              {feedbackSent ? (
+                <div style={{textAlign:"center",padding:"24px 0"}}>
+                  <div style={{fontSize:32,marginBottom:12}}>✓</div>
+                  <div style={{fontSize:15,fontWeight:700,color:"var(--t1)",marginBottom:6}}>Thanks for your feedback!</div>
+                  <div style={{fontSize:13,color:"var(--t3)"}}>We read every message.</div>
+                </div>
+              ) : (<>
+                <textarea value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}
+                  placeholder={t("feedback.placeholder")}
+                  style={{width:"100%",minHeight:120,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"12px 14px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:12}} />
+                <div style={{marginBottom:16}}>
+                  <label style={{fontSize:12,color:"var(--t3)",display:"block",marginBottom:6}}>{t("feedback.attach")}</label>
+                  <input type="file" accept="image/*" onChange={e=>setFeedbackImg(e.target.files[0])}
+                    style={{fontSize:12,color:"var(--t3)"}} />
+                </div>
+                <button disabled={!feedbackText.trim()} onClick={async () => {
+                  const body = new FormData();
+                  body.append("feedback", feedbackText);
+                  body.append("user", sessionUser?.email || "unknown");
+                  if (feedbackImg) body.append("image", feedbackImg);
+                  // Send as email via mailto fallback (no backend needed)
+                  const subject = encodeURIComponent("Logoplacers feedback from " + (sessionUser?.email || "user"));
+                  const bodyText = encodeURIComponent(feedbackText + (feedbackImg ? "\n\n[Image attached — please reply for image]" : ""));
+                  window.open(`mailto:adminlogoplacers@gmail.com?subject=${subject}&body=${bodyText}`);
+                  setFeedbackSent(true);
+                  setFeedbackText("");
+                  setFeedbackImg(null);
+                }} style={{width:"100%",padding:"11px 0",background:"var(--blue)",border:"none",borderRadius:10,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",opacity:feedbackText.trim()?1:0.4}}>
+                  Send feedback
+                </button>
+              </>)}
+            </div>
+          </div>
+        )}
+
         <div className="mode-tabs">
-          <button className={`mode-tab${mode === "bild" ? " active" : ""}`} onClick={() => setMode("bild")}>Bild</button>
+          <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>Image</button>
           <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>Video</button>
         </div>
 
         {mode === "video" && <VideoMode
           companies={companies}
           resolveTemplateFn={resolveTemplate}
-          renderIngredients={hasImage && baseImageRef.current ? {
-            baseImg: baseImageRef.current,
-            logoInstances, myLogoEl, myLogoPos, myLogoSize,
-            w: canvasSizeRef.current.w, h: canvasSizeRef.current.h,
-            textLayers, symbols
-          } : null}
+          renderIngredients={hasImage && baseImageRef.current ? { baseImg: baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w: canvasSizeRef.current.w, h: canvasSizeRef.current.h, textLayers, symbols } : null}
         />}
-        {mode === "bild" && <div className="workspace">
+
+        {mode === "image" && <div className="workspace">
           <div className="sidebar">
-
-            {/* Bas-bild */}
-            <span className="s-label">Basbild</span>
+            <span className="s-label">{t("app.base_image")}</span>
             <div className="card"><div className="card-pad">
-              <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleFileUpload(e); }} className="upload-zone" style={{}}>
+              <DropZone accept="image/*" onFile={file => handleFileUpload({ target: { files: [file] } })} className="upload-zone" style={{}}>
                 <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
-                  <input type="file" accept="image/*,.heic,.heif,.HEIC,.HEIF" style={{display:"none"}} onChange={handleFileUpload} />
+                  <input type="file" accept="image/*,.heic,.heif" style={{display:"none"}} onChange={handleFileUpload} />
                   <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  {converting && <p className="uz-active">Konverterar...</p>}
+                  {converting && <p className="uz-active">Converting...</p>}
                   {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
-                  {!converting && !baseImageName && <p className="uz-text">Klicka eller dra hit</p>}
-                  <p className="uz-hint">JPG · PNG · WEBP · HEIC · GIF</p>
+                  {!converting && !baseImageName && <p className="uz-text">Click or drag here</p>}
+                  <p className="uz-hint">JPG · PNG · WEBP · HEIC</p>
                 </label>
               </DropZone>
-            </div></div>
-
-            {/* Min logga */}
-            <span className="s-label">Min logga</span>
-            <div className="card"><div className="card-pad">
-              <DropZone accept="image/*" onFile={file => { const e = { target: { files: [file] } }; handleMyLogoUpload(e); }} className="upload-zone" style={{}}>
-                <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
-                  <input type="file" accept="image/*" style={{display:"none"}} onChange={handleMyLogoUpload} />
-                  <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01"/></svg></div>
-                  {myLogoName ? <p className="uz-active">{myLogoName}</p> : <p className="uz-text">Klicka eller dra hit loggan</p>}
-                  <p className="uz-hint">PNG med transparent bakgrund</p>
-                </label>
-              </DropZone>
-              {myLogoEl && (
-                <div className="sl-wrap">
-                  <div className="sl-head">
-                    <span className="sl-label">Storlek</span>
-                    <span className="sl-val" style={{color:"var(--purple)"}}>{myLogoSize}px</span>
-                  </div>
-                  <input type="range" min={20} max={500} value={myLogoSize} onChange={e => setMyLogoSize(Number(e.target.value))} style={{ accentColor: "var(--purple)" }} />
-                </div>
+              {hasImage && (
+                <button onClick={() => {
+                  const ctx = canvasRef.current?.getContext("2d");
+                  if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                  baseImageRef.current = null;
+                  setHasImage(false);
+                  setBaseImageName(null);
+                }} style={{marginTop:8,width:"100%",padding:"6px 0",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:8,color:"#f87171",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                  Remove image
+                </button>
               )}
             </div></div>
 
-            {/* Mottagarens logga */}
+            <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:canvasBg.enabled?10:0}}>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Background colour</span>
+                <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
+                  onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
+                  <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
+                </div>
+              </div>
+              {canvasBg.enabled && (
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <input type="color" value={canvasBg.color} onChange={e => setCanvasBg(bg => ({ ...bg, color: e.target.value }))}
+                    style={{width:32,height:32,borderRadius:8,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none"}} />
+                  <span style={{fontSize:12,color:"var(--t3)",fontFamily:"monospace"}}>{canvasBg.color}</span>
+                </div>
+              )}
+            </div>
+
+            <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                <div>
+                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Match brand colour</span>
+                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Replace a colour with recipient's brand</div>
+                </div>
+                <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
+                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)} style={{opacity:0,width:0,height:0,position:"absolute"}}/>
+                  <span style={{position:"absolute",inset:0,borderRadius:9,background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s"}}>
+                    <span style={{position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+                  </span>
+                </label>
+              </div>
+              {personalisedColors && (
+                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap"}}>
+                  <div style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>Replace:</div>
+                  <input type="color" value={colorToReplace} onChange={e => setColorToReplace(e.target.value)}
+                    style={{width:32,height:28,borderRadius:6,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none",flexShrink:0}} />
+                  <button onClick={() => setEyedropperActive(v => !v)} title="Pick colour from image"
+                    style={{display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6,
+                      border:`1.5px solid ${eyedropperActive?"var(--blue)":"var(--sep)"}`,
+                      background:eyedropperActive?"rgba(26,130,255,.15)":"var(--bg4)",
+                      cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive?"#5ba4ff":"var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33L20.84 9.5a5.5 5.5 0 0 0 0-7.78v-.91z"/>
+                      <line x1="18" y1="11.5" x2="6" y2="23.5"/>
+                    </svg>
+                  </button>
+                  <div style={{fontSize:10,color:"var(--t4)",fontFamily:"monospace"}}>{colorToReplace}</div>
+                  {eyedropperActive && <div style={{fontSize:10,color:"var(--blue)",fontWeight:600}}>Click image to pick</div>}
+                </div>
+              )}
+            </div>
+
             <div className="s-row">
-              <span className="s-label">Mottagarens logga</span>
-              <button className="btn-text" onClick={addLogoInst}>+ Ny</button>
+              <span className="s-label">Recipient logo</span>
+              <button className="btn-text" onClick={addLogoInst}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
               {logoInstances.map((inst, idx) => (
                 <LogoInstanceCard key={inst.id} inst={inst} idx={idx} total={logoInstances.length}
                   onChange={patch => updateLogoInst(inst.id, patch)}
-                  onRemove={() => removeLogoInst(inst.id)}
+                  onRemove={() => setLogoInstances(ls => ls.filter(l => l.id !== inst.id))}
                   isOpen={openLogoId === inst.id}
                   onToggle={() => setOpenLogoId(openLogoId === inst.id ? null : inst.id)} />
               ))}
             </div>
 
-            {/* Text */}
             <div className="s-row">
-              <span className="s-label">Textlager</span>
-              <button className="btn-text" onClick={addTextLayer}>+ Ny</button>
+              <span className="s-label">Text layers</span>
+              <button className="btn-text" onClick={addTextLayer}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
               {textLayers.map((layer, idx) => (
                 <TextLayerCard key={layer.id} layer={layer} idx={idx} total={textLayers.length}
                   onChange={patch => updateTextLayer(layer.id, patch)}
-                  onRemove={() => removeTextLayer(layer.id)}
+                  onRemove={() => setTextLayers(ls => ls.filter(l => l.id !== layer.id))}
                   isOpen={openTextId === layer.id}
                   onToggle={() => setOpenTextId(openTextId === layer.id ? null : layer.id)} />
               ))}
             </div>
 
-            {/* Symboler */}
-            <span className="s-label">Symboler</span>
-            <div className="card">
-              <div className="sym-grid">
-                {SYMBOL_OPTIONS.map(char => (
-                  <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>
+            <div style={{margin:"0 10px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span className="s-label" style={{padding:0}}>Templates</span>
+              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>{showTemplates ? "Hide" : `Saved (${templates.length})`}</button>
+            </div>
+            <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
+              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Template name…" onKeyDown={e => e.key==="Enter" && saveTemplate()}
+                style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}} />
+              <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0}}>Save</button>
+            </div>
+            {showTemplates && templates.length > 0 && (
+              <div style={{margin:"0 10px 8px",display:"flex",flexDirection:"column",gap:4,maxHeight:220,overflowY:"auto"}}>
+                {templates.map(tpl => (
+                  <div key={tpl.id} style={{display:"flex",alignItems:"center",gap:6,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"7px 10px"}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:600,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tpl.name}</div>
+                      <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
+                    </div>
+                    <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
+                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); sbDeleteTemplate(tpl.id).catch(()=>{}); }} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
+                  </div>
                 ))}
               </div>
+            )}
+
+            <span className="s-label">Symbols</span>
+            <div className="card">
+              <div className="sym-grid">
+                {SYMBOL_OPTIONS.map(char => <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>)}
+              </div>
               {symbols.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{display:"flex",flexDirection:"column",gap:6,padding:"0 8px 8px"}}>
                   {symbols.map(sym => (
                     <div key={sym.id} style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>{sym.char}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{ flex: 1, accentColor: "#fbbf24" }} />
+                      <span style={{fontSize:20,minWidth:28,textAlign:"center"}}>{sym.char}</span>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{flex:1,accentColor:"#fbbf24"}} />
                           <span style={{fontSize:11,color:"var(--yellow)",minWidth:28}}>{sym.size}px</span>
                           <div className="color-swatch" style={{background:sym.color}}><input type="color" value={sym.color} onChange={e => updateSymbol(sym.id,{color:e.target.value})} /></div>
                         </div>
@@ -1800,17 +2898,15 @@ export default function App() {
               )}
             </div>
 
-            {/* Klistra in */}
-            {/* Kontakter */}
-            <span className="s-label">Kontakter</span>
+            <span className="s-label">Contacts</span>
             <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
-              <textarea className="paste-area" placeholder={"Klistra från Fair/LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nEller: Felix , Findex"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
-              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extrahera kontakter</button>
+              <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Acme Corp"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
+              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extract contacts</button>
               <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
-                <p style={{fontSize:12,color:"var(--t3)"}}>Eller lägg till manuellt</p>
-                <input className="inp sm" placeholder="Personens namn (valfritt)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
+                <p style={{fontSize:12,color:"var(--t3)"}}>Or add manually</p>
+                <input className="inp sm" placeholder="Person name (optional)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
                 <div style={{display:"flex",gap:7}}>
-                  <input className="inp sm" style={{flex:1}} placeholder="Bolagsnamn eller domän" value={singleCompany}
+                  <input className="inp sm" style={{flex:1}} placeholder="Company name or domain" value={singleCompany}
                     onChange={e => setSingleCompany(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany); setSingleCompany(""); setSinglePerson(""); } }} />
                   <button className="btn-s" disabled={!singleCompany.trim()}
@@ -1821,87 +2917,117 @@ export default function App() {
 
             {companies.length > 0 && (<>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 16px 6px"}}>
-                <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} bolag · {readyCount} klara</span>
-                <button className="btn-text-red" onClick={() => setCompanies([])}>Rensa</button>
+                <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} companies · {readyCount} ready</span>
+                <button className="btn-text-red" onClick={() => setCompanies([])}>Clear all</button>
               </div>
               <div className="co-list-wrap">
                 {companies.map(c => (
-                  <div className="co-row" key={c.id}>
-                    <div className="co-logo">
-                      {c.status === "loading" && <div className="spinner" />}
-                      {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
-                      {c.status === "error" && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
+                  <div key={c.id}>
+                    <div className="co-row">
+                      <div className="co-logo" style={{cursor:c.status==="error"?"pointer":"default"}} onClick={() => c.status==="error" && retryCompany(c)}>
+                        {c.status === "loading" && <div className="spinner" />}
+                        {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
+                        {c.status === "error" && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
+                      </div>
+                      <div className="co-info" style={{flex:1,minWidth:0}}>
+                        <div className="co-name">{c.companyName}
+                          {c.personName && <span style={{fontWeight:400,color:"var(--t3)",marginLeft:5,fontSize:12}}>· {c.personName}</span>}
+                        </div>
+                        {editingDomain[c.id] !== undefined ? (
+                          <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+                            <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="e.g. lysa.se"
+                              onChange={e => setEditingDomain(ed => ({...ed, [c.id]: e.target.value}))}
+                              onKeyDown={e => { if (e.key==="Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key==="Escape") setEditingDomain(ed=>{const n={...ed};delete n[c.id];return n;}); }}
+                              onBlur={() => commitDomain(c.id, editingDomain[c.id])} />
+                          </div>
+                        ) : (
+                          <div style={{display:"flex",alignItems:"center",gap:3,marginTop:1}}>
+                            <span className="co-sub" style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.domain}</span>
+                            <button className="ico-edit" onClick={() => setEditingDomain(ed => ({...ed, [c.id]: c.domain}))}>✎</button>
+                          </div>
+                        )}
+                      </div>
+                      {c.email && <span title={c.email} style={{fontSize:11,color:"var(--green)",flexShrink:0}}>@</span>}
+                      {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                      {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
+                      <button className="ico-edit" style={{fontSize:11,padding:"2px 5px"}}
+                        onClick={() => setEditingContact(ec => ec?.id===c.id ? null : {id:c.id, name:c.personName||"", email:c.email||""})}>
+                        {editingContact?.id===c.id ? "▲" : "▼"}
+                      </button>
+                      <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                     </div>
-                    <div className="co-info">
-                      <div className="co-name">{c.companyName}</div>
-                      <div className="co-sub">{c.personName || c.domain}</div>
-                    </div>
-                    {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
-                    {c.email && <span title={c.email} style={{fontSize:11,color:"var(--green)"}}>@</span>}
-                    {c.status === "error" && <button className="badge-err" onClick={() => retryCompany(c)}>↺</button>}
-                    <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
+                    {editingContact?.id === c.id && (
+                      <div style={{padding:"8px 12px 10px 54px",background:"var(--bg)",borderBottom:"0.5px solid var(--sep)",display:"flex",flexDirection:"column",gap:6}}>
+                        <div style={{display:"flex",gap:6}}>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Name</div>
+                            <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({...ec, name:e.target.value}))} />
+                          </div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Email</div>
+                            <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({...ec, email:e.target.value}))} />
+                          </div>
+                        </div>
+                        <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
+                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={() => setEditingContact(null)}>Cancel</button>
+                          <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={() => {
+                            setCompanies(cs => cs.map(x => x.id===c.id ? {...x, personName:editingContact.name, email:editingContact.email||null} : x));
+                            setEditingContact(null);
+                          }}>Save</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </>)}
           </div>
 
-          {/* Canvas */}
           <div className="canvas-area">
-
-
-            <div className="canvas-wrapper">
+            <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001))); }}>
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  <p className="empty-title">Ingen bild vald</p>
-                  <p className="empty-sub">Ladda upp en basbild till vänster</p>
+                  <p className="empty-title">No image selected</p>
+                  <p className="empty-sub">Upload a base image on the left</p>
                 </div>
               ) : (
+                <div style={{ width: (cw||0)*canvasZoom, height: (ch||0)*canvasZoom, flexShrink:0 }}>
                 <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                  style={{ width: cw || "auto", height: ch || "auto", cursor: dragging ? "grabbing" : "default" }}>
+                  style={{ width:cw||"auto", height:ch||"auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform:`scale(${canvasZoom})`, transformOrigin:"top left" }}>
                   <canvas ref={canvasRef} />
                   {cw > 0 && (
                     <>
-                      {/* Logo instances */}
                       {logoInstances.map((inst, idx) => {
                         const color = LAYER_COLORS[(idx + 4) % LAYER_COLORS.length];
                         return (
                           <div key={inst.id} className="overlay-box"
-                            style={{ left: inst.pos.x, top: inst.pos.y, width: inst.size, height: inst.size, borderColor: color, background: `${color}11` }}>
-                            <div className="ov-pill" style={{background:color}}>Logo {idx + 1}</div>
+                            style={{ left:inst.pos.x, top:inst.pos.y, width:inst.size, height:inst.size, borderColor:color, background:`${color}11`, borderRadius:Math.min(inst.size*0.15,12) }}>
+                            <div className="ov-pill" style={{background:color}}>Logo {idx+1}</div>
                             <span style={{fontSize:10,color,textTransform:"uppercase",pointerEvents:"none"}}>{companyLogoEl?"▣":"LOGO"}</span>
                           </div>
                         );
                       })}
-
-                      {/* My logo */}
                       {myLogoEl && (
-                        <div className="overlay-box"
-                          style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)" }}>
-                          <div className="ov-pill" style={{background:"var(--purple)"}}>Min logga</div>
+                        <div className="overlay-box" style={{ left:myLogoPos.x, top:myLogoPos.y, width:myLogoSize, height:myLogoSize, borderColor:"#a78bfa", background:"rgba(167,139,250,0.07)", borderRadius:Math.min(myLogoSize*0.15,12) }}>
+                          <div className="ov-pill" style={{background:"var(--purple)"}}>My logo</div>
                           <span style={{fontSize:10,color:"var(--purple)",pointerEvents:"none"}}>▣</span>
                         </div>
                       )}
-
-                      {/* Text layers */}
                       {textLayers.map((layer, idx) => {
                         const color = LAYER_COLORS[idx % LAYER_COLORS.length];
-                        const preview = layer.template ? resolveTemplate(layer.template, previewPerson, previewCompany) : "";
                         if (!layer.enabled || !layer.template) return null;
                         return (
                           <div key={layer.id} className="overlay-box text-box"
-                            style={{ left: layer.pos.x, top: layer.pos.y, borderColor: color, background: `${color}11`, fontSize: layer.fontSize, fontFamily: layer.fontFamily, color: layer.color, fontWeight: layer.fontWeight ?? (layer.bold ? "bold" : "normal"), fontStyle: layer.italic ? "italic" : "normal", lineHeight: 1.4 }}>
-                            <div className="ov-pill" style={{background:color}}>Text {idx + 1}</div>
-                            <span className="inner-text">{preview}</span>
+                            style={{ left:layer.pos.x, top:layer.pos.y, borderColor:color, background:`${color}11`, fontSize:layer.fontSize, fontFamily:layer.fontFamily, color:layer.color, fontWeight:layer.fontWeight??(layer.bold?"bold":"normal"), fontStyle:layer.italic?"italic":"normal", lineHeight:1.4 }}>
+                            <div className="ov-pill" style={{background:color}}>Text {idx+1}</div>
+                            <span className="inner-text">{resolveTemplate(layer.template, previewPerson, previewCompany)}</span>
                           </div>
                         );
                       })}
-
-                      {/* Symbols */}
                       {symbols.map(sym => (
                         <div key={sym.id} className="overlay-box"
-                          style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
+                          style={{ left:sym.pos.x, top:sym.pos.y, width:sym.size, height:sym.size, borderColor:"#fbbf24", background:"rgba(251,191,36,0.07)", fontSize:sym.size*0.75, color:sym.color, fontWeight:"bold" }}>
                           <div className="ov-pill" style={{background:"var(--yellow)",color:"#000"}}>Symbol</div>
                           <span style={{fontSize:sym.size*0.7,color:sym.color,pointerEvents:"none"}}>{sym.char}</span>
                         </div>
@@ -1909,27 +3035,51 @@ export default function App() {
                     </>
                   )}
                 </div>
+                </div>
               )}
             </div>
-            <div className="canvas-footer">
-              {cw > 0 ? "Dra för att flytta element på bilden" : "Ladda upp en basbild för att komma igång"}
+            <div className="canvas-footer" style={{position:"relative"}}>
+              {cw > 0 ? "Drag elements to position · Scroll to zoom" : "Upload a base image to get started"}
+              {hasImage && (
+                <div className="zoom-controls">
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z-0.1).toFixed(2)))}>−</button>
+                  <span className="zoom-label">{Math.round(canvasZoom*100)}%</span>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z+0.1).toFixed(2)))}>+</button>
+                  <button className="zoom-btn" style={{fontSize:9}} onClick={() => setCanvasZoom(1)}>↺</button>
+                </div>
+              )}
             </div>
           </div>
         </div>}
 
         {toast && <div className="toast">{toast}</div>}
 
-        {/* Image preview modal */}
         {previewUrl && (
-          <div onClick={() => setPreviewUrl(null)} style={{
-            position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:1000,
-            display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"
-          }}>
-            <div onClick={e => e.stopPropagation()} style={{position:"relative",maxWidth:"90vw",maxHeight:"90vh",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-              <img src={previewUrl} style={{maxWidth:"90vw",maxHeight:"82vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.6)"}} alt="Förhandsgranskning" />
+          <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }}
+            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+            <div onClick={e => e.stopPropagation()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,maxWidth:"92vw",maxHeight:"96vh"}}>
+              <div style={{display:"flex",alignItems:"center",gap:16}}>
+                <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{allPreviews[previewIdx]?.name}</span>
+                {allPreviews.length > 1 && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{previewIdx+1} / {allPreviews.length}</span>}
+              </div>
+              <img src={allPreviews[previewIdx]?.url || previewUrl} style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}} alt="Preview" />
+              {allPreviews.length > 1 && (
+                <div style={{display:"flex",gap:8,overflowX:"auto",maxWidth:"88vw",padding:"4px 0"}}>
+                  {allPreviews.map((p,i) => (
+                    <img key={i} src={p.url} alt={p.name} onClick={() => setPreviewIdx(i)}
+                      style={{width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",border:i===previewIdx?"2px solid var(--blue)":"2px solid transparent",opacity:i===previewIdx?1:0.55,transition:"all .15s"}} />
+                  ))}
+                </div>
+              )}
               <div style={{display:"flex",gap:8}}>
-                <button onClick={() => setPreviewUrl(null)} className="btn-s">Stäng</button>
-                <button onClick={() => { const a=document.createElement("a");a.href=previewUrl;a.download="forhandsvisning.png";a.click(); }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Ladda ner</button>
+                {allPreviews.length > 1 && (
+                  <>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i-1,0))} disabled={previewIdx===0}>Prev</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>Next</button>
+                  </>
+                )}
+                <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Close</button>
+                <button onClick={() => { const a=document.createElement("a"); a.href=allPreviews[previewIdx]?.url||previewUrl; a.download=`${allPreviews[previewIdx]?.name||"preview"}.png`; a.click(); }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Download</button>
               </div>
             </div>
           </div>
@@ -1939,10 +3089,352 @@ export default function App() {
           <SendModal
             companies={companies}
             getImageBlob={getImageBlob}
+            sharedToken={gmailToken}
+            onTokenAcquired={t => { setGmailToken(t); sessionStorage.setItem("lp_gtoken", t); }}
             onClose={() => setShowSendModal(false)}
+            spendCredits={spend}
+            creditsBalance={credits.balance}
+            onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
           />
         )}
+        {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
       </div>
     </>
   );
+}
+
+// ─────────────────────────────────────────────
+// ADMIN PANEL
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// ADMIN PANEL
+// ─────────────────────────────────────────────
+// Add your email here to grant admin access
+const ADMIN_EMAILS = [
+  "adminlogoplacers@gmail.com", // NOTE: Move to env var if open-sourcing
+];
+
+function AdminPanel({ onBack }) {
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const u = JSON.parse(sessionStorage.getItem("lp_admin_user") || "null");
+      return u && ADMIN_EMAILS.includes(u.email) ? u : null;
+    } catch { return null; }
+  });
+  const [loading, setLoading] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [saved, setSaved] = useState("");
+
+  const PLANS = ["free", "sdr", "pro", "team"];
+  const PLAN_LIMITS = { free: 4, sdr: 300, pro: 2000, team: 10000 };
+
+  const loginWithGoogle = async () => {
+    setLoading(true); setDenied(false);
+    try {
+      await loadGIS();
+      await new Promise((resolve, reject) => {
+        window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid email profile",
+          callback: async (resp) => {
+            if (resp.error) { reject(resp.error); return; }
+            try {
+              const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                headers: { Authorization: `Bearer ${resp.access_token}` }
+              });
+              const u = await r.json();
+              if (ADMIN_EMAILS.includes(u.email)) {
+                sessionStorage.setItem("lp_admin_user", JSON.stringify(u));
+                setAdminUser(u);
+                resolve();
+              } else {
+                setDenied(true);
+                resolve();
+              }
+            } catch(e) { reject(e); }
+          },
+        }).requestAccessToken({ prompt: "select_account" });
+      });
+    } catch { /* cancelled */ }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!adminUser) return;
+    sbGetAllUsers().then(rows => setUsers(Array.isArray(rows) ? rows : []));
+    // Auto-refresh every 15s for real-time credits
+    const interval = setInterval(() => {
+      sbGetAllUsers().then(rows => setUsers(Array.isArray(rows) ? rows : []));
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [adminUser]);
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const updated = { plan: editing.plan, balance: Number(editing.balance), updated_at: new Date().toISOString() };
+    if (editing.trial_until) updated.trial_until = editing.trial_until;
+    await sbUpsertUser(editing.email, updated);
+    setUsers(us => us.map(u => u.email === editing.email ? { ...u, ...updated } : u));
+
+    // ── Force-sync the user's local credits if they are currently logged in ──
+    // We write directly to their localStorage key so the next render picks it up.
+    // This works if admin and user share the same browser, and also seeds the
+    // correct balance for when the user next opens the app on any device.
+    try {
+      const userEmail = editing.email;
+      const storageKey = `lp_companies_${userEmail}`;
+      // Update lp_credits_{email} if it exists
+      const credKey = `lp_credits`;
+      // Try to patch localStorage for this user's session (same browser)
+      const existingRaw = localStorage.getItem(credKey);
+      if (existingRaw) {
+        const existing = JSON.parse(existingRaw);
+        // Only patch if the stored email matches the edited user
+        const storedUser = sessionStorage.getItem("lp_user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.email === userEmail) {
+            // Same browser session — patch immediately
+            const plan = PLANS[editing.plan];
+            const newBalance = Number(editing.balance);
+            const now = new Date();
+            let resetAt = existing.resetAt;
+            // Recalculate resetAt if plan type changed (daily vs monthly)
+            if (plan.creditsPerDay && !existing.resetAt?.includes("T")) {
+              const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
+              resetAt = tomorrow.toISOString();
+            } else if (plan.monthly && existing.plan !== editing.plan) {
+              const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth()+1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
+              resetAt = nextMonth.toISOString();
+            }
+            localStorage.setItem(credKey, JSON.stringify({ plan: editing.plan, balance: newBalance, resetAt }));
+            sessionStorage.setItem("lp_verified_plan", editing.plan);
+            // Dispatch storage event so the app tab picks it up instantly
+            window.dispatchEvent(new StorageEvent("storage", { key: credKey }));
+          }
+        }
+      }
+    } catch(e) { /* non-critical */ }
+
+    setSaved(editing.email); setTimeout(() => setSaved(""), 2000);
+    setEditing(null);
+  };
+
+  const addUser = async () => {
+    const email = prompt("User email:");
+    if (!email?.trim()) return;
+    const existing = users.find(u => u.email === email.trim());
+    if (existing) { alert("User already exists"); return; }
+    const fresh = { plan: "free", balance: 4 };
+    await sbUpsertUser(email.trim(), fresh);
+    setUsers(us => [...us, { email: email.trim(), ...fresh }]);
+  };
+
+  const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
+
+  // ── Login screen ──────────────────────────────────────────────────────
+  if (!adminUser) return (
+    <div style={{minHeight:"100vh",background:"#070b12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
+      <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:24,padding:"44px 48px",width:360,display:"flex",flexDirection:"column",gap:20,alignItems:"center",textAlign:"center"}}>
+        <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1a82ff,#5b4fff)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 32px rgba(26,130,255,.35)"}}>
+          <svg width="24" height="24" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+            <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
+            <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
+            <rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/>
+          </svg>
+        </div>
+        <div>
+          <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-1px",marginBottom:6}}>Admin</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.3)",lineHeight:1.6}}>Sign in with your Google account.<br/>Access is restricted to admins.</div>
+        </div>
+        {denied && <div style={{fontSize:12,color:"#ef4444",padding:"8px 14px",background:"rgba(239,68,68,.1)",borderRadius:8,width:"100%"}}>Access denied — your account is not an admin.</div>}
+        <button onClick={loginWithGoogle} disabled={loading}
+          style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px",borderRadius:12,border:"none",background:loading?"rgba(255,255,255,.7)":"rgba(255,255,255,.93)",color:"#111827",fontSize:14,fontWeight:600,fontFamily:"inherit",cursor:loading?"default":"pointer",transition:"all .15s"}}>
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+          {loading ? "Signing in…" : "Continue with Google"}
+        </button>
+        <button onClick={onBack} style={{background:"none",border:"none",color:"rgba(255,255,255,.25)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>← Back</button>
+      </div>
+    </div>
+  );
+
+  // ── Admin dashboard ───────────────────────────────────────────────────
+  return (
+    <div style={{minHeight:"100vh",background:"#070b12",color:"#fff",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",padding:"40px 32px"}}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+      <div style={{maxWidth:900,margin:"0 auto"}}>
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32,flexWrap:"wrap",gap:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <img src={adminUser.picture} alt="" style={{width:36,height:36,borderRadius:"50%",border:"2px solid rgba(255,255,255,.1)"}}/>
+            <div>
+              <div style={{fontSize:20,fontWeight:800,letterSpacing:"-1px"}}>Admin Panel</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>{adminUser.email}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={addUser} style={{padding:"8px 16px",background:"rgba(26,130,255,.15)",border:"1px solid rgba(26,130,255,.3)",color:"#5ba4ff",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>+ Add user</button>
+            <button onClick={() => { sessionStorage.removeItem("lp_admin_user"); setAdminUser(null); }}
+              style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Sign out</button>
+            <button onClick={onBack} style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>← App</button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10,marginBottom:24}}>
+          {[["Total users", users.length],
+            ["Free", users.filter(u=>u.plan==="free"||!u.plan).length],
+            ["SDR", users.filter(u=>u.plan==="sdr").length],
+            ["Pro", users.filter(u=>u.plan==="pro").length],
+            ["Team", users.filter(u=>u.plan==="team").length],
+          ].map(([label, val]) => (
+            <div key={label} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.06)",borderRadius:12,padding:"14px 16px"}}>
+              <div style={{fontSize:22,fontWeight:800,letterSpacing:"-1px"}}>{val}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2}}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Search */}
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by email…"
+          style={{width:"100%",padding:"10px 16px",borderRadius:10,border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.04)",color:"#fff",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+
+        {/* User rows */}
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {filtered.map(u => (
+            <div key={u.email} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px 18px"}}>
+              {editing?.email === u.email ? (
+                <div style={{display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
+                  <div style={{fontWeight:600,fontSize:13,flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.email}</div>
+                  <select value={editing.plan} onChange={e=>setEditing({...editing,plan:e.target.value})}
+                    style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit",cursor:"pointer"}}>
+                    {PLANS.map(p=><option key={p} value={p}>{p} ({PLAN_LIMITS[p].toLocaleString()}/mo)</option>)}
+                  </select>
+                  <input type="number" value={editing.balance} onChange={e=>setEditing({...editing,balance:e.target.value})}
+                    style={{width:88,padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit"}}
+                    placeholder="Credits"/>
+                  <input type="date" value={editing.trial_until||""} onChange={e=>setEditing({...editing,trial_until:e.target.value})}
+                    style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:editing.trial_until?"#fff":"rgba(255,255,255,.3)",fontSize:13,fontFamily:"inherit"}}
+                    title="Trial until (optional)"/>
+                  <button onClick={saveEdit} style={{padding:"6px 16px",background:"#1a82ff",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Save</button>
+                  <button onClick={()=>setEditing(null)} style={{padding:"6px 12px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                  <div style={{flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:13,fontWeight:500}}>{u.email}</div>
+                  <span style={{fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,
+                    background:u.plan==="free"||!u.plan?"rgba(255,255,255,.06)":u.plan==="sdr"?"rgba(26,130,255,.15)":u.plan==="pro"?"rgba(91,79,255,.2)":"rgba(16,185,129,.15)",
+                    color:u.plan==="free"||!u.plan?"rgba(255,255,255,.4)":u.plan==="sdr"?"#5ba4ff":u.plan==="pro"?"#a78bfa":"#34d399"
+                  }}>{u.plan||"free"}</span>
+                  {/* Credits live bar */}
+                  {(() => {
+                    const plan = u.plan || "free";
+                    const limits = { free: 4, sdr: 300, pro: 2000, team: 10000 };
+                    const total = limits[plan] || 4;
+                    const bal = u.balance ?? 0;
+                    const used = Math.max(0, total - bal);
+                    const pct = Math.min(100, (used / total) * 100);
+                    const barColor = pct > 90 ? "#ef4444" : pct > 60 ? "#f59e0b" : "#34d399";
+                    return (
+                      <div style={{display:"flex",alignItems:"center",gap:8,flex:"0 0 auto"}}>
+                        <div style={{width:80,height:5,background:"rgba(255,255,255,.08)",borderRadius:3,overflow:"hidden"}}>
+                          <div style={{width:`${pct}%`,height:"100%",background:barColor,borderRadius:3,transition:"width .3s"}}/>
+                        </div>
+                        <span style={{fontSize:12,color:"rgba(255,255,255,.5)",fontVariantNumeric:"tabular-nums",minWidth:70}}>
+                          {bal.toLocaleString()} / {total.toLocaleString()}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  {u.trial_until && new Date(u.trial_until) > new Date() && <span style={{fontSize:11,fontWeight:700,padding:"2px 7px",borderRadius:5,background:"rgba(251,191,36,.1)",color:"#fbbf24"}}>trial until {u.trial_until}</span>}
+                  {saved===u.email && <span style={{fontSize:11,color:"#34d399",fontWeight:600}}>✓ Saved</span>}
+                  <button onClick={()=>setEditing({email:u.email,plan:u.plan||"free",balance:u.balance??0,trial_until:u.trial_until||""})}
+                    style={{padding:"5px 13px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.45)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>
+                    Edit
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+          {filtered.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.2)",padding:"48px 0",fontSize:13}}>No users found</div>}
+        </div>
+
+        <div style={{marginTop:28,padding:"14px 18px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",borderRadius:10,fontSize:11,color:"rgba(255,255,255,.2)",lineHeight:1.7}}>
+          Credits synced from Supabase every 15s. Balance shown = remaining credits for this cycle. Bar turns red when &gt; 90% used.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppRouterInner() {
+  const [view, setView] = useState(() => {
+    const hash = window.location.hash;
+    if (hash === "#app") return "app";
+    if (hash === "#blog") return "blog";
+    if (hash === "#admin") return "admin";
+    if (hash === "#privacy") return "privacy";
+    if (hash === "#terms") return "terms";
+    return "landing";
+  });
+  useEffect(() => {
+    const APP_HASHES = ["#app","#blog","#admin","#privacy","#terms","","#"];
+    const onHash = () => {
+      const hash = window.location.hash;
+      if (hash === "#app") setView("app");
+      else if (hash === "#blog") setView("blog");
+      else if (hash === "#admin") setView("admin");
+      else if (hash === "#privacy") setView("privacy");
+      else if (hash === "#terms") setView("terms");
+      else if (APP_HASHES.includes(hash)) setView("landing");
+      // Otherwise: blog post slug or other sub-hash — don't change view
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  const goToApp  = () => { window.location.hash = "app";  setView("app"); };
+  const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
+  const goHome   = () => { window.location.hash = "";     setView("landing"); };
+
+  if (view === "app")   return <App />;
+  if (view === "blog")  return <Blog onEnterApp={goToApp} onBack={goHome} />;
+  if (view === "admin") return <AdminPanel onBack={goHome} />;
+  if (view === "privacy") return <Legal page="privacy" onBack={goHome} />;
+  if (view === "terms")   return <Legal page="terms" onBack={goHome} />;
+  return <Landing onEnterApp={goToApp} onOpenBlog={goToBlog} />;
+}
+
+// ── Cookie/Privacy notice ─────────────────────────────────────────────────────
+function CookieNotice() {
+  const [hidden, setHidden] = useState(() => !!localStorage.getItem("lp_cookie_ok"));
+  if (hidden) return null;
+  return (
+    <div style={{
+      position:"fixed", bottom:20, left:"50%", transform:"translateX(-50%)",
+      zIndex:9999, background:"rgba(10,16,26,0.96)", backdropFilter:"blur(20px)",
+      border:"1px solid rgba(255,255,255,0.1)", borderRadius:14,
+      padding:"14px 20px", display:"flex", alignItems:"center", gap:16,
+      boxShadow:"0 8px 40px rgba(0,0,0,0.6)", maxWidth:520, width:"calc(100% - 40px)",
+    }}>
+      <span style={{fontSize:12,color:"rgba(255,255,255,0.5)",lineHeight:1.5,flex:1}}>
+        Vi använder localStorage för att spara din session och inställningar — inga spårningscookies.
+        {" "}<a href="#privacy" style={{color:"rgba(100,180,255,0.7)"}}>Integritetspolicy</a>
+      </span>
+      <button onClick={()=>{localStorage.setItem("lp_cookie_ok","1");setHidden(true);}} style={{
+        background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",
+        borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",
+        fontFamily:"inherit",flexShrink:0,
+      }}>OK</button>
+    </div>
+  );
+}
+
+
+export default function AppRouter() {
+  return <LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider>;
 }
