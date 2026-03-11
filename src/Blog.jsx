@@ -45,6 +45,7 @@ const CAT_COLORS = {Strategy:"#1a82ff",Playbook:"#8b5cf6",Tutorial:"#10b981",Ind
 function BlogCard({ p, onClick }) {
   const [hov, setHov] = useState(false);
   const c = CAT_COLORS[p.cat] || "#1a82ff";
+  const t = useT();
   return (
     <article onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} onClick={()=>onClick(p)}
       itemScope itemType="https://schema.org/BlogPosting"
