@@ -193,19 +193,25 @@ function HeroScene() {
     const orbGeo = new THREE.SphereGeometry(0.08, 8, 8);
     const orbMat = new THREE.MeshPhongMaterial({ color: 0xaaccff, transparent: true, opacity: 0.6, specular: 0xffffff, shininess: 200 });
 
-    // Orbit ring
-    const ringGeo = new THREE.TorusGeometry(7.5, 0.02, 6, 80);
-    const ring = new THREE.Mesh(ringGeo, glassMat(0.1));
-    ring.rotation.x = Math.PI / 3.5;
-    scene.add(ring);
+    // Extra envelopes for more visual richness
+    const extraPositions = [
+      [2, 1.5, 3.5], [-3.5, 1, 2.5], [0, -3, 2],
+      [3, -1, 4], [-1.5, 4, -0.5], [5, 1.5, 2],
+    ];
+    const extraSizes = [0.42, 0.52, 0.38, 0.58, 0.44, 0.36];
+    extraPositions.forEach((pos, i) => {
+      const env = makeEnvelope(extraSizes[i]);
+      env.position.set(...pos);
+      env.rotation.set((Math.random()-.5)*0.5, (Math.random()-.5)*0.7, (Math.random()-.5)*0.3);
+      env.userData.baseY = pos[1];
+      env.userData.phase = (i + 12) * 0.4;
+      env.userData.floatSpeed = 0.22 + i * 0.03;
+      env.userData.rotSpeed = { x: (Math.random()-.5)*0.005, y: (Math.random()-.5)*0.007 };
+      scene.add(env); envelopes.push(env);
+    });
 
-    const ring2Geo = new THREE.TorusGeometry(10.5, 0.015, 6, 100);
-    const ring2 = new THREE.Mesh(ring2Geo, glassMat(0.12));
-    ring2.rotation.x = Math.PI / 6; ring2.rotation.y = Math.PI / 5;
-    scene.add(ring2);
-
-    // Orbit dots
-    const orbitDots = Array.from({length: 5}, () => {
+    // Orbit dots (small subtle ones only)
+    const orbitDots = Array.from({length: 3}, () => {
       const m = new THREE.Mesh(orbGeo, orbMat.clone());
       scene.add(m); return m;
     });
@@ -236,20 +242,20 @@ function HeroScene() {
       raf = requestAnimationFrame(animate); t += 0.01;
       const mx = mouseRef.current.x, my = mouseRef.current.y;
 
+      // Envelopes drift toward mouse slightly
       envelopes.forEach((env, i) => {
         env.rotation.x += env.userData.rotSpeed.x + my * 0.001;
         env.rotation.y += env.userData.rotSpeed.y + mx * 0.001;
         env.position.y = env.userData.baseY + Math.sin(t * env.userData.floatSpeed + env.userData.phase) * 0.5;
+        // Subtle mouse attraction
+        env.position.x += (env.position.x + mx * 1.2 - env.position.x) * 0.008;
       });
 
-      ring.rotation.z  += 0.002;
-      ring2.rotation.z -= 0.0015; ring2.rotation.y += 0.001;
-
       orbitDots.forEach((dot, i) => {
-        const angle = t * 0.8 + i * (Math.PI * 2 / 5);
-        dot.position.x = Math.cos(angle) * 7.5;
-        dot.position.y = Math.sin(angle) * 7.5 * Math.sin(Math.PI / 3.5);
-        dot.position.z = Math.sin(angle) * 7.5 * Math.cos(Math.PI / 3.5);
+        const angle = t * 0.6 + i * (Math.PI * 2 / 3);
+        dot.position.x = Math.cos(angle) * 5;
+        dot.position.y = Math.sin(angle) * 2;
+        dot.position.z = Math.sin(angle * 0.7) * 2;
       });
 
       camera.position.x += (mx * 1.8 - camera.position.x) * 0.04;
@@ -269,6 +275,38 @@ function HeroScene() {
   }, [loaded]);
 
   return <div ref={mountRef} style={{ position:"absolute", inset:0, zIndex:1, opacity:loaded?1:0, transition:"opacity 1s" }} />;
+}
+
+// ── Animated counter stat ─────────────────────────────────────────────────────
+function AnimatedStat({ target, suffix, prefix, lbl, visible, delay, mouseX, mouseY, idx }) {
+  const [count, setCount] = useState(0);
+  const started = useRef(false);
+  useEffect(() => {
+    if (!visible || started.current) return;
+    started.current = true;
+    const duration = 900;
+    const steps = 40;
+    const interval = duration / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const progress = step / steps;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (step >= steps) { setCount(target); clearInterval(timer); }
+    }, interval);
+    return () => clearInterval(timer);
+  }, [visible, target]);
+  return (
+    <div style={{ transition: `opacity .7s ${delay}ms, transform .7s ${delay}ms`, opacity: visible ? 1 : 0, transform: visible ? `translateY(0) translate(${mouseX*-4*(idx-1)}px,${mouseY*-3}px)` : "translateY(20px)" }}>
+      <div style={{
+        fontSize: "clamp(36px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", lineHeight: 1,
+        background: "linear-gradient(135deg,#fff,rgba(14,165,233,0.7))",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+      }}>{prefix}{count}{suffix}</div>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 10, letterSpacing: ".2px" }}>{lbl}</div>
+    </div>
+  );
 }
 
 function FeatureScene({ index }) {
@@ -2019,8 +2057,24 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
     return () => window.removeEventListener("mousemove", fn);
   }, []);
 
+  const [cursorPos, setCursorPos] = useState({ x: -200, y: -200 });
+  useEffect(() => {
+    const fn = (e) => setCursorPos({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", fn);
+    return () => window.removeEventListener("mousemove", fn);
+  }, []);
+
   return (
     <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", "--mx": mouse.x, "--my": mouse.y }}>
+      {/* Cursor glow */}
+      <div style={{
+        position: "fixed", pointerEvents: "none", zIndex: 9999,
+        width: 320, height: 320, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)",
+        transform: "translate(-50%,-50%)",
+        left: cursorPos.x, top: cursorPos.y,
+        transition: "left 0.06s ease, top 0.06s ease",
+      }} />
       <ExitIntentPopup onEnterApp={onEnterApp} />
       <SocialProofTicker />
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
@@ -2131,7 +2185,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
               onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(26,130,255,0.4)"; }}>
               Start free — no credit card
             </button>
-            <button onClick={onEnterApp} style={{
+            <button onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} style={{
               color: "rgba(255,255,255,0.55)", background: "none",
               border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: "17px 28px",
               fontSize: 15, fontWeight: 500, transition: "all .15s", cursor: "pointer", fontFamily: "inherit",
@@ -2156,22 +2210,15 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
         </div>
       </section>
 
-      {/* STATS */}
+      {/* STATS — animated count-up */}
       <section ref={statsRef} style={{ padding: "72px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: 960, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 40, textAlign: "center" }}>
           {[
-            { val: "3.4x", lbl: "more replies vs generic outreach" },
-            { val: "< 30s", lbl: "to personalise per prospect" },
-            { val: "94%", lbl: "of buyers prefer visual demos" },
-          ].map(({ val, lbl }, i) => (
-            <div key={i} style={{ transition: `opacity .7s ${i*150}ms, transform .7s ${i*150}ms`, opacity: statsVis ? 1 : 0, transform: statsVis ? `translateY(0) translate(${mouse.x*-4*(i-1)}px,${mouse.y*-3}px)` : "translateY(20px)" }}>
-              <div style={{
-                fontSize: "clamp(36px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", lineHeight: 1,
-                background: "linear-gradient(135deg,#fff,rgba(26,130,255,0.7))",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>{val}</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 10, letterSpacing: ".2px" }}>{lbl}</div>
-            </div>
+            { target: 340, suffix: "%", prefix: "+", lbl: "more replies vs generic outreach" },
+            { target: 30, suffix: "s", prefix: "< ", lbl: "to personalise per prospect" },
+            { target: 94, suffix: "%", prefix: "", lbl: "of buyers prefer visual demos" },
+          ].map(({ target, suffix, prefix, lbl }, i) => (
+            <AnimatedStat key={i} target={target} suffix={suffix} prefix={prefix} lbl={lbl} visible={statsVis} delay={i * 150} mouseX={mouse.x} mouseY={mouse.y} idx={i} />
           ))}
         </div>
       </section>
