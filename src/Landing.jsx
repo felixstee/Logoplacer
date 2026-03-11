@@ -68,20 +68,21 @@ const Icon = {
 // ─────────────────────────────────────────────
 // LOGO
 // ─────────────────────────────────────────────
-function Logo({ size = 36 }) {
+function Logo({ size = 32 }) {
+  const id = "lg" + size;
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <defs>
-        <linearGradient id="lgrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+        <linearGradient id={id} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
           <stop stopColor="#1a82ff"/><stop offset="1" stopColor="#5b4fff"/>
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="9" fill="url(#lgrad)"/>
-      <rect x="4" y="4" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="17" y="4" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="4" y="17" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="17" y="17" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      
+      <rect width="32" height="32" rx="8" fill={`url(#${id})`}/>
+      <rect x="4" y="4" width="10" height="10" rx="2.5" fill="white" opacity=".95"/>
+      <rect x="18" y="4" width="10" height="10" rx="2" fill="white" opacity=".55"/>
+      <rect x="4" y="18" width="10" height="10" rx="2" fill="white" opacity=".55"/>
+      <rect x="18" y="18" width="10" height="10" rx="2.5" fill="white" opacity=".9"/>
+      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".3"/>
     </svg>
   );
 }
@@ -2367,10 +2368,10 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
       <div style={{ padding: "32px 48px 0", display: "flex", justifyContent: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28, flexWrap: "wrap", justifyContent: "center" }}>
           {[
-            { icon: "🔒", label: t("trust.ssl") },
-            { icon: "💳", label: t("trust.stripe") },
-            { icon: "🇪🇺", label: t("trust.gdpr") },
-            { icon: "🔑", label: t("trust.oauth") },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: t("trust.ssl") },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, label: t("trust.stripe") },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, label: t("trust.gdpr") },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>, label: t("trust.oauth") },
           ].map(b => (
             <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
               <span style={{ fontSize: 15 }}>{b.icon}</span>

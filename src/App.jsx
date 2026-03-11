@@ -1414,7 +1414,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-body">
           {step === "auth" && (
             <div className="auth-center">
-              <div className="auth-icon">📧</div>
+              <div className="auth-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></div>
               <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Connect Gmail</div>
               <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
                 Logoplacers skickar mejl via ditt Gmail-konto. Vi begär <strong>enbart</strong> sändningsbehörighet (gmail.send) — vi läser aldrig din inkorg, dina kontakter eller din historik.
@@ -1520,7 +1520,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               ))}
               {step === "done" && (
                 <div style={{textAlign:"center",padding:"12px 0"}}>
-                  <div style={{fontSize:28}}>{doneErr === 0 ? "🎉" : "⚠️"}</div>
+                  <div style={{fontSize:28}}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>}</div>
                   <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} of {selectedContacts.length} sent</div>
                   {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed — check token expiry</div>}
                 </div>
@@ -1645,7 +1645,7 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
       <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
         <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52 }}>
           <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45)" }}>
-            <svg width="26" height="26" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/></svg>
+            <Logo size={26}/>
           </div>
           <div>
             <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px" }}>LogoPlacer</div>
@@ -1680,6 +1680,25 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
       </div>
       <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
+  );
+}
+
+function Logo({ size = 32 }) {
+  const id = "lg" + size;
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1a82ff"/><stop offset="1" stopColor="#5b4fff"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="8" fill={`url(#${id})`}/>
+      <rect x="4" y="4" width="10" height="10" rx="2.5" fill="white" opacity=".95"/>
+      <rect x="18" y="4" width="10" height="10" rx="2" fill="white" opacity=".55"/>
+      <rect x="4" y="18" width="10" height="10" rx="2" fill="white" opacity=".55"/>
+      <rect x="18" y="18" width="10" height="10" rx="2.5" fill="white" opacity=".9"/>
+      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".3"/>
+    </svg>
   );
 }
 
@@ -3198,15 +3217,15 @@ function AdminPanel({ onBack }) {
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser.email === userEmail) {
             // Same browser session — patch immediately
-            const plan = PLANS[editing.plan];
+            const planName = editing.plan;
             const newBalance = Number(editing.balance);
             const now = new Date();
             let resetAt = existing.resetAt;
             // Recalculate resetAt if plan type changed (daily vs monthly)
-            if (plan.creditsPerDay && !existing.resetAt?.includes("T")) {
+            if (planName === "free" && !existing.resetAt?.includes("T")) {
               const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
               resetAt = tomorrow.toISOString();
-            } else if (plan.monthly && existing.plan !== editing.plan) {
+            } else if (planName !== "free" && existing.plan !== editing.plan) {
               const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth()+1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
               resetAt = nextMonth.toISOString();
             }
@@ -3240,13 +3259,7 @@ function AdminPanel({ onBack }) {
     <div style={{minHeight:"100vh",background:"#070b12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
       <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:24,padding:"44px 48px",width:360,display:"flex",flexDirection:"column",gap:20,alignItems:"center",textAlign:"center"}}>
         <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1a82ff,#5b4fff)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 32px rgba(26,130,255,.35)"}}>
-          <svg width="24" height="24" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-            <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
-            <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/>
-            <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/>
-            <rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/>
-          </svg>
+          <Logo size={24}/>
         </div>
         <div>
           <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-1px",marginBottom:6}}>Admin</div>
