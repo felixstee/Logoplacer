@@ -2004,6 +2004,8 @@ function useCredits() {
 // Credit badge shown in header
 function CreditBadge({ credits, onUpgrade }) {
   const plan = PLANS[credits.plan] || PLANS["free"];
+  const [pulse, setPulse] = useState(false);
+  const prevBalance = useRef(credits.balance);
   useEffect(() => {
     if (credits.balance !== prevBalance.current) {
       setPulse(true);
