@@ -2007,6 +2007,7 @@ function ComparisonTable() {
 // EXIT INTENT POPUP
 // ─────────────────────────────────────────────
 function ExitIntentPopup({ onEnterApp }) {
+  const { lang } = useLang();
   const [show, setShow] = useState(false);
   const fired = useRef(false);
   useEffect(() => {
