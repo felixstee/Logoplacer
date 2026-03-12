@@ -1,189 +1,243 @@
-// ── Logoplacers i18n ─────────────────────────────────────────────────────────
-// Usage: import { useT, LanguageProvider } from "./i18n";
-//        const t = useT();  then  t("key")
 import { createContext, useContext, useState } from "react";
 
 export const LanguageContext = createContext({ lang: "en", setLang: () => {} });
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem("lp_lang") || "en");
-  const set = (l) => { localStorage.setItem("lp_lang", l); setLang(l); };
-  return <LanguageContext.Provider value={{ lang, setLang: set }}>{children}</LanguageContext.Provider>;
+  const setLangPersist = (l) => { setLang(l); localStorage.setItem("lp_lang", l); 
+};
+  return (
+    <LanguageContext.Provider value={{ lang, setLang: setLangPersist }}>
+      {children}
+    </LanguageContext.Provider>
+  );
 }
 
+export function useLang() { return useContext(LanguageContext); }
+
 export function useT() {
-  const { lang } = useContext(LanguageContext);
+  const { lang } = useLang();
   return (key) => {
     const entry = TRANSLATIONS[key];
     if (!entry) return key;
-    return entry[lang] || entry.en || key;
-  };
-}
-
-export function useLang() {
-  return useContext(LanguageContext);
-}
-
-// ── All translations ──────────────────────────────────────────────────────────
-const TRANSLATIONS = {
-  // NAV
-  "nav.blog": { en: "Blog", sv: "Blogg" },
-  "nav.pricing": { en: "Pricing", sv: "Priser" },
-  "nav.try_free": { en: "Try free", sv: "Prova gratis" },
-  "nav.sign_in": { en: "Sign in", sv: "Logga in" },
-
-  // HERO
-  "hero.badge": { en: "AI-powered sales personalisation", sv: "AI-driven saljpersonalisering" },
-  "hero.title1": { en: "Your logo.", sv: "Er logotyp." },
-  "hero.title2": { en: "Their brand.", sv: "Deras varumarke." },
-  "hero.title3": { en: "Every deal.", sv: "Varje affar." },
-  "hero.sub": { en: "Create personalised sales demos with your prospect's logo automatically placed. Send 100 unique images from Gmail in under 10 minutes.", sv: "Skapa personaliserade saljdemos med mottagarens logotyp automatiskt inplacerad. Skicka 100 unika bilder fran Gmail pa under 10 minuter." },
-  "hero.cta_primary": { en: "Start for free", sv: "Borja gratis" },
-  "hero.cta_secondary": { en: "See how it works", sv: "Se hur det funkar" },
-  "hero.social_proof": { en: "Join 500+ sales teams already using Logoplacers", sv: "Gat med 500+ saljteam som redan anvander Logoplacers" },
-
-  // STATS
-  "stats.reply_rate": { en: "Average reply rate lift", sv: "Genomsnittlig okning av svarsfrekvens" },
-  "stats.time_saved": { en: "Time saved per 50 demos", sv: "Tid sparad per 50 demos" },
-  "stats.setup": { en: "Minutes to first send", sv: "Minuter till forsta utskick" },
-  "stats.credits": { en: "Free credits daily", sv: "Gratiskrediter dagligen" },
-
-  // HOW IT WORKS
-  "how.label": { en: "How it works", sv: "Hur det funkar" },
-  "how.title": { en: "Three steps to a personalised pipeline.", sv: "Tre steg till en personaliserad pipeline." },
-  "how.step1.title": { en: "Upload your screenshot", sv: "Ladda upp din skärmbild" },
-  "how.step1.body": { en: "Drop any product screenshot or image. Drag logo and text placeholders to position.", sv: "Ladda upp valfri produktskärmbild. Dra logotyp- och textplatshallare till ratt position." },
-  "how.step2.title": { en: "Add your prospects", sv: "Lagg till dina prospekter" },
-  "how.step2.body": { en: "Paste your list. Logoplacers auto-fetches every company logo instantly.", sv: "Klistra in din lista. Logoplacers hamtar automatiskt varje foretagslogotyp direkt." },
-  "how.step3.title": { en: "Send from Gmail", sv: "Skicka fran Gmail" },
-  "how.step3.body": { en: "Connect Gmail in one click. Send 100 personalised emails with natural delays.", sv: "Anslut Gmail med ett klick. Skicka 100 personaliserade mejl med naturliga forsenjingar." },
-
-  // FEATURES
-  "features.label": { en: "Features", sv: "Funktioner" },
-  "features.title": { en: "Everything you need to close more deals.", sv: "Allt du behover for att stanga fler affarer." },
-  "features.autofetch.title": { en: "Auto logo fetch", sv: "Automatisk logohämtning" },
-  "features.autofetch.body": { en: "Type a company name or domain. Logo appears in seconds.", sv: "Skriv ett foretagsnamn eller doman. Logotypen visas pa sekunder." },
-  "features.bulk.title": { en: "Bulk personalisation", sv: "Masspersonalisering" },
-  "features.bulk.body": { en: "50 unique personalised images generated in under 2 minutes.", sv: "50 unika personaliserade bilder genereras pa under 2 minuter." },
-  "features.gmail.title": { en: "Gmail integration", sv: "Gmail-integration" },
-  "features.gmail.body": { en: "Send directly from your own Gmail. No third-party sending.", sv: "Skicka direkt fran din egen Gmail. Ingen tredjeparts-sändning." },
-  "features.templates.title": { en: "Save templates", sv: "Spara mallar" },
-  "features.templates.body": { en: "Save your best setups and reuse them across campaigns.", sv: "Spara dina basta instaallningar och ateranvand dem i kampanjer." },
-  "features.heic.title": { en: "HEIC support", sv: "HEIC-stod" },
-  "features.heic.body": { en: "iPhone photos converted automatically in the browser.", sv: "iPhone-bilder konverteras automatiskt i webblesaren." },
-  "features.privacy.title": { en: "Privacy first", sv: "Integritet forst" },
-  "features.privacy.body": { en: "We never read your emails. Google OAuth, zero data stored.", sv: "Vi laser aldrig dina mejl. Google OAuth, noll data lagrat." },
-
-  // PRICING
-  "pricing.label": { en: "Pricing", sv: "Priser" },
-  "pricing.title": { en: "Simple, honest pricing.", sv: "Enkla, ara priser." },
-  "pricing.sub": { en: "Start free. Upgrade when you need more.", sv: "Borja gratis. Uppgradera nar du behover mer." },
-  "pricing.most_popular": { en: "Most popular", sv: "Mest populär" },
-  "pricing.per_month": { en: "/mo", sv: "/man" },
-  "pricing.cta.free": { en: "Get started free", sv: "Kom igang gratis" },
-  "pricing.cta.sdr": { en: "Get SDR", sv: "Skaffa SDR" },
-  "pricing.cta.pro": { en: "Get Sales Pro", sv: "Skaffa Sales Pro" },
-  "pricing.cta.team": { en: "Get Team", sv: "Skaffa Team" },
-  "pricing.free.credits": { en: "4 credits / day", sv: "4 krediter / dag" },
-  "pricing.sdr.credits": { en: "300 credits / month", sv: "300 krediter / manad" },
-  "pricing.pro.credits": { en: "2 000 credits / month", sv: "2 000 krediter / manad" },
-  "pricing.team.credits": { en: "10 000 credits / month", sv: "10 000 krediter / manad" },
-
-  // FAQ
-  "faq.label": { en: "FAQ", sv: "Vanliga fragor" },
-  "faq.title": { en: "Common questions.", sv: "Vanliga fragor." },
-  "faq.q1": { en: "Does Logoplacers store my Gmail credentials?", sv: "Lagrar Logoplacers mina Gmail-uppgifter?" },
-  "faq.a1": { en: "No. Your Gmail connection uses Google's official OAuth flow entirely in the browser. We never see or store your credentials or email content.", sv: "Nej. Din Gmail-anslutning anvander Googles officiella OAuth-flode helt i webblesaren. Vi ser eller lagrar aldrig dina uppgifter eller mejlinnehall." },
-  "faq.q2": { en: "How many prospects can I personalise at once?", sv: "Hur manga prospekter kan jag personalisera pa en gang?" },
-  "faq.a2": { en: "There is no hard limit. Logoplacers generates images for every prospect in your list.", sv: "Det finns ingen fast grans. Logoplacers genererar bilder for varje prospekt i din lista." },
-  "faq.q3": { en: "What image formats does it support?", sv: "Vilka bildformat stods?" },
-  "faq.a3": { en: "PNG, JPG, WEBP and HEIC. HEIC files are automatically converted in the browser.", sv: "PNG, JPG, WEBP och HEIC. HEIC-filer konverteras automatiskt i webblesaren." },
-  "faq.q4": { en: "How does automatic logo detection work?", sv: "Hur fungerar automatisk logotypdetektering?" },
-  "faq.a4": { en: "Type a company name or domain and Logoplacers queries multiple logo databases simultaneously.", sv: "Skriv ett foretagsnamn eller doman och Logoplacers soker i flera logodatabaser samtidigt." },
-  "faq.q5": { en: "Is there a free trial?", sv: "Finns det en gratis provperiod?" },
-  "faq.a5": { en: "Yes. The Free plan gives you 4 credits per day with no credit card required.", sv: "Ja. Gratisplanen ger dig 4 krediter per dag utan kreditkort." },
-
-  // FOOTER
-  "footer.tagline": { en: "Personalised sales demos that convert.", sv: "Personaliserade saljdemos som konverterar." },
-  "footer.privacy": { en: "Privacy Policy", sv: "Integritetspolicy" },
-  "footer.terms": { en: "Terms of Service", sv: "Anvandardvillkor" },
-  "footer.contact": { en: "Contact", sv: "Kontakt" },
-
-  // TRUST BADGES
-  "trust.ssl": { en: "SSL Encrypted", sv: "SSL-krypterat" },
-  "trust.stripe": { en: "Payments by Stripe", sv: "Betalningar via Stripe" },
-  "trust.gdpr": { en: "GDPR Compliant", sv: "GDPR-kompatibelt" },
-  "trust.oauth": { en: "Google OAuth — we never see your password", sv: "Google OAuth — vi ser aldrig ditt losenord" },
-
-  // APP UI
-  "app.base_image": { en: "Base image", sv: "Basbild" },
-  "app.remove_image": { en: "Remove image", sv: "Ta bort bild" },
-  "app.bg_color": { en: "Background colour", sv: "Bakgrundsfarg" },
-  "app.prospects": { en: "Prospects", sv: "Prospekter" },
-  "app.preview": { en: "Preview", sv: "Forhandsgranska" },
-  "app.send": { en: "Send", sv: "Skicka" },
-  "app.download": { en: "Download", sv: "Ladda ner" },
-  "app.saving": { en: "Saving...", sv: "Sparar..." },
-  "app.saved": { en: "Saved", sv: "Sparat" },
-  "app.sign_out": { en: "Sign out", sv: "Logga ut" },
-  "app.feedback": { en: "Feedback", sv: "Feedback" },
-  "app.upgrade": { en: "Upgrade", sv: "Uppgradera" },
-  "app.credits": { en: "credits", sv: "krediter" },
-  "app.refresh_all": { en: "Refresh all", sv: "Uppdatera alla" },
-  "app.add_contact": { en: "Add", sv: "Lagg till" },
-  "app.paste_list": { en: "Paste list", sv: "Klistra in lista" },
-
-  // MANUAL
-  "manual.title": { en: "How to use Logoplacers", sv: "Hur man anvander Logoplacers" },
-  "manual.step1.title": { en: "Upload your base image", sv: "Ladda upp din basbild" },
-  "manual.step1.body": { en: "Click or drag a screenshot. Supports JPG, PNG, WEBP, HEIC.", sv: "Klicka eller dra en skärmbild. Stoder JPG, PNG, WEBP, HEIC." },
-  "manual.step2.title": { en: "Position logos and text", sv: "Positionera logotyper och text" },
-  "manual.step2.body": { en: "Add logo placeholders and text layers. Drag them to position.", sv: "Lagg till logotypplatshallare och textlager. Dra dem till ratt position." },
-  "manual.step3.title": { en: "Add your prospects", sv: "Lagg till dina prospekter" },
-  "manual.step3.body": { en: "Paste companies. Logos are fetched automatically.", sv: "Klistra in foretag. Logotyper hamtas automatiskt." },
-  "manual.step4.title": { en: "Preview and download", sv: "Forhandsgranska och ladda ner" },
-  "manual.step4.body": { en: "Preview each personalised image. Download a ZIP or send via Gmail.", sv: "Forhandsgranska varje personaliserad bild. Ladda ner en ZIP eller skicka via Gmail." },
-  "manual.step5.title": { en: "Send via Gmail", sv: "Skicka via Gmail" },
-  "manual.step5.body": { en: "Connect Gmail. Use {name} and {company} placeholders in your email.", sv: "Anslut Gmail. Anvand {name} och {company} platshallare i ditt mejl." },
-  "manual.step6.title": { en: "Refresh logos", sv: "Uppdatera logotyper" },
-  "manual.step6.body": { en: "Click the refresh icon next to a company to retry logo fetch.", sv: "Klicka pa uppdateringsikonen bredvid ett foretag for att forsoka igen." },
-
-  // FEEDBACK
-  "feedback.title": { en: "Send feedback", sv: "Skicka feedback" },
-  "feedback.placeholder": { en: "What could be better? Found a bug? Have a feature request?", sv: "Vad kan forbattras? Hittade du en bugg? Har du en funktionsbegaran?" },
-  "feedback.attach": { en: "Attach image (optional)", sv: "Bifoga bild (valfritt)" },
-  "feedback.send": { en: "Send feedback", sv: "Skicka feedback" },
-  "feedback.thanks": { en: "Thanks for your feedback!", sv: "Tack for din feedback!" },
-  "feedback.read": { en: "We read every message.", sv: "Vi laser varje meddelande." },
-
-  // UPGRADE MODAL
-  "upgrade.title": { en: "Upgrade your plan", sv: "Uppgradera din plan" },
-  "upgrade.sub": { en: "More credits, more deals closed.", sv: "Fler krediter, fler affarer stangda." },
-  "upgrade.current": { en: "Current plan", sv: "Nuvarande plan" },
-  "upgrade.manage": { en: "Manage or cancel subscription", sv: "Hantera eller avsluta prenumeration" },
-
-  // LEGAL
-  "legal.privacy_title": { en: "Privacy Policy", sv: "Integritetspolicy" },
-  "legal.terms_title": { en: "Terms of Service", sv: "Anvandardvillkor" },
-  "legal.back": { en: "Back", sv: "Tillbaka" },
-
-  // BLOG
-  "blog.label": { en: "Blog", sv: "Blogg" },
-  "blog.title": { en: "Sales outreach, explained.", sv: "Saljoutreach, forklarad." },
-  "blog.sub": { en: "Tactics, playbooks, and deep-dives for modern SDRs and AEs.", sv: "Taktiker, spelbacker och djupdykningar for moderna SDR:er och AE:er." },
-  "blog.read_more": { en: "Read more", sv: "Las mer" },
-  "blog.all_posts": { en: "All posts", sv: "Alla inlagg" },
-  "blog.cta_title": { en: "Send your first demo in 30 seconds.", sv: "Skicka din forsta demo pa 30 sekunder." },
-  "blog.cta_sub": { en: "Ready to try visual personalisation?", sv: "Redo att testa visuell personalisering?" },
-  "blog.cta_btn": { en: "Try Logoplacers free", sv: "Prova Logoplacers gratis" },
-  "blog.lang_en": { en: "English", sv: "Engelska" },
-  "blog.lang_sv": { en: "Swedish", sv: "Svenska" },
-
-  // LOGIN
-  "login.title": { en: "Sign in to Logoplacers", sv: "Logga in pa Logoplacers" },
-  "login.sub": { en: "Personalised demos that close deals.", sv: "Personaliserade demos som stangar affarer." },
-  "login.btn": { en: "Continue with Google", sv: "Fortsatt med Google" },
-  "login.terms": { en: "By signing in you agree to our", sv: "Genom att logga in godkanner du var" },
+    return entry[lang] || entry["en"] || key;
+  
 };
+}
 
-export default TRANSLATIONS;
+export const TRANSLATIONS = {
+  // ── Navigation ───────────────────────────────────────────────────────────
+  "nav.blog":           { en: "Blog",        sv: "Blogg" },
+  "nav.pricing":        { en: "Pricing",     sv: "Priser" },
+  "nav.features":       { en: "Features",    sv: "Funktioner" },
+  "nav.how_it_works":   { en: "How it works",sv: "Hur det funkar" },
+  "nav.try":            { en: "Use the tool",sv: "Prova verktyget" },
+
+  // ── Hero ─────────────────────────────────────────────────────────────────
+  "hero.sub":           { en: "Personal demo images at scale", sv: "Personaliserade demobilder i skala" },
+  "hero.cta_primary":   { en: "Start free — no credit card", sv: "Börja gratis — inget kreditkort" },
+
+  // ── App – Header ─────────────────────────────────────────────────────────
+  "app.base_image":     { en: "Base image",    sv: "Basbild" },
+  "app.download":       { en: "Download",      sv: "Ladda ner" },
+  "app.feedback":       { en: "Feedback",      sv: "Feedback" },
+  "app.preview":        { en: "Preview",       sv: "Förhandsgranska" },
+  "app.saved":          { en: "Saved",         sv: "Sparat" },
+  "app.saving":         { en: "Saving…",       sv: "Sparar…" },
+  "app.send":           { en: "Send",          sv: "Skicka" },
+  "app.sign_out":       { en: "Sign out",      sv: "Logga ut" },
+  "app.packing":        { en: "Packing…",      sv: "Packar…" },
+  "app.macbook_video":  { en: "MacBook Video", sv: "MacBook Video" },
+  "app.product_mockup": { en: "Mockup",        sv: "Mockup" },
+
+  // ── App – Tabs ────────────────────────────────────────────────────────────
+  "app.image_mode":     { en: "Image",  sv: "Bild" },
+  "app.video_mode":     { en: "Video",  sv: "Video" },
+
+  // ── App – Sidebar ─────────────────────────────────────────────────────────
+  "app.remove_image":       { en: "Remove image",              sv: "Ta bort bild" },
+  "app.background_color":   { en: "Background colour",         sv: "Bakgrundsfärg" },
+  "app.match_brand":        { en: "Match brand colour",        sv: "Matcha varumärkesfärg" },
+  "app.match_brand_sub":    { en: "Replace a colour with recipient's brand", sv: "Ersätt en färg med mottagarens varumärke" },
+  "app.replace_label":      { en: "Replace:",                  sv: "Ersätt:" },
+  "app.pick_color":         { en: "Click image to pick",       sv: "Klicka på bilden för att välja" },
+  "app.recipient_logo":     { en: "Recipient logo",            sv: "Mottagarens logotyp" },
+  "app.new":                { en: "+ New",                     sv: "+ Ny" },
+  "app.text_layers":        { en: "Text layers",               sv: "Textlager" },
+  "app.templates_section":  { en: "Templates",                 sv: "Mallar" },
+  "app.templates_hide":     { en: "Hide",                      sv: "Dölj" },
+  "app.templates_saved":    { en: "Saved",                     sv: "Sparade" },
+  "app.save":               { en: "Save",                      sv: "Spara" },
+  "app.load":               { en: "Load",                      sv: "Ladda" },
+  "app.symbols":            { en: "Symbols",                   sv: "Symboler" },
+  "app.contacts":           { en: "Contacts",                  sv: "Kontakter" },
+  "app.extract_contacts":   { en: "Extract contacts",          sv: "Extrahera kontakter" },
+  "app.add_manually":       { en: "Or add manually",           sv: "Eller lägg till manuellt" },
+  "app.clear_all":          { en: "Clear all",                 sv: "Rensa allt" },
+  "app.click_drag":         { en: "Click or drag here",        sv: "Klicka eller dra hit" },
+  "app.template_name":      { en: "Template name…",           sv: "Mallnamn…" },
+  "app.person_name":        { en: "Person name (optional)",    sv: "Personnamn (valfritt)" },
+  "app.company_placeholder":{ en: "Company name or domain",    sv: "Företagsnamn eller domän" },
+
+  // ── App – Canvas ─────────────────────────────────────────────────────────
+  "canvas.hint":        { en: "Drag elements to position · Scroll to zoom", sv: "Dra element för att placera · Scrolla för att zooma" },
+  "canvas.empty":       { en: "Upload a base image to get started",         sv: "Ladda upp en basbild för att komma igång" },
+
+  // ── App – Companies list ──────────────────────────────────────────────────
+  "companies.count":    { en: "{n} companies · {m} ready", sv: "{n} företag · {m} klara" },
+  "contact.name_label": { en: "Name",  sv: "Namn" },
+  "contact.email_label":{ en: "Email", sv: "E-post" },
+
+  // ── App – Preview modal ───────────────────────────────────────────────────
+  "modal.close":        { en: "Close",    sv: "Stäng" },
+  "modal.download":     { en: "Download", sv: "Ladda ner" },
+  "modal.prev":         { en: "Prev",     sv: "Föregående" },
+  "modal.next":         { en: "Next",     sv: "Nästa" },
+  "modal.cancel":       { en: "Cancel",   sv: "Avbryt" },
+  "modal.back":         { en: "← Back",   sv: "← Tillbaka" },
+
+  // ── App – Credits info ────────────────────────────────────────────────────
+  "app.credits_info":   {
+    en: "Credits are spent when you generate personalised images or send emails. Free plan: 10/day. Upgrade anytime for more.",
+    sv: "Krediter förbrukas när du genererar personaliserade bilder eller skickar mejl. Gratisplan: 10/dag. Uppgradera när som helst för fler."
+  },
+
+  // ── Manual modal ─────────────────────────────────────────────────────────
+  "manual.title":           { en: "How to use Logoplacers", sv: "Hur du använder Logoplacers" },
+  "manual.step1.title":     { en: "Upload a base image",    sv: "Ladda upp en basbild" },
+  "manual.step1.body":      {
+    en: "Drag or click to upload a screenshot of your product. Supports PNG, JPG, WEBP, and HEIC (iPhone photos).",
+    sv: "Dra eller klicka för att ladda upp en skärmbild av din produkt. Stöder PNG, JPG, WEBP och HEIC (iPhone-foton)."
+  },
+  "manual.step2.title":     { en: "Position the logo",      sv: "Placera logotypen" },
+  "manual.step2.body":      {
+    en: "Drag the logo placeholder to where you want the recipient's logo to appear on your image.",
+    sv: "Dra logotypplatshållaren dit du vill att mottagarens logotyp ska visas på din bild."
+  },
+  "manual.step3.title":     { en: "Add text layers",        sv: "Lägg till textlager" },
+  "manual.step3.body":      {
+    en: "Click '+ New' under Text Layers. Use ((name)) and ((company)) as placeholders — they're replaced automatically per contact.",
+    sv: "Klicka '+ Ny' under Textlager. Använd ((name)) och ((company)) som platshållare — de ersätts automatiskt per kontakt."
+  },
+  "manual.step4.title":     { en: "Add contacts",           sv: "Lägg till kontakter" },
+  "manual.step4.body":      {
+    en: "Paste a list of company names from your CRM, or add them manually. Logos are fetched automatically.",
+    sv: "Klistra in en lista med företagsnamn från ditt CRM, eller lägg till dem manuellt. Logotyper hämtas automatiskt."
+  },
+  "manual.step5.title":     { en: "Preview",                sv: "Förhandsgranska" },
+  "manual.step5.body":      {
+    en: "Click Preview to see a watermarked version of each personalised image. Watermarks are removed on download and send.",
+    sv: "Klicka Förhandsgranska för att se en vattenstämplad version av varje personaliserad bild. Vattenstämplar tas bort vid nedladdning och utskick."
+  },
+  "manual.step6.title":     { en: "Send or download",       sv: "Skicka eller ladda ner" },
+  "manual.step6.body":      {
+    en: "Click Send to email each contact directly from your Gmail, or Download to get a ZIP with all images.",
+    sv: "Klicka Skicka för att mejla varje kontakt direkt från ditt Gmail, eller Ladda ner för att få en ZIP med alla bilder."
+  },
+
+  // ── Feedback modal ────────────────────────────────────────────────────────
+  "feedback.title":         { en: "Send feedback",           sv: "Skicka feedback" },
+  "feedback.placeholder":   { en: "What can we improve?",   sv: "Vad kan vi förbättra?" },
+  "feedback.attach":        { en: "Attach a screenshot (optional)", sv: "Bifoga en skärmbild (valfritt)" },
+  "feedback.send_btn":      { en: "Send feedback",           sv: "Skicka feedback" },
+  "feedback.sent_title":    { en: "Thanks for your feedback!", sv: "Tack för din feedback!" },
+  "feedback.sent_body":     { en: "We read every message.",  sv: "Vi läser varje meddelande." },
+
+  // ── Upgrade modal ─────────────────────────────────────────────────────────
+  "upgrade.title":          { en: "Upgrade your plan",       sv: "Uppgradera din plan" },
+  "upgrade.sub":            {
+    en: "Get more credits and unlock bulk sending for your whole prospect list.",
+    sv: "Få fler krediter och lås upp bulkutskick för hela din prospektlista."
+  },
+  "upgrade.current":        { en: "Current plan",           sv: "Nuvarande plan" },
+  "upgrade.per_month":      { en: "/mo",                    sv: "/mån" },
+  "upgrade.upgrade_btn":    { en: "Upgrade",                sv: "Uppgradera" },
+  "upgrade.manage":         { en: "Manage subscription",    sv: "Hantera prenumeration" },
+
+  // ── Send modal ────────────────────────────────────────────────────────────
+  "send.title":             { en: "Send email",             sv: "Skicka mejl" },
+  "send.compose":           { en: "Compose message",        sv: "Skriv meddelande" },
+  "send.sending":           { en: "Sending…",               sv: "Skickar…" },
+  "send.done":              { en: "Done!",                  sv: "Klart!" },
+  "send.approve_btn":       { en: "Send {n} email{s}",      sv: "Skicka {n} mejl" },
+  "send.preview_btn":       { en: "Preview ({n}) →",        sv: "Förhandsgranska ({n}) →" },
+  "send.no_contacts":       { en: "No contacts with email addresses yet.", sv: "Inga kontakter med e-postadresser ännu." },
+  "send.no_contacts_hint":  { en: "Add emails in the contacts panel on the left.", sv: "Lägg till e-post i kontaktpanelen till vänster." },
+  "send.connect_gmail":     { en: "Connect Gmail to send", sv: "Anslut Gmail för att skicka" },
+  "send.reconnect":         { en: "Reconnect Gmail →",     sv: "Återanslut Gmail →" },
+  "send.reconnect_msg":     { en: "Gmail session expired. Reconnect and try again.", sv: "Gmail-session har löpt ut. Återanslut och försök igen." },
+  "send.recipients":        { en: "Recipients",             sv: "Mottagare" },
+  "send.subject":           { en: "Subject",                sv: "Ämnesrad" },
+  "send.body":              { en: "Message body",           sv: "Meddelandetext" },
+  "send.video_link":        { en: "Video link (optional)",  sv: "Videolänk (valfritt)" },
+  "send.delay_note":        { en: "Sending with natural delays to protect deliverability.", sv: "Skickar med naturliga fördröjningar för att skydda leveransbarhet." },
+  "send.gmail_info":        {
+    en: "Logoplacers sends via your Gmail. We only request gmail.send — we never read your inbox.",
+    sv: "Logoplacers skickar via ditt Gmail. Vi begär bara gmail.send — vi läser aldrig din inkorg."
+  },
+
+  // ── MacBook Video modal ───────────────────────────────────────────────────
+  "video.title":            { en: "MacBook Demo Video",     sv: "MacBook Demo Video" },
+  "video.select_company":   { en: "Company",                sv: "Företag" },
+  "video.animation":        { en: "Animation",              sv: "Animation" },
+  "video.anim_zoom":        { en: "Slow zoom",              sv: "Långsam zoom" },
+  "video.anim_pan":         { en: "Pan left→right",         sv: "Pan vänster→höger" },
+  "video.anim_tilt":        { en: "3D tilt",                sv: "3D-lutning" },
+  "video.anim_full":        { en: "Full presentation",      sv: "Full presentation" },
+  "video.duration":         { en: "Duration (seconds)",     sv: "Längd (sekunder)" },
+  "video.record":           { en: "Record",                 sv: "Spela in" },
+  "video.recording":        { en: "Recording…",             sv: "Spelar in…" },
+  "video.download":         { en: "Download video",         sv: "Ladda ner video" },
+  "video.preview":          { en: "Preview",                sv: "Förhandsvisa" },
+  "video.no_image":         { en: "Upload a base image first", sv: "Ladda upp en basbild först" },
+  "video.loading":          { en: "Rendering…",             sv: "Renderar…" },
+  "video.webm_note":        { en: "WebM format. Convert to MP4 with any video converter.", sv: "WebM-format. Konvertera till MP4 med valfri videokonverterare." },
+
+  // ── Product Mockup modal ──────────────────────────────────────────────────
+  "mockup.title":           { en: "Product Mockup",         sv: "Produktmockup" },
+  "mockup.template":        { en: "Template",               sv: "Mall" },
+  "mockup.company":         { en: "Company",                sv: "Företag" },
+  "mockup.exposure":        { en: "Exposure",               sv: "Exponering" },
+  "mockup.opacity":         { en: "Opacity",                sv: "Opacitet" },
+  "mockup.blend":           { en: "Blend mode",             sv: "Blandningsläge" },
+  "mockup.mesh_size":       { en: "Mesh points",            sv: "Nätpunkter" },
+  "mockup.reset_mesh":      { en: "Reset mesh",             sv: "Återställ nät" },
+  "mockup.drag_corners":    { en: "Drag corners to adjust", sv: "Dra i hörnen för att justera" },
+  "mockup.drag_mesh":       { en: "Drag mesh points to warp", sv: "Dra nätpunkter för att forma" },
+  "mockup.download":        { en: "Download mockup",        sv: "Ladda ner mockup" },
+  "mockup.upload_bg":       { en: "Upload product photo",   sv: "Ladda upp produktfoto" },
+  "mockup.or_use_template": { en: "or use a template",      sv: "eller använd en mall" },
+
+  // ── Legal ─────────────────────────────────────────────────────────────────
+  "legal.privacy_title":    { en: "Privacy Policy",         sv: "Integritetspolicy" },
+  "legal.terms_title":      { en: "Terms of Service",       sv: "Användarvillkor" },
+  "legal.back":             { en: "Back",                   sv: "Tillbaka" },
+
+  // ── Blog ──────────────────────────────────────────────────────────────────
+  "blog.read_more":         { en: "Read more",              sv: "Läs mer" },
+  "blog.cta_btn":           { en: "Try free",               sv: "Prova gratis" },
+  "blog.back":              { en: "← All posts",            sv: "← Alla inlägg" },
+  "blog.min_read":          { en: "min read",               sv: "min läsning" },
+  "blog.title":             { en: "Insights for modern sales teams", sv: "Insikter för moderna säljteam" },
+  "blog.sub":               { en: "Strategy, playbooks, and tools for B2B outreach.", sv: "Strategi, spelböcker och verktyg för B2B-outreach." },
+  "blog.lang_en":           { en: "🇬🇧 English", sv: "🇬🇧 English" },
+  "blog.lang_sv":           { en: "🇸🇪 Svenska", sv: "🇸🇪 Svenska" },
+  "blog.all_posts":         { en: "← All posts", sv: "← Alla inlägg" },
+  "blog.cta_title":         { en: "Ready to personalise your outreach?", sv: "Redo att personalisera din outreach?" },
+  "blog.cta_sub":           { en: "Try Logoplacers free — no credit card required.", sv: "Prova Logoplacers gratis — inget kreditkort krävs." },
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  "footer.privacy":         { en: "Privacy",                sv: "Integritet" },
+  "footer.terms":           { en: "Terms",                  sv: "Villkor" },
+
+  // ── Trust badges ──────────────────────────────────────────────────────────
+  "trust.ssl":              { en: "SSL encrypted",          sv: "SSL-krypterat" },
+  "trust.stripe":           { en: "Stripe payments",        sv: "Stripe-betalningar" },
+  "trust.gdpr":             { en: "GDPR compliant",         sv: "GDPR-kompatibelt" },
+  "trust.oauth":            { en: "Google OAuth",           sv: "Google OAuth" },
+
+  // ── Pricing ───────────────────────────────────────────────────────────────
+  "pricing.title":          { en: "Simple, transparent pricing", sv: "Enkel, transparent prissättning" },
+  "pricing.sub":            { en: "Start free. No credit card required.", sv: "Börja gratis. Inget kreditkort krävs." },
+
+};

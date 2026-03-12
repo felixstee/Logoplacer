@@ -838,7 +838,7 @@ function LiveDemo() {
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       <div style={{ textAlign: "center", marginBottom: 56 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Live demo</div>
-        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px" }}>See exactly how it works.</h2>
+        <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px" }}>{lang==="sv"?"Se exakt hur det fungerar.":"See exactly how it works."}</h2>
         <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
           Type a company name and watch their logo appear on the demo — then drag it anywhere.
         </p>
@@ -970,14 +970,14 @@ function roundRect(ctx, x, y, w, h, r) {
 // ─────────────────────────────────────────────
 const DEMO_STEPS = [
   {
-    title: "Upload your product screenshot",
-    desc: "Start by uploading any screenshot of your product — a dashboard, feature view, or landing page.",
-    tag: "Step 1",
+    title: "Upload your product screenshot", titleSv: "Ladda upp din produktskärmbild",
+    desc: "Start by uploading any screenshot of your product — a dashboard, feature view, or landing page.", descSv: "Börja med att ladda upp valfri skärmbild av din produkt.",
+    tag: "Step 1", tagSv: "Steg 1",
   },
   {
-    title: "Paste your prospect list",
-    desc: "Drop in company names and contacts. Logoplacers auto-fetches every logo simultaneously.",
-    tag: "Step 2",
+    title: "Paste your prospect list", titleSv: "Klistra in din prospektlista",
+    desc: "Drop in company names and contacts. Logoplacers auto-fetches every logo simultaneously.", descSv: "Lägg till företag och kontakter. Logotyper hämtas automatiskt.",
+    tag: "Step 2", tagSv: "Steg 2",
     leads: [
       { company: "Pied Piper",    name: "Jared Dunn",  email: "jared@piedpiper.com",    status: "ok" },
       { company: "Hooli",   name: "Gavin Belson",    email: "gavin@hooli.com", status: "ok" },
@@ -1487,12 +1487,12 @@ function DemoWalkthrough() {
       opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(32px)",
     }}>
       <div style={{ textAlign: "center", marginBottom: 56 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>How it works</div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang==="sv"?"Hur det fungerar":"How it works"}</div>
         <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px" }}>
-          From zero to 100 demos<br/>in under a minute.
+          {lang==="sv"?"Från noll till 100 demos":"From zero to 100 demos"}<br/>{lang==="sv"?"på under en minut.":"in under a minute."}
         </h2>
         <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
-          Click through the steps to see exactly how it works.
+{lang==="sv"?"Klicka igenom stegen för att se hur det fungerar.":"Click through the steps to see exactly how it works."}
         </p>
       </div>
 
@@ -1507,7 +1507,7 @@ function DemoWalkthrough() {
             transition: "all .2s",
             boxShadow: step===i ? "0 4px 20px rgba(26,130,255,0.3)" : "none",
           }}>
-            <span style={{ opacity: .6, marginRight: 6 }}>{i+1}.</span>{s.title.split(" ").slice(0,3).join(" ")}…
+            <span style={{ opacity: .6, marginRight: 6 }}>{i+1}.</span>{(lang==="sv"?s.titleSv||s.title:s.title).split(" ").slice(0,3).join(" ")}…
           </button>
         ))}
       </div>
@@ -1968,7 +1968,7 @@ function ComparisonTable() {
     <div ref={ref} style={{maxWidth:840,margin:"0 auto",opacity:vis?1:0,transform:vis?"translateY(0)":"translateY(28px)",transition:"opacity .7s,transform .7s"}}>
       <div style={{textAlign:"center",marginBottom:52}}>
         <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:14}}>vs the alternatives</div>
-        <h2 style={{fontSize:"clamp(26px,4vw,46px)",fontWeight:800,letterSpacing:"-2px",margin:0,lineHeight:1.1}}>Why not just use Loom or Figma?</h2>
+        <h2 style={{fontSize:"clamp(26px,4vw,46px)",fontWeight:800,letterSpacing:"-2px",margin:0,lineHeight:1.1}}>{lang==="sv"?"Varför inte bara använda Loom eller Figma?":"Why not just use Loom or Figma?"}</h2>
       </div>
       <div style={{overflowX:"auto",borderRadius:20,border:"1px solid rgba(255,255,255,.07)"}}>
         <table style={{width:"100%",borderCollapse:"collapse",minWidth:520}}>
@@ -2017,7 +2017,7 @@ function ExitIntentPopup({ onEnterApp }) {
       onClick={e=>e.target===e.currentTarget&&setShow(false)}>
       <div style={{background:"rgba(7,11,18,.98)",border:"1px solid rgba(255,255,255,.1)",borderRadius:28,padding:"46px 44px",maxWidth:440,width:"100%",textAlign:"center",boxShadow:"0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(26,130,255,.2)"}}>
         <div style={{marginBottom:18,display:"flex",justifyContent:"center"}}><svg width="42" height="42" viewBox="0 0 42 42" fill="none"><rect width="42" height="42" rx="11" fill="url(#ei)"/><rect x="5" y="5" width="14" height="14" rx="3" fill="white" opacity=".95"/><rect x="23" y="5" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="5" y="23" width="14" height="14" rx="3" fill="white" opacity=".6"/><rect x="23" y="23" width="14" height="14" rx="3" fill="white" opacity=".95"/><rect x="17.5" y="17.5" width="7" height="7" rx="1.75" fill="white" opacity=".28"/><defs><linearGradient id="ei" x1="0" y1="0" x2="42" y2="42"><stop offset="0%" stopColor="#1a82ff"/><stop offset="100%" stopColor="#5b4fff"/></linearGradient></defs></svg></div>
-        <h3 style={{fontSize:25,fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 12px",lineHeight:1.12,color:"#fff"}}>Wait — grab 10 free credits</h3>
+        <h3 style={{fontSize:25,fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 12px",lineHeight:1.12,color:"#fff"}}>{lang==="sv"?"Vänta — hämta 10 gratis krediter":"Wait — grab 10 free credits"}</h3>
         <p style={{fontSize:14,color:"rgba(255,255,255,.42)",lineHeight:1.65,marginBottom:28}}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
         <button onClick={()=>{setShow(false);onEnterApp();}} style={{background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",borderRadius:13,padding:"14px 32px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",width:"100%",boxShadow:"0 8px 32px rgba(26,130,255,.4)",marginBottom:10}}>
           Try it free →
@@ -2045,36 +2045,15 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
   const [ctaRef,   ctaVis]   = useReveal(0.15);
   const [navScrolled, setNavScrolled] = useState(false);
 
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [mouse] = useState({ x: 0, y: 0 });
   useEffect(() => {
     const fn = () => setNavScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
-  useEffect(() => {
-    const fn = (e) => setMouse({ x: (e.clientX/window.innerWidth-.5)*2, y: (e.clientY/window.innerHeight-.5)*2 });
-    window.addEventListener("mousemove", fn);
-    return () => window.removeEventListener("mousemove", fn);
-  }, []);
-
-  const [cursorPos, setCursorPos] = useState({ x: -200, y: -200 });
-  useEffect(() => {
-    const fn = (e) => setCursorPos({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", fn);
-    return () => window.removeEventListener("mousemove", fn);
-  }, []);
 
   return (
-    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", "--mx": mouse.x, "--my": mouse.y }}>
-      {/* Cursor glow */}
-      <div style={{
-        position: "fixed", pointerEvents: "none", zIndex: 9999,
-        width: 320, height: 320, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)",
-        transform: "translate(-50%,-50%)",
-        left: cursorPos.x, top: cursorPos.y,
-        transition: "left 0.06s ease, top 0.06s ease",
-      }} />
+    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden" }}>
       <ExitIntentPopup onEnterApp={onEnterApp} />
       <SocialProofTicker />
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
@@ -2147,7 +2126,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             animation: "fadeUp .8s ease both",
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1a82ff", display: "inline-block", boxShadow: "0 0 10px #1a82ff" }}/>
-            Sales outreach · Auto logo personalisation
+            {lang==="sv"?"Säljutskick · Automatisk logopersonalisering":"Sales outreach · Auto logo personalisation"}
           </div>
 
           <h1 style={{
@@ -2155,12 +2134,12 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             letterSpacing: "-3.5px", margin: "0 0 24px",
             animation: "fadeUp .9s .1s ease both",
           }}>
-            <span style={{ color: "#fff" }}>Your product.</span>
+            <span style={{ color: "#fff" }}>{lang==="sv"?"Din produkt.":"Your product."}</span>
             <br/>
             <span style={{
               background: "linear-gradient(135deg,#1a82ff 0%,#a78bfa 55%,#5b4fff 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>Their logo. Every email.</span>
+            }}>{lang==="sv"?"Deras logotyp. Varje mejl.":"Their logo. Every email."}</span>
           </h1>
 
           <p style={{
@@ -2168,9 +2147,9 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             lineHeight: 1.72, maxWidth: 580, margin: "0 auto 48px",
             animation: "fadeUp .9s .2s ease both",
           }}>
-            Upload one screenshot of your product. Paste a list of companies.
-            Logoplacers auto-fetches every logo and generates 100 unique personalised demo images —
-            then sends them directly from your Gmail in under 10 minutes.
+            {lang==="sv"
+              ?"Ladda upp en skärmbild av din produkt. Klistra in en lista med företag. Logoplacers hämtar automatiskt varje logotyp och genererar 100 unika personaliserade demobilder — och skickar dem direkt från ditt Gmail på under 10 minuter."
+              :"Upload one screenshot of your product. Paste a list of companies. Logoplacers auto-fetches every logo and generates 100 unique personalised demo images — then sends them directly from your Gmail in under 10 minutes."}
           </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", animation: "fadeUp .9s .3s ease both" }}>
@@ -2183,7 +2162,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             }}
               onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 14px 48px rgba(26,130,255,0.55)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(26,130,255,0.4)"; }}>
-              Start free — no credit card
+              {lang==="sv"?"Börja gratis — inget kreditkort":"Start free — no credit card"}
             </button>
             <button onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} style={{
               color: "rgba(255,255,255,0.55)", background: "none",
@@ -2193,7 +2172,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             }}
               onMouseEnter={e => { e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; e.currentTarget.style.color="#fff"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; e.currentTarget.style.color="rgba(255,255,255,0.55)"; }}>
-              ▶ See how it works
+              {lang==="sv"?"▶ Se hur det fungerar":"▶ See how it works"}
             </button>
           </div>
         </div>
@@ -2214,9 +2193,9 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
       <section ref={statsRef} style={{ padding: "72px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: 960, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 40, textAlign: "center" }}>
           {[
-            { target: 340, suffix: "%", prefix: "+", lbl: "more replies vs generic outreach" },
-            { target: 30, suffix: "s", prefix: "< ", lbl: "to personalise per prospect" },
-            { target: 94, suffix: "%", prefix: "", lbl: "of buyers prefer visual demos" },
+            { target: 340, suffix: "%", prefix: "+", lbl: lang==="sv"?"fler svar vs generisk outreach":"more replies vs generic outreach" },
+            { target: 30, suffix: "s", prefix: "< ", lbl: lang==="sv"?"att personalisera per prospekt":"to personalise per prospect" },
+            { target: 94, suffix: "%", prefix: "", lbl: lang==="sv"?"av köpare föredrar visuella demos":"of buyers prefer visual demos" },
           ].map(({ target, suffix, prefix, lbl }, i) => (
             <AnimatedStat key={i} target={target} suffix={suffix} prefix={prefix} lbl={lbl} visible={statsVis} delay={i * 150} mouseX={mouse.x} mouseY={mouse.y} idx={i} />
           ))}
@@ -2226,16 +2205,16 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
       {/* 3-STEP HOW IT WORKS — Concise visual */}
       <section style={{ padding: "80px 48px 60px", background: "rgba(255,255,255,.015)", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
         <div style={{ maxWidth: 920, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 18 }}>HOW IT WORKS</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 18 }}>{lang==="sv"?"HUR DET FUNGERAR":"HOW IT WORKS"}</div>
           <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 56px", color: "#fff" }}>
-            From screenshot to 100 personalised emails<br/>
-            <span style={{ color: "rgba(255,255,255,.38)" }}>in under 10 minutes.</span>
+            {lang==="sv"?"Från skärmbild till 100 personaliserade mejl":"From screenshot to 100 personalised emails"}<br/>
+            <span style={{ color: "rgba(255,255,255,.38)" }}>{lang==="sv"?"på under 10 minuter.":"in under 10 minutes."}</span>
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24, textAlign: "left" }}>
             {[
-              { n:"01", title:"Upload your product screenshot", body:"Drag in any UI screenshot, mockup, or image. Supports PNG, JPG, HEIC. No design skills needed.", color:"#1a82ff" },
-              { n:"02", title:"Paste your prospect list", body:"Type or paste company names. Logoplacers auto-fetches every logo in seconds — Salesforce, Spotify, any company.", color:"#8b5cf6" },
-              { n:"03", title:"Send from your own Gmail", body:"Connect Gmail in one click. Each prospect gets a unique personalised image. Emails sent with natural delays.", color:"#10b981" },
+              { n:"01", title:lang==="sv"?"Ladda upp din produktskärmbild":"Upload your product screenshot", body:lang==="sv"?"Dra in valfri UI-skärmbild, mockup eller bild. Stöder PNG, JPG, HEIC. Inga designkunskaper behövs.":"Drag in any UI screenshot, mockup, or image. Supports PNG, JPG, HEIC. No design skills needed.", color:"#1a82ff" },
+              { n:"02", title:lang==="sv"?"Klistra in din prospektlista":"Paste your prospect list", body:lang==="sv"?"Skriv eller klistra in företagsnamn. Logoplacers hämtar automatiskt varje logotyp på sekunder — Salesforce, Spotify, vilket företag som helst.":"Type or paste company names. Logoplacers auto-fetches every logo in seconds — Salesforce, Spotify, any company.", color:"#8b5cf6" },
+              { n:"03", title:lang==="sv"?"Skicka från ditt eget Gmail":"Send from your own Gmail", body:lang==="sv"?"Anslut Gmail med ett klick. Varje prospekt får en unik personaliserad bild. Mejl skickas med naturliga fördröjningar.":"Connect Gmail in one click. Each prospect gets a unique personalised image. Emails sent with natural delays.", color:"#10b981" },
             ].map(s => (
               <div key={s.n} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 18, padding: "28px 24px" }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: s.color, letterSpacing: "1px", marginBottom: 14 }}>{s.n}</div>
@@ -2395,7 +2374,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
       <section id="faq" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
         <div style={{ maxWidth: 740, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 72 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang==="sv"?"VANLIGA FRÅGOR":"FAQ"}</div>
             <h2 style={{ fontSize: "clamp(32px,5vw,54px)", fontWeight: 800, letterSpacing: "-2px", margin: 0 }}>Common questions.</h2>
           </div>
           <div ref={faqRef} style={{ display: "flex", flexDirection: "column", gap: 10 }}>

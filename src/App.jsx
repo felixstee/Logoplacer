@@ -1112,25 +1112,33 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 }
 
 function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
-  return new Promise(async (resolve) => {
-    const boundary = "MP_" + Math.random().toString(36).slice(2);
-    const subjB64 = btoa(unescape(encodeURIComponent(subject)));
-    const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
-    const attB64 = await new Promise((res, rej) => {
-      const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
-      r.readAsDataURL(attachBlob);
-    });
-    const chunk76 = s => { const r=[]; for (let i=0;i<s.length;i+=76) r.push(s.slice(i,i+76)); return r; };
-    const raw = [
-      `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
-      "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
-      `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
-      ...chunk76(bodyB64), "",
-      `--${boundary}`, `Content-Type: image/png; name="${filename}"`, "Content-Transfer-Encoding: base64",
-      `Content-Disposition: attachment; filename="${filename}"`, "", ...chunk76(attB64), "",
-      `--${boundary}--`,
-    ].join("\r\n");
-    resolve(btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+  return new Promise(async (resolve, reject) => {
+    try {
+      const boundary = "MP_" + Math.random().toString(36).slice(2);
+      const subjB64 = btoa(unescape(encodeURIComponent(subject)));
+      const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
+      const attB64 = await new Promise((res, rej) => {
+        const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
+        r.readAsDataURL(attachBlob);
+      });
+      // Sanitise filename — btoa() crashes on non-Latin1 chars (åäö etc)
+      const safeFilename = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "_");
+      const chunk76 = s => { const r=[]; for (let i=0;i<s.length;i+=76) r.push(s.slice(i,i+76)); return r; };
+      const raw = [
+        `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
+        "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
+        `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
+        ...chunk76(bodyB64), "",
+        `--${boundary}`, `Content-Type: image/png; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
+        `Content-Disposition: attachment; filename="${safeFilename}"`, "", ...chunk76(attB64), "",
+        `--${boundary}--`,
+      ].join("\r\n");
+      // Use Uint8Array encode so non-ASCII chars never reach btoa()
+      const bytes = new Uint8Array(raw.split("").map(c => c.charCodeAt(0)));
+      let b64 = ""; const chunk = 8192;
+      for (let i = 0; i < bytes.length; i += chunk) b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + chunk)));
+      resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+    } catch(err) { reject(err); }
   });
 }
 
@@ -1301,9 +1309,956 @@ function DriveUploadField({ token, videoLink, setVideoLink }) {
   );
 }
 
-function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade }) {
+
+// ─────────────────────────────────────────────────────────────────────────
+// MACBOOK VIDEO MODAL
+// ─────────────────────────────────────────────────────────────────────────
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.8);
+  bgGrad.addColorStop(0, "#0d1520");
+  bgGrad.addColorStop(1, "#070b12");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Animation transforms
+  let scale = 1, tx = 0, ty = 0, skewX = 0;
+  const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+  const p = ease(progress);
+
+  if (animType === "zoom") {
+    scale = 1 + p * 0.35;
+  } else if (animType === "pan") {
+    tx = (p - 0.5) * W * 0.18;
+    scale = 1.1;
+  } else if (animType === "tilt") {
+    skewX = Math.sin(progress * Math.PI * 2) * 0.04;
+    scale = 1 + Math.sin(progress * Math.PI) * 0.08;
+  } else if (animType === "full") {
+    if (progress < 0.3) { scale = 1 + (progress/0.3)*0.25; }
+    else if (progress < 0.6) { tx = ((progress-0.3)/0.3 - 0.5)*W*0.15; scale = 1.25; }
+    else if (progress < 0.85) { scale = 1.25 + ((progress-0.6)/0.25)*0.1; skewX = ((progress-0.6)/0.25)*0.03; }
+    else { scale = 1.35 - ((progress-0.85)/0.15)*0.35; skewX = 0.03*(1-(progress-0.85)/0.15); }
+  }
+
+  ctx.save();
+  ctx.translate(W/2 + tx, H/2 + ty);
+  ctx.scale(scale, scale);
+  if (skewX) ctx.transform(1, 0, skewX, 1, 0, 0);
+  ctx.translate(-W/2, -H/2);
+
+  // Laptop proportions
+  const lw = W * 0.86, lh = H * 0.88;
+  const lx = (W - lw) / 2, ly = (H - lh) / 2;
+  const screenH = lh * 0.64;
+
+  // Outer screen bezel (dark aluminium)
+  const bezelGrad = ctx.createLinearGradient(lx, ly, lx, ly + screenH);
+  bezelGrad.addColorStop(0, "#2a2a2a");
+  bezelGrad.addColorStop(1, "#1a1a1a");
+  ctx.fillStyle = bezelGrad;
+  roundRectPath(ctx, lx, ly, lw, screenH, 12);
+  ctx.fill();
+
+  // Sheen on bezel
+  ctx.fillStyle = "rgba(255,255,255,0.04)";
+  roundRectPath(ctx, lx, ly, lw, screenH * 0.5, 12);
+  ctx.fill();
+
+  // Screen area (slightly inset)
+  const si = 10;
+  const sx = lx + si, sy = ly + si, sw = lw - si*2, sh = screenH - si - 4;
+  ctx.fillStyle = "#000";
+  ctx.fillRect(sx, sy, sw, sh);
+
+  // Demo image on screen
+  if (demoImg) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(sx, sy, sw, sh);
+    ctx.clip();
+    const ir = demoImg.width / demoImg.height;
+    const sr = sw / sh;
+    let dx, dy, dw2, dh2;
+    if (ir > sr) { dw2 = sw; dh2 = sw / ir; dx = sx; dy = sy + (sh - dh2)/2; }
+    else { dh2 = sh; dw2 = sh * ir; dx = sx + (sw - dw2)/2; dy = sy; }
+    ctx.drawImage(demoImg, dx, dy, dw2, dh2);
+    ctx.restore();
+  }
+
+  // Subtle screen glare
+  const glare = ctx.createLinearGradient(sx, sy, sx + sw*0.6, sy + sh*0.4);
+  glare.addColorStop(0, "rgba(255,255,255,0.07)");
+  glare.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = glare;
+  ctx.fillRect(sx, sy, sw, sh);
+
+  // Camera dot (no branding, just a sensor dot)
+  ctx.fillStyle = "#222";
+  ctx.beginPath();
+  ctx.arc(lx + lw/2, ly + 7, 2.5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = "#1a1a2e";
+  ctx.beginPath();
+  ctx.arc(lx + lw/2, ly + 7, 1.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // Hinge strip
+  const hinge = ctx.createLinearGradient(lx, ly + screenH, lx, ly + screenH + lh*0.025);
+  hinge.addColorStop(0, "#1e1e1e");
+  hinge.addColorStop(1, "#252525");
+  ctx.fillStyle = hinge;
+  ctx.fillRect(lx + lw*0.04, ly + screenH, lw*0.92, lh*0.025);
+
+  // Base / keyboard body
+  const by = ly + screenH + lh*0.025;
+  const bh = lh * 0.32;
+  const baseGrad = ctx.createLinearGradient(lx, by, lx + lw, by + bh);
+  baseGrad.addColorStop(0, "#252525");
+  baseGrad.addColorStop(0.5, "#222222");
+  baseGrad.addColorStop(1, "#1a1a1a");
+  ctx.fillStyle = baseGrad;
+  ctx.beginPath();
+  ctx.moveTo(lx - lw*0.01, by);
+  ctx.lineTo(lx + lw + lw*0.01, by);
+  ctx.lineTo(lx + lw + lw*0.04, by + bh);
+  ctx.lineTo(lx - lw*0.04, by + bh);
+  ctx.closePath();
+  ctx.fill();
+
+  // Keyboard area (subtle)
+  ctx.fillStyle = "rgba(255,255,255,0.025)";
+  roundRectPath(ctx, lx + lw*0.07, by + bh*0.1, lw*0.86, bh*0.55, 5);
+  ctx.fill();
+
+  // Key rows (very subtle)
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 14; col++) {
+      const kx = lx + lw*0.08 + col*(lw*0.8/14);
+      const ky = by + bh*0.12 + row*(bh*0.44/4);
+      const kw = lw*0.8/14 - 2, kh = bh*0.44/4 - 2;
+      ctx.fillStyle = "rgba(255,255,255,0.018)";
+      roundRectPath(ctx, kx, ky, kw, kh, 1.5);
+      ctx.fill();
+    }
+  }
+
+  // Trackpad
+  ctx.fillStyle = "rgba(255,255,255,0.04)";
+  ctx.strokeStyle = "rgba(255,255,255,0.06)";
+  ctx.lineWidth = 0.5;
+  roundRectPath(ctx, lx + lw*0.33, by + bh*0.7, lw*0.34, bh*0.22, 5);
+  ctx.fill();
+  ctx.stroke();
+
+  // Bottom edge reflection
+  const refl = ctx.createLinearGradient(lx, by + bh - 4, lx, by + bh);
+  refl.addColorStop(0, "rgba(255,255,255,0)");
+  refl.addColorStop(1, "rgba(255,255,255,0.03)");
+  ctx.fillStyle = refl;
+  ctx.beginPath();
+  ctx.moveTo(lx - lw*0.04, by + bh - 4);
+  ctx.lineTo(lx + lw + lw*0.04, by + bh - 4);
+  ctx.lineTo(lx + lw + lw*0.04, by + bh);
+  ctx.lineTo(lx - lw*0.04, by + bh);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function MacBookVideoModal({ getImageBlob, companies, onClose }) {
+  const t = useT();
+  const canvasRef = useRef(null);
+  const recCanvasRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const mediaRecRef = useRef(null);
+  const chunksRef = useRef([]);
+
+  const readyCompanies = (companies || []).filter(c => c.status === "ok");
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [animType, setAnimType] = useState("zoom");
+  const [duration, setDuration] = useState(5);
+  const [recording, setRecording] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [demoImg, setDemoImg] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const progressRef = useRef(0);
+
+  const company = readyCompanies[selectedIdx] || readyCompanies[0] || null;
+
+  useEffect(() => {
+    if (!company || !getImageBlob) return;
+    setLoading(true);
+    setDemoImg(null);
+    getImageBlob(company).then(blob => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => { setDemoImg(img); setLoading(false); };
+      img.onerror = () => setLoading(false);
+      img.src = url;
+    }).catch(() => setLoading(false));
+  }, [company?.id]);
+
+  useEffect(() => {
+    if (!canvasRef.current || loading) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    drawLaptopFrame(ctx, canvas.width, canvas.height, demoImg, 0, animType);
+  }, [demoImg, animType, loading]);
+
+  const startRecording = () => {
+    if (!demoImg) return;
+    const recCanvas = recCanvasRef.current;
+    if (!recCanvas) return;
+    recCanvas.width = 1280; recCanvas.height = 720;
+    const ctx = recCanvas.getContext("2d");
+
+    const stream = recCanvas.captureStream(30);
+    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+    const rec = new MediaRecorder(stream, { mimeType: mime });
+    chunksRef.current = [];
+    rec.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    rec.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      setVideoUrl(URL.createObjectURL(blob));
+      setRecording(false);
+    };
+    mediaRecRef.current = rec;
+    rec.start();
+    setRecording(true);
+    setVideoUrl(null);
+
+    const startTime = performance.now();
+    const totalMs = duration * 1000;
+    progressRef.current = 0;
+
+    const tick = () => {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / totalMs, 1);
+      progressRef.current = progress;
+      drawLaptopFrame(ctx, recCanvas.width, recCanvas.height, demoImg, progress, animType);
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        setTimeout(() => rec.stop(), 100);
+      }
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
+  };
+
+  const stopRecording = () => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (mediaRecRef.current && mediaRecRef.current.state === "recording") mediaRecRef.current.stop();
+  };
+
+  const downloadVideo = () => {
+    if (!videoUrl) return;
+    const a = document.createElement("a");
+    a.href = videoUrl;
+    a.download = `${company?.companyName || "demo"}_macbook.webm`;
+    a.click();
+  };
+
+  const canvasW = 680, canvasH = 420;
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
+      <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:760,maxHeight:"92vh",overflow:"auto",padding:"28px 32px"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+          <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("video.title")}</h2>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22}}>×</button>
+        </div>
+
+        {/* Canvas preview */}
+        <div style={{borderRadius:12,overflow:"hidden",marginBottom:20,background:"#070b12",display:"flex",justifyContent:"center"}}>
+          {loading
+            ? <div style={{height:canvasH*0.6,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:13}}>{t("video.loading")}</div>
+            : <canvas ref={canvasRef} width={canvasW} height={canvasH} style={{display:"block",maxWidth:"100%"}} />
+          }
+        </div>
+        <canvas ref={recCanvasRef} style={{display:"none"}} />
+
+        {/* Controls */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+          {/* Company selector */}
+          <div>
+            <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.select_company")}</label>
+            <select value={selectedIdx} onChange={e=>setSelectedIdx(Number(e.target.value))}
+              style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+              {readyCompanies.length === 0
+                ? <option>—</option>
+                : readyCompanies.map((c,i) => <option key={i} value={i}>{c.companyName}</option>)
+              }
+            </select>
+          </div>
+
+          {/* Animation type */}
+          <div>
+            <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.animation")}</label>
+            <select value={animType} onChange={e=>setAnimType(e.target.value)}
+              style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+              <option value="zoom">{t("video.anim_zoom")}</option>
+              <option value="pan">{t("video.anim_pan")}</option>
+              <option value="tilt">{t("video.anim_tilt")}</option>
+              <option value="full">{t("video.anim_full")}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Duration slider */}
+        <div style={{marginBottom:20}}>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.duration")}: {duration}s</label>
+          <input type="range" min={3} max={20} value={duration} onChange={e=>setDuration(Number(e.target.value))}
+            style={{width:"100%",accentColor:"var(--blue)"}} />
+        </div>
+
+        {/* Status */}
+        {recording && (
+          <div style={{marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:10,fontSize:13,color:"#f87171",display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444",animation:"pulse 1s infinite"}}/>
+            {t("video.recording")} {duration}s
+          </div>
+        )}
+        {videoUrl && (
+          <div style={{marginBottom:12}}>
+            <video src={videoUrl} controls style={{width:"100%",borderRadius:10,maxHeight:200}} />
+            <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{t("video.webm_note")}</div>
+          </div>
+        )}
+
+        {!demoImg && !loading && (
+          <div style={{textAlign:"center",padding:"16px 0",color:"var(--t3)",fontSize:13}}>{t("video.no_image")}</div>
+        )}
+
+        {/* Buttons */}
+        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+          <button className="btn-s" onClick={onClose}>{t("modal.close")}</button>
+          {recording
+            ? <button className="btn-s" style={{background:"rgba(239,68,68,.12)",borderColor:"rgba(239,68,68,.3)",color:"#f87171"}} onClick={stopRecording}>■ Stop</button>
+            : <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} disabled={!demoImg} onClick={startRecording}>● {t("video.record")}</button>
+          }
+          {videoUrl && (
+            <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={downloadVideo}>↓ {t("video.download")}</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// PRODUCT MOCKUP MODAL — perspective mesh warp + exposure controls
+// ─────────────────────────────────────────────────────────────────────────
+
+const MOCKUP_TEMPLATES = [
+  {
+    id: "golf",
+    label: "Golf Ball",
+    emoji: "⛳",
+    bgColor: "#e8e4dc",
+    // circle mask, logo sits on center of sphere
+    type: "sphere",
+    logoArea: { cx: 0.5, cy: 0.44, r: 0.22 },
+  },
+  {
+    id: "mug",
+    label: "Coffee Mug",
+    emoji: "☕",
+    bgColor: "#d4c5b0",
+    type: "cylinder",
+    logoArea: { x: 0.32, y: 0.3, w: 0.35, h: 0.38 },
+  },
+  {
+    id: "tshirt",
+    label: "T-Shirt",
+    emoji: "👕",
+    bgColor: "#c8d4e8",
+    type: "flat",
+    logoArea: { x: 0.35, y: 0.32, w: 0.3, h: 0.2 },
+  },
+  {
+    id: "hoodie",
+    label: "Hoodie",
+    emoji: "🧥",
+    bgColor: "#2d3748",
+    type: "flat",
+    logoArea: { x: 0.36, y: 0.34, w: 0.28, h: 0.18 },
+  },
+  {
+    id: "bottle",
+    label: "Water Bottle",
+    emoji: "🍶",
+    bgColor: "#b8cce0",
+    type: "cylinder",
+    logoArea: { x: 0.33, y: 0.35, w: 0.34, h: 0.28 },
+  },
+  {
+    id: "notebook",
+    label: "Notebook",
+    emoji: "📓",
+    bgColor: "#f5e6c8",
+    type: "flat",
+    logoArea: { x: 0.3, y: 0.28, w: 0.4, h: 0.44 },
+  },
+  {
+    id: "cap",
+    label: "Cap",
+    emoji: "🧢",
+    bgColor: "#1a2540",
+    type: "curve",
+    logoArea: { cx: 0.5, cy: 0.42, r: 0.15 },
+  },
+  {
+    id: "bag",
+    label: "Tote Bag",
+    emoji: "👜",
+    bgColor: "#e8d5b0",
+    type: "flat",
+    logoArea: { x: 0.28, y: 0.3, w: 0.44, h: 0.38 },
+  },
+  {
+    id: "phone",
+    label: "Phone Case",
+    emoji: "📱",
+    bgColor: "#2c2c2c",
+    type: "flat",
+    logoArea: { x: 0.28, y: 0.35, w: 0.44, h: 0.28 },
+  },
+  {
+    id: "custom",
+    label: "Custom Photo",
+    emoji: "📷",
+    bgColor: "#111827",
+    type: "custom",
+    logoArea: { x: 0.25, y: 0.25, w: 0.5, h: 0.5 },
+  },
+];
+
+function buildDefaultMesh(cols, rows, W, H, area, type) {
+  const pts = [];
+  for (let r = 0; r <= rows; r++) {
+    for (let c = 0; c <= cols; c++) {
+      const u = c / cols;
+      const v = r / rows;
+      let x, y;
+      if (area.x !== undefined) {
+        x = (area.x + u * area.w) * W;
+        y = (area.y + v * area.h) * H;
+      } else {
+        const angle = u * Math.PI * 2;
+        x = (area.cx + Math.cos(angle) * area.r) * W;
+        y = (area.cy + Math.sin(angle) * area.r) * H;
+      }
+      // Slight 3D curve effect for cylinder/sphere
+      if (type === "cylinder" || type === "curve") {
+        const curveMag = 0.06;
+        const curve = Math.sin(u * Math.PI) * curveMag;
+        y += curve * H * (v - 0.5) * 0.5;
+        x += Math.sin(v * Math.PI - Math.PI/2) * curveMag * W * (u - 0.5) * 0.3;
+      }
+      pts.push({ u, v, x: Math.round(x), y: Math.round(y) });
+    }
+  }
+  return pts;
+}
+
+function renderMockupToCanvas(canvas, logoImg, bgImg, bgColor, meshPts, meshCols, meshRows, exposure, opacity, blendMode, templateType) {
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw background
+  if (bgImg) {
+    ctx.drawImage(bgImg, 0, 0, W, H);
+  } else {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, W, H);
+    // Draw a product shape silhouette
+    drawProductSilhouette(ctx, W, H, templateType, bgColor);
+  }
+
+  if (!logoImg || !meshPts || meshPts.length < 4) return;
+
+  // Draw mesh-warped logo using bilinear patch subdivision
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.globalCompositeOperation = blendMode;
+
+  // Exposure: brighten/darken logo before placing
+  if (exposure !== 0) {
+    const offscreen = document.createElement("canvas");
+    offscreen.width = logoImg.width || 200;
+    offscreen.height = logoImg.height || 200;
+    const octx = offscreen.getContext("2d");
+    octx.drawImage(logoImg, 0, 0, offscreen.width, offscreen.height);
+    if (exposure > 0) {
+      octx.globalCompositeOperation = "screen";
+      octx.fillStyle = `rgba(255,255,255,${exposure * 0.6})`;
+      octx.fillRect(0, 0, offscreen.width, offscreen.height);
+    } else {
+      octx.globalCompositeOperation = "multiply";
+      octx.fillStyle = `rgba(0,0,0,${Math.abs(exposure) * 0.6})`;
+      octx.fillRect(0, 0, offscreen.width, offscreen.height);
+    }
+    // Use adjusted logo
+    drawMeshWarped(ctx, offscreen, meshPts, meshCols, meshRows, W, H);
+  } else {
+    drawMeshWarped(ctx, logoImg, meshPts, meshCols, meshRows, W, H);
+  }
+  ctx.restore();
+}
+
+function drawMeshWarped(ctx, img, pts, cols, rows, W, H) {
+  const iw = img.width || img.naturalWidth || 100;
+  const ih = img.height || img.naturalHeight || 100;
+  const subdiv = 4; // subdivide each cell for smoother warp
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const tl = pts[row * (cols+1) + col];
+      const tr = pts[row * (cols+1) + col + 1];
+      const bl = pts[(row+1) * (cols+1) + col];
+      const br = pts[(row+1) * (cols+1) + col + 1];
+
+      // Subdivide each quad
+      for (let sr = 0; sr < subdiv; sr++) {
+        for (let sc = 0; sc < subdiv; sc++) {
+          const u0 = sc / subdiv, u1 = (sc+1) / subdiv;
+          const v0 = sr / subdiv, v1 = (sr+1) / subdiv;
+
+          // Bilinear interpolation of corners
+          const lerp2 = (a, b, c, d, u, v) => a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v;
+          const px = (u,v) => lerp2(tl.x, tr.x, bl.x, br.x, u, v);
+          const py = (u,v) => lerp2(tl.y, tr.y, bl.y, br.y, u, v);
+
+          // Source UV in logo image
+          const su0 = (col + sc/subdiv) / cols;
+          const su1 = (col + (sc+1)/subdiv) / cols;
+          const sv0 = (row + sr/subdiv) / rows;
+          const sv1 = (row + (sr+1)/subdiv) / rows;
+
+          // Draw using transform
+          const x0 = px(u0,v0), y0 = py(u0,v0);
+          const x1 = px(u1,v0), y1 = py(u1,v0);
+          const x2 = px(u0,v1), y2 = py(u0,v1);
+
+          const dx1 = x1-x0, dy1 = y1-y0;
+          const dx2 = x2-x0, dy2 = y2-y0;
+
+          const srcW = (su1-su0) * iw;
+          const srcH = (sv1-sv0) * ih;
+          if (srcW < 0.1 || srcH < 0.1) continue;
+
+          ctx.save();
+          ctx.setTransform(
+            dx1/srcW, dy1/srcW,
+            dx2/srcH, dy2/srcH,
+            x0, y0
+          );
+          ctx.drawImage(img,
+            su0*iw, sv0*ih, srcW, srcH,
+            0, 0, srcW, srcH
+          );
+          ctx.restore();
+        }
+      }
+    }
+  }
+}
+
+function drawProductSilhouette(ctx, W, H, type, bgColor) {
+  // Draw a simple but credible product shape
+  const isDark = bgColor < "#888888";
+  ctx.save();
+
+  if (type === "sphere") {
+    // Golf ball
+    const cx = W/2, cy = H*0.46, r = H*0.32;
+    const grad = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.05, cx, cy, r);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.5, "#e8e4dc");
+    grad.addColorStop(1, "#c8c0b0");
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+    // Dimples
+    ctx.strokeStyle = "rgba(0,0,0,0.06)"; ctx.lineWidth = 1;
+    for (let i = 0; i < 40; i++) {
+      const da = (i * 137.5) * Math.PI/180;
+      const dr = (i % 3 + 1) / 4 * r * 0.85;
+      const dx = cx + Math.cos(da)*dr, dy = cy + Math.sin(da)*dr;
+      ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI*2); ctx.stroke();
+    }
+    // Shadow
+    const shadow = ctx.createRadialGradient(cx, cy+r*1.1, 0, cx, cy+r*1.1, r*0.6);
+    shadow.addColorStop(0, "rgba(0,0,0,0.2)"); shadow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = shadow;
+    ctx.beginPath(); ctx.ellipse(cx, cy+r*1.1, r*0.65, r*0.12, 0, 0, Math.PI*2); ctx.fill();
+
+  } else if (type === "cylinder") {
+    // Mug or bottle
+    const mx = W*0.5, my = H*0.5;
+    const mw = W*0.38, mh = H*0.55;
+    // Body
+    const bodyGrad = ctx.createLinearGradient(mx-mw/2, 0, mx+mw/2, 0);
+    bodyGrad.addColorStop(0, "rgba(0,0,0,0.15)");
+    bodyGrad.addColorStop(0.2, "rgba(255,255,255,0.1)");
+    bodyGrad.addColorStop(0.5, "rgba(255,255,255,0.05)");
+    bodyGrad.addColorStop(0.85, "rgba(255,255,255,0.12)");
+    bodyGrad.addColorStop(1, "rgba(0,0,0,0.2)");
+    // Base shape
+    ctx.fillStyle = bgColor;
+    roundRectPath(ctx, mx-mw/2, my-mh/2, mw, mh, mw*0.08);
+    ctx.fill();
+    ctx.fillStyle = bodyGrad;
+    roundRectPath(ctx, mx-mw/2, my-mh/2, mw, mh, mw*0.08);
+    ctx.fill();
+    // Top ellipse
+    const topGrad = ctx.createLinearGradient(mx-mw/2, my-mh/2-10, mx+mw/2, my-mh/2);
+    topGrad.addColorStop(0, "rgba(255,255,255,0.3)"); topGrad.addColorStop(1, "rgba(255,255,255,0.05)");
+    ctx.fillStyle = topGrad;
+    ctx.beginPath(); ctx.ellipse(mx, my-mh/2, mw/2, mw*0.1, 0, 0, Math.PI*2); ctx.fill();
+    // Handle for mug
+    if (type === "cylinder" && bgColor.includes("d4c5")) {
+      ctx.strokeStyle = bgColor; ctx.lineWidth = mw*0.12; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(mx + mw*0.55, my, mw*0.22, -Math.PI*0.65, Math.PI*0.65); ctx.stroke();
+    }
+
+  } else if (type === "flat") {
+    // T-shirt / hoodie / tote
+    const isTshirt = (bgColor === "#c8d4e8" || bgColor === "#2d3748" || bgColor === "#e8d5b0" || bgColor === "#2c2c2c" || bgColor === "#f5e6c8");
+    // Simple rectangle with slight shadow
+    ctx.fillStyle = bgColor;
+    const fw = W*0.7, fh = H*0.75;
+    const fx = (W-fw)/2, fy = (H-fh)/2;
+    roundRectPath(ctx, fx, fy, fw, fh, 8);
+    ctx.fill();
+    // Subtle sheen
+    ctx.fillStyle = "rgba(255,255,255,0.04)";
+    ctx.fillRect(fx, fy, fw, fh/3);
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.fillRect(fx+4, fy+fh, fw-8, 10);
+
+  } else if (type === "curve") {
+    // Cap — simplified front panel
+    const cx = W/2, cy = H*0.42;
+    const cr = H*0.28;
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy + cr*0.3, cr, Math.PI, 2*Math.PI);
+    ctx.lineTo(cx + cr, cy + cr*0.3);
+    ctx.closePath();
+    ctx.fill();
+    // Brim
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + cr*1.25, cr*1.1, cr*0.12, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + cr*1.25, cr*1.1, cr*0.1, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function ProductMockupModal({ getImageBlob, companies, onClose }) {
+  const t = useT();
+  const canvasRef = useRef(null);
+  const [templateId, setTemplateId] = useState("mug");
+  const [meshCols, setMeshCols] = useState(6);
+  const [meshRows, setMeshRows] = useState(4);
+  const [exposure, setExposure] = useState(0);
+  const [opacity, setOpacity] = useState(0.9);
+  const [blendMode, setBlendMode] = useState("normal");
+  const [logoImg, setLogoImg] = useState(null);
+  const [bgImg, setBgImg] = useState(null);
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [meshPts, setMeshPts] = useState(null);
+  const [draggingPt, setDraggingPt] = useState(null);
+  const [showMesh, setShowMesh] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const template = MOCKUP_TEMPLATES.find(t => t.id === templateId) || MOCKUP_TEMPLATES[0];
+  const readyCompanies = (companies || []).filter(c => c.status === "ok");
+  const company = readyCompanies[selectedIdx] || null;
+
+  const W = 600, H = 500;
+
+  // Init / reset mesh when template or mesh size changes
+  useEffect(() => {
+    const pts = buildDefaultMesh(meshCols, meshRows, W, H, template.logoArea, template.type);
+    setMeshPts(pts);
+  }, [templateId, meshCols, meshRows]);
+
+  // Load logo when company changes
+  useEffect(() => {
+    if (!company || !getImageBlob) { setLogoImg(null); return; }
+    setLoading(true);
+    getImageBlob(company).then(blob => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => { setLogoImg(img); setLoading(false); };
+      img.onerror = () => setLoading(false);
+      img.src = url;
+    }).catch(() => setLoading(false));
+  }, [company?.id]);
+
+  // Re-render whenever anything changes
+  useEffect(() => {
+    if (!canvasRef.current || !meshPts) return;
+    const canvas = canvasRef.current;
+    canvas.width = W; canvas.height = H;
+    renderMockupToCanvas(canvas, logoImg, bgImg, template.bgColor, meshPts, meshCols, meshRows, exposure, opacity, blendMode, template.type);
+    if (showMesh && meshPts) drawMeshOverlay(canvas, meshPts, meshCols, meshRows);
+  }, [logoImg, bgImg, template, meshPts, exposure, opacity, blendMode, showMesh]);
+
+  function drawMeshOverlay(canvas, pts, cols, rows) {
+    const ctx = canvas.getContext("2d");
+    ctx.save();
+    ctx.strokeStyle = "rgba(26,130,255,0.5)";
+    ctx.lineWidth = 0.8;
+    // Grid lines
+    for (let r = 0; r <= rows; r++) {
+      ctx.beginPath();
+      for (let c = 0; c <= cols; c++) {
+        const pt = pts[r*(cols+1)+c];
+        c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.stroke();
+    }
+    for (let c = 0; c <= cols; c++) {
+      ctx.beginPath();
+      for (let r = 0; r <= rows; r++) {
+        const pt = pts[r*(cols+1)+c];
+        r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.stroke();
+    }
+    // Dots
+    pts.forEach((pt, i) => {
+      const isCorner = [0, cols, rows*(cols+1), rows*(cols+1)+cols].includes(i);
+      ctx.fillStyle = isCorner ? "rgba(26,130,255,0.9)" : "rgba(26,130,255,0.55)";
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, isCorner ? 5 : 3.5, 0, Math.PI*2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  const getCanvasPt = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = W / rect.width, scaleY = H / rect.height;
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+  };
+
+  const onCanvasMouseDown = (e) => {
+    if (!meshPts) return;
+    const { x, y } = getCanvasPt(e);
+    const hitIdx = meshPts.findIndex(pt => Math.hypot(pt.x - x, pt.y - y) < 14);
+    if (hitIdx >= 0) setDraggingPt(hitIdx);
+  };
+  const onCanvasMouseMove = (e) => {
+    if (draggingPt === null || draggingPt === undefined) return;
+    const { x, y } = getCanvasPt(e);
+    setMeshPts(prev => prev.map((pt, i) => i === draggingPt ? { ...pt, x: Math.round(x), y: Math.round(y) } : pt));
+  };
+  const onCanvasMouseUp = () => setDraggingPt(null);
+
+  const resetMesh = () => {
+    const pts = buildDefaultMesh(meshCols, meshRows, W, H, template.logoArea, template.type);
+    setMeshPts(pts);
+  };
+
+  const downloadMockup = () => {
+    if (!canvasRef.current) return;
+    const tmp = document.createElement("canvas");
+    tmp.width = W; tmp.height = H;
+    renderMockupToCanvas(tmp, logoImg, bgImg, template.bgColor, meshPts, meshCols, meshRows, exposure, opacity, blendMode, template.type);
+    const a = document.createElement("a");
+    a.href = tmp.toDataURL("image/png");
+    a.download = `${company?.companyName || "mockup"}_${templateId}.png`;
+    a.click();
+  };
+
+  const bgUpload = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => setBgImg(img);
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
+      <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:980,maxHeight:"94vh",overflow:"auto",padding:"24px 28px",display:"flex",flexDirection:"column",gap:16}} onClick={e=>e.stopPropagation()}>
+        
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("mockup.title")}</h2>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22}}>×</button>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:20,minHeight:0}}>
+          
+          {/* Left: Canvas */}
+          <div>
+            {/* Template picker */}
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+              {MOCKUP_TEMPLATES.map(tmpl => (
+                <button key={tmpl.id} onClick={() => setTemplateId(tmpl.id)} style={{
+                  background: templateId===tmpl.id ? "rgba(26,130,255,.15)" : "rgba(255,255,255,.04)",
+                  border: `1px solid ${templateId===tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
+                  borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600,
+                  color: templateId===tmpl.id ? "#60a5fa" : "var(--t3)", cursor:"pointer", fontFamily:"inherit",
+                  display:"flex", alignItems:"center", gap:5,
+                }}>
+                  <span style={{fontSize:14}}>{tmpl.emoji}</span>{tmpl.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Canvas */}
+            <div style={{position:"relative",borderRadius:12,overflow:"hidden",background:"#0d0d14",border:"0.5px solid var(--sep)"}}>
+              <canvas ref={canvasRef} width={W} height={H}
+                style={{display:"block",width:"100%",cursor:draggingPt!=null?"grabbing":"crosshair"}}
+                onMouseDown={onCanvasMouseDown}
+                onMouseMove={onCanvasMouseMove}
+                onMouseUp={onCanvasMouseUp}
+                onMouseLeave={onCanvasMouseUp}
+              />
+              {loading && (
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.5)",color:"var(--t3)",fontSize:13}}>
+                  {t("video.loading")}
+                </div>
+              )}
+            </div>
+            <div style={{fontSize:11,color:"var(--t4)",marginTop:6,textAlign:"center"}}>
+              {showMesh ? t("mockup.drag_mesh") : ""} · {t("mockup.drag_corners")}
+            </div>
+          </div>
+
+          {/* Right: Controls */}
+          <div style={{display:"flex",flexDirection:"column",gap:14,overflowY:"auto"}}>
+            
+            {/* Company */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.company")}</label>
+              <select value={selectedIdx} onChange={e=>setSelectedIdx(Number(e.target.value))}
+                style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+                {readyCompanies.length === 0
+                  ? <option>— Add contacts first —</option>
+                  : readyCompanies.map((c,i) => <option key={i} value={i}>{c.companyName}</option>)
+                }
+              </select>
+            </div>
+
+            {/* Custom background photo */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.upload_bg")}</label>
+              <label style={{display:"block",cursor:"pointer",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",fontSize:12,color:"var(--t3)",textAlign:"center"}}>
+                <input type="file" accept="image/*" style={{display:"none"}} onChange={bgUpload}/>
+                📷 {bgImg ? "✓ Photo uploaded" : t("mockup.or_use_template")}
+              </label>
+              {bgImg && (
+                <button onClick={()=>setBgImg(null)} style={{marginTop:4,fontSize:11,color:"var(--t3)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>✕ Remove photo</button>
+              )}
+            </div>
+
+            {/* Mesh size */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
+                {t("mockup.mesh_size")}: {meshCols}×{meshRows}
+              </label>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <div>
+                  <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Cols</div>
+                  <input type="range" min={2} max={12} value={meshCols} onChange={e=>setMeshCols(Number(e.target.value))} style={{width:"100%",accentColor:"var(--blue)"}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Rows</div>
+                  <input type="range" min={2} max={10} value={meshRows} onChange={e=>setMeshRows(Number(e.target.value))} style={{width:"100%",accentColor:"var(--blue)"}}/>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
+                <button onClick={resetMesh} style={{fontSize:11,color:"var(--t3)",background:"none",border:"0.5px solid var(--sep)",borderRadius:6,padding:"3px 10px",cursor:"pointer",fontFamily:"inherit"}}>↺ {t("mockup.reset_mesh")}</button>
+                <label style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"var(--t3)",cursor:"pointer"}}>
+                  <input type="checkbox" checked={showMesh} onChange={e=>setShowMesh(e.target.checked)} style={{accentColor:"var(--blue)"}}/>
+                  Show mesh
+                </label>
+              </div>
+            </div>
+
+            {/* Exposure */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
+                {t("mockup.exposure")}: {exposure > 0 ? "+" : ""}{Math.round(exposure*100)}
+              </label>
+              <input type="range" min={-1} max={1} step={0.05} value={exposure}
+                onChange={e=>setExposure(Number(e.target.value))}
+                style={{width:"100%",accentColor:"var(--yellow)"}}/>
+            </div>
+
+            {/* Opacity */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
+                {t("mockup.opacity")}: {Math.round(opacity*100)}%
+              </label>
+              <input type="range" min={0.1} max={1} step={0.05} value={opacity}
+                onChange={e=>setOpacity(Number(e.target.value))}
+                style={{width:"100%",accentColor:"var(--blue)"}}/>
+            </div>
+
+            {/* Blend mode */}
+            <div>
+              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.blend")}</label>
+              <select value={blendMode} onChange={e=>setBlendMode(e.target.value)}
+                style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+                {["normal","multiply","screen","overlay","soft-light","hard-light","luminosity","color-dodge"].map(m=>(
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+              <button className="btn-s" onClick={onClose}>{t("modal.close")}</button>
+              <button className="btn-p" style={{width:"100%",padding:"10px 0"}} onClick={downloadMockup} disabled={!logoImg}>
+                ↓ {t("mockup.download")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
-  const token = sharedToken;
+  const [token, setToken] = useState(sharedToken);
+  const [sendErrMsg, setSendErrMsg] = useState("");
   const [subject, setSubject] = useState("A personal demo for ((company))");
   const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
   const [videoLink, setVideoLink] = useState("");
@@ -1326,7 +2281,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       client_id: GOOGLE_CLIENT_ID,
       scope: "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
       callback: (r) => {
-        if (r.access_token) { onTokenAcquired(r.access_token); setStep("compose"); }
+        if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("compose"); }
         else alert("Login failed: " + (r.error || "unknown"));
       },
     }).requestAccessToken({ prompt: "select_account" });
@@ -1362,7 +2317,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       onUpgrade?.();
       return;
     }
+    setSendErrMsg("");
     setStep("sending");
+    let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
       if (si > 0) {
@@ -1376,7 +2333,10 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const videoBtn = videoLink.trim()
           ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#1a82ff;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
           : "";
-        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}${videoBtn}</div>`;
+        const viralFooter = isFreePlan
+          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#1a82ff;text-decoration:none;font-weight:600">Logoplacers</a></div>`
+          : "";
+        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}${videoBtn}${viralFooter}</div>`;
         const blob = await getImageBlob(c);
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
@@ -1385,10 +2345,29 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ raw }),
         });
-        setResults(r => ({ ...r, [c.id]: res.ok ? "ok" : "err" }));
-      } catch { setResults(r => ({ ...r, [c.id]: "err" })); }
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          const errMsg = errBody?.error?.message || `HTTP ${res.status}`;
+          console.error("Gmail send error:", res.status, errMsg, "for", c.email);
+          if (res.status === 401) { tokenExpired = true; }
+          setResults(r => ({ ...r, [c.id]: "err" }));
+          setSendErrMsg(res.status === 401 ? "Gmail session expired — reconnect below" : `Error: ${errMsg}`);
+        } else {
+          setResults(r => ({ ...r, [c.id]: "ok" }));
+        }
+      } catch(err) {
+        console.error("Send failed for", c.email, err);
+        setResults(r => ({ ...r, [c.id]: "err" }));
+        setSendErrMsg(err.message || "Unknown error");
+      }
+      if (tokenExpired) break;
     }
-    setCountdown(null); setStep("done");
+    setCountdown(null);
+    if (tokenExpired) {
+      setStep("reauth");
+    } else {
+      setStep("done");
+    }
   };
 
   const doneOk = Object.values(results).filter(v => v === "ok").length;
@@ -1400,9 +2379,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-head">
           <div>
             <div className="modal-title">
-              {step === "auth" && "Send email"}{step === "compose" && "Compose message"}
+              {step === "auth" && t("send.title")}{step === "compose" && t("send.compose")}
               {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
-              {step === "sending" && "Sending…"}{step === "done" && "Done!"}
+              {step === "sending" && t("send.sending")}{step === "done" && t("send.done")}
             </div>
             <div className="modal-sub">
               {step === "compose" && "((name)) and ((company)) are replaced per recipient. Image attached automatically."}
@@ -1522,7 +2501,8 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 <div style={{textAlign:"center",padding:"12px 0"}}>
                   <div style={{fontSize:28}}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>}</div>
                   <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} of {selectedContacts.length} sent</div>
-                  {doneErr > 0 && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed — check token expiry</div>}
+                  {doneErr > 0 && sendErrMsg && <div style={{fontSize:12,color:"var(--red)",marginTop:4}}>{sendErrMsg}</div>}
+                  {doneErr > 0 && !sendErrMsg && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed</div>}
                 </div>
               )}
             </>
@@ -1532,7 +2512,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-foot">
           {step === "compose" && (
             <>
-              <button className="btn-s" onClick={onClose}>Cancel</button>
+              <button className="btn-s" onClick={onClose}>{t("modal.cancel")}</button>
               <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
                 disabled={!selectedContacts.length} onClick={() => setStep("approve")}>
                 Preview ({selectedContacts.length}) →
@@ -1541,14 +2521,26 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           )}
           {step === "approve" && (
             <>
-              <button className="btn-s" onClick={() => setStep("compose")}>← Back</button>
+              <button className="btn-s" onClick={() => setStep("compose")}>{t("modal.back")}</button>
               <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={sendAll}>
                 ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
               </button>
             </>
           )}
           {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Close</button>}
-          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>Cancel</button>}
+          {step === "reauth" && (
+            <>
+              <div style={{fontSize:12,color:"var(--red)",flex:1}}>Gmail session expired. Reconnect and try again.</div>
+              <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={() => {
+                window.google?.accounts?.oauth2?.initTokenClient({
+                  client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
+                  scope: "https://www.googleapis.com/auth/gmail.send",
+                  callback: (r) => { if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("approve"); setSendErrMsg(""); setResults({}); } },
+                }).requestAccessToken({ prompt: "" });
+              }}>Reconnect Gmail →</button>
+            </>
+          )}
+          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>{t("modal.cancel")}</button>}
         </div>
       </div>
     </div>
@@ -2277,6 +3269,8 @@ function App() {
   const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [showMacBookModal, setShowMacBookModal] = useState(false);
+  const [showMockupModal, setShowMockupModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
   const [editingDomain, setEditingDomain] = useState({});
   const [editingContact, setEditingContact] = useState(null);
@@ -2638,13 +3632,44 @@ function App() {
     }}
   />;
 
+  if (!sessionLoaded) return (
+    <>
+      <style>{style}</style>
+      <div className="app" style={{pointerEvents:"none"}}>
+        <div className="header">
+          <div className="header-brand">
+            <Logo size={34}/>
+            <div><div className="header-name">Logoplacers</div></div>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"280px 1fr",height:"calc(100vh - 52px)"}}>
+          {/* Sidebar skeleton */}
+          <div style={{borderRight:"0.5px solid var(--sep)",padding:"16px 12px",display:"flex",flexDirection:"column",gap:12}}>
+            {[120,80,200,100,160].map((h,i) => (
+              <div key={i} style={{height:h,borderRadius:12,background:"var(--bg3)",overflow:"hidden",position:"relative"}}>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)",animation:"shimmer 1.4s infinite",backgroundSize:"200% 100%"}}/>
+              </div>
+            ))}
+          </div>
+          {/* Canvas skeleton */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)"}}>
+            <div style={{width:"70%",maxWidth:600,aspectRatio:"16/10",borderRadius:16,background:"var(--bg3)",overflow:"hidden",position:"relative",boxShadow:"0 8px 40px rgba(0,0,0,0.4)"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)",animation:"shimmer 1.4s infinite",backgroundSize:"200% 100%"}}/>
+            </div>
+          </div>
+        </div>
+        <style>{`@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }`}</style>
+      </div>
+    </>
+  );
+
   return (
     <>
       <style>{style}</style>
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
           <div className="header-brand">
-            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/></svg></div>
+            <Logo size={34}/>
             <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0,22)}…</div></div>
           </div>
           <div className="header-btns">
@@ -2670,13 +3695,21 @@ function App() {
                 {t("app.preview")}
               </span>
             </button>
+            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMacBookModal(true)} disabled={!hasImage}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
+              {t("app.macbook_video")}
+            </button>
+            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMockupModal(true)} disabled={!hasImage}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              {t("app.product_mockup")}
+            </button>
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
               {t("app.send")}
               {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
             </button>
             <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
-              {zipping ? "Packing..." : `${t("app.download")} (${readyCount})`}
+              {zipping ? t("app.packing") : `${t("app.download")} (${readyCount})`}
             </button>
           </div>
         </div>
@@ -2708,7 +3741,7 @@ function App() {
                 </div>
               ))}
               <div style={{marginTop:8,padding:"14px 18px",background:"rgba(26,130,255,.06)",border:"1px solid rgba(26,130,255,.15)",borderRadius:12,fontSize:13,color:"var(--t2)",lineHeight:1.7}}>
-                Credits are spent when you generate personalised images or send emails. Free plan: 4/day. Upgrade anytime for more.
+                {t("app.credits_info")}
               </div>
             </div>
           </div>
@@ -2725,8 +3758,8 @@ function App() {
               {feedbackSent ? (
                 <div style={{textAlign:"center",padding:"24px 0"}}>
                   <div style={{fontSize:32,marginBottom:12}}>✓</div>
-                  <div style={{fontSize:15,fontWeight:700,color:"var(--t1)",marginBottom:6}}>Thanks for your feedback!</div>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>We read every message.</div>
+                  <div style={{fontSize:15,fontWeight:700,color:"var(--t1)",marginBottom:6}}>{t("feedback.sent_title")}</div>
+                  <div style={{fontSize:13,color:"var(--t3)"}}>{t("feedback.sent_body")}</div>
                 </div>
               ) : (<>
                 <textarea value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}
@@ -2758,8 +3791,8 @@ function App() {
         )}
 
         <div className="mode-tabs">
-          <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>Image</button>
-          <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>Video</button>
+          <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>{t("app.image_mode")}</button>
+          <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>{t("app.video_mode")}</button>
         </div>
 
         {mode === "video" && <VideoMode
@@ -2789,15 +3822,13 @@ function App() {
                   baseImageRef.current = null;
                   setHasImage(false);
                   setBaseImageName(null);
-                }} style={{marginTop:8,width:"100%",padding:"6px 0",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:8,color:"#f87171",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
-                  Remove image
-                </button>
+                }} style={{marginTop:8,width:"100%",padding:"6px 0",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:8,color:"#f87171",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{t("app.remove_image")}</button>
               )}
             </div></div>
 
             <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:canvasBg.enabled?10:0}}>
-                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Background colour</span>
+                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>{t("app.background_color")}</span>
                 <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
                   onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
                   <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
@@ -2815,8 +3846,8 @@ function App() {
             <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                 <div>
-                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Match brand colour</span>
-                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>Replace a colour with recipient's brand</div>
+                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>{t("app.match_brand")}</span>
+                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>{t("app.match_brand_sub")}</div>
                 </div>
                 <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
                   <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)} style={{opacity:0,width:0,height:0,position:"absolute"}}/>
@@ -2847,7 +3878,7 @@ function App() {
             </div>
 
             <div className="s-row">
-              <span className="s-label">Recipient logo</span>
+              <span className="s-label">{t("app.recipient_logo")}</span>
               <button className="btn-text" onClick={addLogoInst}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
@@ -2861,7 +3892,7 @@ function App() {
             </div>
 
             <div className="s-row">
-              <span className="s-label">Text layers</span>
+              <span className="s-label">{t("app.text_layers")}</span>
               <button className="btn-text" onClick={addTextLayer}>+ New</button>
             </div>
             <div style={{padding:"0 10px"}}>
@@ -2879,7 +3910,7 @@ function App() {
               <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>{showTemplates ? "Hide" : `Saved (${templates.length})`}</button>
             </div>
             <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
-              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Template name…" onKeyDown={e => e.key==="Enter" && saveTemplate()}
+              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder={t("app.template_name")} onKeyDown={e => e.key==="Enter" && saveTemplate()}
                 style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}} />
               <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0}}>Save</button>
             </div>
@@ -2898,7 +3929,7 @@ function App() {
               </div>
             )}
 
-            <span className="s-label">Symbols</span>
+            <span className="s-label">{t("app.symbols")}</span>
             <div className="card">
               <div className="sym-grid">
                 {SYMBOL_OPTIONS.map(char => <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>)}
@@ -2922,15 +3953,15 @@ function App() {
               )}
             </div>
 
-            <span className="s-label">Contacts</span>
+            <span className="s-label">{t("app.contacts")}</span>
             <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
               <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Acme Corp"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
-              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>Extract contacts</button>
+              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>{t("app.extract_contacts")}</button>
               <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
-                <p style={{fontSize:12,color:"var(--t3)"}}>Or add manually</p>
-                <input className="inp sm" placeholder="Person name (optional)" value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
+                <p style={{fontSize:12,color:"var(--t3)"}}>{t("app.add_manually")}</p>
+                <input className="inp sm" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
                 <div style={{display:"flex",gap:7}}>
-                  <input className="inp sm" style={{flex:1}} placeholder="Company name or domain" value={singleCompany}
+                  <input className="inp sm" style={{flex:1}} placeholder={t("app.company_placeholder")} value={singleCompany}
                     onChange={e => setSingleCompany(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany); setSingleCompany(""); setSinglePerson(""); } }} />
                   <button className="btn-s" disabled={!singleCompany.trim()}
@@ -2942,7 +3973,7 @@ function App() {
             {companies.length > 0 && (<>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 16px 6px"}}>
                 <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} companies · {readyCount} ready</span>
-                <button className="btn-text-red" onClick={() => setCompanies([])}>Clear all</button>
+                <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
               </div>
               <div className="co-list-wrap">
                 {companies.map(c => (
@@ -2984,16 +4015,16 @@ function App() {
                       <div style={{padding:"8px 12px 10px 54px",background:"var(--bg)",borderBottom:"0.5px solid var(--sep)",display:"flex",flexDirection:"column",gap:6}}>
                         <div style={{display:"flex",gap:6}}>
                           <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Name</div>
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>{t("contact.name_label")}</div>
                             <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({...ec, name:e.target.value}))} />
                           </div>
                           <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Email</div>
+                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>{t("contact.email_label")}</div>
                             <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({...ec, email:e.target.value}))} />
                           </div>
                         </div>
                         <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
-                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={() => setEditingContact(null)}>Cancel</button>
+                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
                           <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={() => {
                             setCompanies(cs => cs.map(x => x.id===c.id ? {...x, personName:editingContact.name, email:editingContact.email||null} : x));
                             setEditingContact(null);
@@ -3063,7 +4094,7 @@ function App() {
               )}
             </div>
             <div className="canvas-footer" style={{position:"relative"}}>
-              {cw > 0 ? "Drag elements to position · Scroll to zoom" : "Upload a base image to get started"}
+              {cw > 0 ? t("canvas.hint") : t("canvas.empty")}
               {hasImage && (
                 <div className="zoom-controls">
                   <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z-0.1).toFixed(2)))}>−</button>
@@ -3098,8 +4129,8 @@ function App() {
               <div style={{display:"flex",gap:8}}>
                 {allPreviews.length > 1 && (
                   <>
-                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i-1,0))} disabled={previewIdx===0}>Prev</button>
-                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>Next</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i-1,0))} disabled={previewIdx===0}>{t("modal.prev")}</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>{t("modal.next")}</button>
                   </>
                 )}
                 <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Close</button>
@@ -3109,6 +4140,20 @@ function App() {
           </div>
         )}
 
+        {showMacBookModal && (
+          <MacBookVideoModal
+            getImageBlob={getImageBlob}
+            companies={companies}
+            onClose={() => setShowMacBookModal(false)}
+          />
+        )}
+        {showMockupModal && (
+          <ProductMockupModal
+            getImageBlob={getImageBlob}
+            companies={companies}
+            onClose={() => setShowMockupModal(false)}
+          />
+        )}
         {showSendModal && (
           <SendModal
             companies={companies}
@@ -3118,6 +4163,7 @@ function App() {
             onClose={() => setShowSendModal(false)}
             spendCredits={spend}
             creditsBalance={credits.balance}
+            isFreePlan={credits.plan === "free"}
             onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
           />
         )}
@@ -3276,7 +4322,7 @@ function AdminPanel({ onBack }) {
           <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
           {loading ? "Signing in…" : "Continue with Google"}
         </button>
-        <button onClick={onBack} style={{background:"none",border:"none",color:"rgba(255,255,255,.25)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>← Back</button>
+        <button onClick={onBack} style={{background:"none",border:"none",color:"rgba(255,255,255,.25)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{t("modal.back")}</button>
       </div>
     </div>
   );
@@ -3340,7 +4386,7 @@ function AdminPanel({ onBack }) {
                     style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:editing.trial_until?"#fff":"rgba(255,255,255,.3)",fontSize:13,fontFamily:"inherit"}}
                     title="Trial until (optional)"/>
                   <button onClick={saveEdit} style={{padding:"6px 16px",background:"#1a82ff",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Save</button>
-                  <button onClick={()=>setEditing(null)} style={{padding:"6px 12px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
+                  <button onClick={()=>setEditing(null)} style={{padding:"6px 12px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>{t("modal.cancel")}</button>
                 </div>
               ) : (
                 <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
