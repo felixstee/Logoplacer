@@ -414,6 +414,7 @@ function useReveal(threshold = 0.1) {
 // LIVE INTERACTIVE DEMO
 // ─────────────────────────────────────────────
 function LiveDemo() {
+  const { lang } = useLang();
   const canvasRef  = useRef(null);
   const wrapRef    = useRef(null);
   const [company,  setCompany]  = useState("");
@@ -1464,6 +1465,7 @@ function DemoCanvas({ step, activeLeadIdx }) {
 }
 
 function DemoWalkthrough() {
+  const { lang } = useLang();
   const [step, setStep] = useState(0);
   const [activeLeadIdx, setActiveLeadIdx] = useState(0);
   const [ref, vis] = useReveal(0.05);
@@ -1950,6 +1952,7 @@ function SocialProofTicker() {
 // COMPARISON TABLE
 // ─────────────────────────────────────────────
 function ComparisonTable() {
+  const { lang } = useLang();
   const [ref, vis] = useReveal(0.08);
   const rows = [
     {f:"Auto logo detection",         lp:1,loom:0,figma:0,manual:0},
