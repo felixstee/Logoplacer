@@ -47,7 +47,7 @@ export const TRANSLATIONS = {
   "app.send":           { en: "Send",          sv: "Skicka" },
   "app.sign_out":       { en: "Sign out",      sv: "Logga ut" },
   "app.packing":        { en: "Packing…",      sv: "Packar…" },
-  "app.macbook_video":  { en: "MacBook Video", sv: "MacBook Video" },
+  "app.macbook_video":  { en: "Laptop Demo", sv: "Laptop Demo" },
   "app.product_mockup": { en: "Mockup",        sv: "Mockup" },
 
   // ── App – Tabs ────────────────────────────────────────────────────────────
@@ -82,6 +82,14 @@ export const TRANSLATIONS = {
   // ── App – Canvas ─────────────────────────────────────────────────────────
   "canvas.hint":        { en: "Drag elements to position · Scroll to zoom", sv: "Dra element för att placera · Scrolla för att zooma" },
   "canvas.empty":       { en: "Upload a base image to get started",         sv: "Ladda upp en basbild för att komma igång" },
+  "canvas.no_image":    { en: "No image selected",                          sv: "Ingen bild vald" },
+  "canvas.no_image_sub":{ en: "Upload a base image on the left",            sv: "Ladda upp en basbild till vänster" },
+  "tag.first_name":     { en: "+ first name",                               sv: "+ förnamn" },
+  "tag.full_name":      { en: "+ full name",                                sv: "+ fullständigt namn" },
+  "tag.company":        { en: "+ company",                                  sv: "+ företag" },
+  "email.default_subject": { en: "A personal demo for ((company))",         sv: "En personlig demo för ((company))" },
+  "email.default_body": { en: "Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards", sv: "Hej ((name)),\n\nHär är en personaliserad demo vi satte ihop för ((company)).\n\nHör gärna av er!\n\nMed vänliga hälsningar" },
+  "video.title":        { en: "Laptop Demo Video",                          sv: "Laptop Demo Video" },
 
   // ── App – Companies list ──────────────────────────────────────────────────
   "companies.count":    { en: "{n} companies · {m} ready", sv: "{n} företag · {m} klara" },
@@ -176,8 +184,7 @@ export const TRANSLATIONS = {
     sv: "Logoplacers skickar via ditt Gmail. Vi begär bara gmail.send — vi läser aldrig din inkorg."
   },
 
-  // ── MacBook Video modal ───────────────────────────────────────────────────
-  "video.title":            { en: "MacBook Demo Video",     sv: "MacBook Demo Video" },
+  // ── Laptop Demo modal ─────────────────────────────────────────────────────
   "video.select_company":   { en: "Company",                sv: "Företag" },
   "video.animation":        { en: "Animation",              sv: "Animation" },
   "video.anim_zoom":        { en: "Slow zoom",              sv: "Långsam zoom" },

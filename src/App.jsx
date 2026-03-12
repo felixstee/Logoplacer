@@ -700,9 +700,9 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
           <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hi ((name)) at ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
-            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
-            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
-            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
+            <button className="tag-btn" onClick={() => insertTag("((name))")}>{t("tag.first_name")}</button>
+            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>{t("tag.full_name")}</button>
+            <button className="tag-btn" onClick={() => insertTag("((company))")}>{t("tag.company")}</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
@@ -1483,7 +1483,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   ctx.restore();
 }
 
-function MacBookVideoModal({ getImageBlob, companies, onClose }) {
+function LaptopDemoModal({ getImageBlob, companies, onClose }) {
   const t = useT();
   const canvasRef = useRef(null);
   const recCanvasRef = useRef(null);
@@ -2256,11 +2256,13 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 }
 
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
+  const t = useT();
+  const { lang } = useLang();
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
   const [token, setToken] = useState(sharedToken);
   const [sendErrMsg, setSendErrMsg] = useState("");
-  const [subject, setSubject] = useState("A personal demo for ((company))");
-  const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
+  const [subject, setSubject] = useState(() => lang === "sv" ? "En personlig demo för ((company))" : "A personal demo for ((company))");
+  const [bodyText, setBodyText] = useState(() => lang === "sv" ? "Hej ((name)),\n\nHär är en personaliserad demo vi satte ihop för ((company)).\n\nHör gärna av er!\n\nMed vänliga hälsningar" : "Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
   const [videoLink, setVideoLink] = useState("");
   const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
@@ -3135,7 +3137,7 @@ function UpgradeModal({ onClose, credits }) {
   );
 }
 
-function App() {
+function App({ onGoHome, onGoToBlog }) {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
@@ -3269,7 +3271,7 @@ function App() {
   const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
-  const [showMacBookModal, setShowMacBookModal] = useState(false);
+  const [showLaptopModal, setShowLaptopModal] = useState(false);
   const [showMockupModal, setShowMockupModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
   const [editingDomain, setEditingDomain] = useState({});
@@ -3668,9 +3670,9 @@ function App() {
       <style>{style}</style>
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
-          <div className="header-brand">
+          <div className="header-brand" onClick={onGoHome} style={{cursor:"pointer"}} title="Back to home">
             <Logo size={34}/>
-            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0,22)}…</div></div>
+            <div><div className="header-name">Logoplacers</div></div>
           </div>
           <div className="header-btns">
             <LangToggle />
@@ -3695,7 +3697,7 @@ function App() {
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMacBookModal(true)} disabled={!hasImage}>
+            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowLaptopModal(true)} disabled={!hasImage}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
               {t("app.macbook_video")}
             </button>
@@ -4043,8 +4045,8 @@ function App() {
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  <p className="empty-title">No image selected</p>
-                  <p className="empty-sub">Upload a base image on the left</p>
+                  <p className="empty-title">{t("canvas.no_image")}</p>
+                  <p className="empty-sub">{t("canvas.no_image_sub")}</p>
                 </div>
               ) : (
                 <div style={{ width: (cw||0)*canvasZoom, height: (ch||0)*canvasZoom, flexShrink:0 }}>
@@ -4140,11 +4142,11 @@ function App() {
           </div>
         )}
 
-        {showMacBookModal && (
-          <MacBookVideoModal
+        {showLaptopModal && (
+          <LaptopDemoModal
             getImageBlob={getImageBlob}
             companies={companies}
-            onClose={() => setShowMacBookModal(false)}
+            onClose={() => setShowLaptopModal(false)}
           />
         )}
         {showMockupModal && (
@@ -4465,7 +4467,7 @@ function AppRouterInner() {
   const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
   const goHome   = () => { window.location.hash = "";     setView("landing"); };
 
-  if (view === "app")   return <App />;
+  if (view === "app")   return <App onGoHome={goHome} onGoToBlog={goToBlog} />;
   if (view === "blog")  return <Blog onEnterApp={goToApp} onBack={goHome} />;
   if (view === "admin") return <AdminPanel onBack={goHome} />;
   if (view === "privacy") return <Legal page="privacy" onBack={goHome} />;
