@@ -700,9 +700,9 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
           <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hi ((name)) at ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
-            <button className="tag-btn" onClick={() => insertTag("((name))")}>{t("tag.first_name")}</button>
-            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>{t("tag.full_name")}</button>
-            <button className="tag-btn" onClick={() => insertTag("((company))")}>{t("tag.company")}</button>
+            <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
+            <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
+            <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
@@ -1483,7 +1483,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   ctx.restore();
 }
 
-function LaptopDemoModal({ getImageBlob, companies, onClose }) {
+function MacBookVideoModal({ getImageBlob, companies, onClose }) {
   const t = useT();
   const canvasRef = useRef(null);
   const recCanvasRef = useRef(null);
@@ -2257,12 +2257,11 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
   const t = useT();
-  const { lang } = useLang();
   const [step, setStep] = useState(sharedToken ? "compose" : "auth");
   const [token, setToken] = useState(sharedToken);
   const [sendErrMsg, setSendErrMsg] = useState("");
-  const [subject, setSubject] = useState(() => lang === "sv" ? "En personlig demo för ((company))" : "A personal demo for ((company))");
-  const [bodyText, setBodyText] = useState(() => lang === "sv" ? "Hej ((name)),\n\nHär är en personaliserad demo vi satte ihop för ((company)).\n\nHör gärna av er!\n\nMed vänliga hälsningar" : "Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
+  const [subject, setSubject] = useState("A personal demo for ((company))");
+  const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
   const [videoLink, setVideoLink] = useState("");
   const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
@@ -3039,6 +3038,7 @@ function CreditBadge({ credits, onUpgrade }) {
 
 // Modal shown when out of credits or trying to upgrade
 function UpgradeModal({ onClose, credits }) {
+  const t = useT();
   const [loading, setLoading] = useState(null);
   const user = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
 
@@ -3137,7 +3137,8 @@ function UpgradeModal({ onClose, credits }) {
   );
 }
 
-function App({ onGoHome, onGoToBlog }) {
+function App() {
+  const t = useT();
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
@@ -3209,7 +3210,6 @@ function App({ onGoHome, onGoToBlog }) {
   };
 
   const sessionUser = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
-  const t = useT();
 
   // If user arrived via pricing page and is already logged in → go to Stripe
   useEffect(() => {
@@ -3271,7 +3271,7 @@ function App({ onGoHome, onGoToBlog }) {
   const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
-  const [showLaptopModal, setShowLaptopModal] = useState(false);
+  const [showMacBookModal, setShowMacBookModal] = useState(false);
   const [showMockupModal, setShowMockupModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
   const [editingDomain, setEditingDomain] = useState({});
@@ -3634,45 +3634,14 @@ function App({ onGoHome, onGoToBlog }) {
     }}
   />;
 
-  if (!sessionLoaded) return (
-    <>
-      <style>{style}</style>
-      <div className="app" style={{pointerEvents:"none"}}>
-        <div className="header">
-          <div className="header-brand">
-            <Logo size={34}/>
-            <div><div className="header-name">Logoplacers</div></div>
-          </div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"280px 1fr",height:"calc(100vh - 52px)"}}>
-          {/* Sidebar skeleton */}
-          <div style={{borderRight:"0.5px solid var(--sep)",padding:"16px 12px",display:"flex",flexDirection:"column",gap:12}}>
-            {[120,80,200,100,160].map((h,i) => (
-              <div key={i} style={{height:h,borderRadius:12,background:"var(--bg3)",overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)",animation:"shimmer 1.4s infinite",backgroundSize:"200% 100%"}}/>
-              </div>
-            ))}
-          </div>
-          {/* Canvas skeleton */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)"}}>
-            <div style={{width:"70%",maxWidth:600,aspectRatio:"16/10",borderRadius:16,background:"var(--bg3)",overflow:"hidden",position:"relative",boxShadow:"0 8px 40px rgba(0,0,0,0.4)"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,.04) 50%,transparent 100%)",animation:"shimmer 1.4s infinite",backgroundSize:"200% 100%"}}/>
-            </div>
-          </div>
-        </div>
-        <style>{`@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }`}</style>
-      </div>
-    </>
-  );
-
   return (
     <>
       <style>{style}</style>
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
-          <div className="header-brand" onClick={onGoHome} style={{cursor:"pointer"}} title="Back to home">
-            <Logo size={34}/>
-            <div><div className="header-name">Logoplacers</div></div>
+          <div className="header-brand">
+            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/></svg></div>
+            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0,22)}…</div></div>
           </div>
           <div className="header-btns">
             <LangToggle />
@@ -3697,7 +3666,7 @@ function App({ onGoHome, onGoToBlog }) {
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowLaptopModal(true)} disabled={!hasImage}>
+            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMacBookModal(true)} disabled={!hasImage}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
               {t("app.macbook_video")}
             </button>
@@ -4045,8 +4014,8 @@ function App({ onGoHome, onGoToBlog }) {
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-                  <p className="empty-title">{t("canvas.no_image")}</p>
-                  <p className="empty-sub">{t("canvas.no_image_sub")}</p>
+                  <p className="empty-title">No image selected</p>
+                  <p className="empty-sub">Upload a base image on the left</p>
                 </div>
               ) : (
                 <div style={{ width: (cw||0)*canvasZoom, height: (ch||0)*canvasZoom, flexShrink:0 }}>
@@ -4142,11 +4111,11 @@ function App({ onGoHome, onGoToBlog }) {
           </div>
         )}
 
-        {showLaptopModal && (
-          <LaptopDemoModal
+        {showMacBookModal && (
+          <MacBookVideoModal
             getImageBlob={getImageBlob}
             companies={companies}
-            onClose={() => setShowLaptopModal(false)}
+            onClose={() => setShowMacBookModal(false)}
           />
         )}
         {showMockupModal && (
@@ -4187,6 +4156,7 @@ const ADMIN_EMAILS = [
 ];
 
 function AdminPanel({ onBack }) {
+  const t = useT();
   const [adminUser, setAdminUser] = useState(() => {
     try {
       const u = JSON.parse(sessionStorage.getItem("lp_admin_user") || "null");
@@ -4467,7 +4437,7 @@ function AppRouterInner() {
   const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
   const goHome   = () => { window.location.hash = "";     setView("landing"); };
 
-  if (view === "app")   return <App onGoHome={goHome} onGoToBlog={goToBlog} />;
+  if (view === "app")   return <App />;
   if (view === "blog")  return <Blog onEnterApp={goToApp} onBack={goHome} />;
   if (view === "admin") return <AdminPanel onBack={goHome} />;
   if (view === "privacy") return <Legal page="privacy" onBack={goHome} />;
