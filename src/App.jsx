@@ -331,9 +331,9 @@ const style = `
 `;
 
 const COLOR_PRESETS = [
-  "#ffffff","#000000","#c8f04c","#60a5fa","#f87171","#fbbf24","#a78bfa",
-  "#34d399","#f97316","#e879f9","#38bdf8","#fb7185","#4ade80","#facc15",
-  "#c084fc","#22d3ee","#f43f5e","#84cc16","#818cf8","#fb923c",
+  "#ffffff", "#000000", "#c8f04c", "#60a5fa", "#f87171", "#fbbf24", "#a78bfa",
+  "#34d399", "#f97316", "#e879f9", "#38bdf8", "#fb7185", "#4ade80", "#facc15",
+  "#c084fc", "#22d3ee", "#f43f5e", "#84cc16", "#818cf8", "#fb923c",
 ];
 
 const FONT_OPTIONS = [
@@ -356,7 +356,7 @@ const FONT_OPTIONS = [
 ];
 
 const SYMBOL_OPTIONS = ["×", "+", "=", "→", "←", "↑", "↓", "★", "♦", "●", "▲", "◆", "♥", "✓", "~"];
-const LAYER_COLORS = ["#c8f04c","#60a5fa","#f87171","#a78bfa","#fbbf24","#34d399","#f97316","#e879f9"];
+const LAYER_COLORS = ["#c8f04c", "#60a5fa", "#f87171", "#a78bfa", "#fbbf24", "#34d399", "#f97316", "#e879f9"];
 
 function domainToCompanyName(domain) {
   let name = domain.replace(/^www\./, "").split(".")[0];
@@ -375,7 +375,7 @@ function guessDomain(input, email = null) {
   if (s.includes(".")) return s.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
   s = s.replace(/\s+(ab|aktiebolag|publ|inc\.?|llc|ltd\.?|gmbh|bv|as|aps|oy|sas|srl|corp\.?|co\.?)$/i, "").trim();
   s = s.replace(/\s+/g, "");
-  const known = { google:"google.com", apple:"apple.com", microsoft:"microsoft.com", amazon:"amazon.com", meta:"meta.com", facebook:"facebook.com", netflix:"netflix.com", spotify:"spotify.com", uber:"uber.com", tesla:"tesla.com", ikea:"ikea.com", volvo:"volvo.com", klarna:"klarna.com" };
+  const known = { google: "google.com", apple: "apple.com", microsoft: "microsoft.com", amazon: "amazon.com", meta: "meta.com", facebook: "facebook.com", netflix: "netflix.com", spotify: "spotify.com", uber: "uber.com", tesla: "tesla.com", ikea: "ikea.com", volvo: "volvo.com", klarna: "klarna.com" };
   if (known[s]) return known[s];
   if (email) {
     const emailDomain = email.split("@")[1];
@@ -396,9 +396,9 @@ const SKIP_RE = new RegExp(
 );
 
 const ROLE_WORDS = [
-  "ceo","cfo","coo","cto","cpo","vp","vice","chief","officer",
-  "founder","co-founder","director","manager","head","president",
-  "partner","lead","controller","advisor",
+  "ceo", "cfo", "coo", "cto", "cpo", "vp", "vice", "chief", "officer",
+  "founder", "co-founder", "director", "manager", "head", "president",
+  "partner", "lead", "controller", "advisor",
 ];
 
 function isSkipLine(line) {
@@ -512,7 +512,7 @@ async function fetchLogoDataURL(domain) {
         if (data) return data;
       }
     }
-  } catch {}
+  } catch { }
 
   throw new Error("no logo found for " + domain);
 }
@@ -559,22 +559,22 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
   if (canvasBg?.personalisedColors && canvasBg?.brandColor && canvasBg?.colorToReplace) {
     try {
       const { r: br, g: bg2, b: bb } = canvasBg.brandColor;
-      const hex = canvasBg.colorToReplace.replace("#","");
-      const tr = parseInt(hex.slice(0,2),16), tg = parseInt(hex.slice(2,4),16), tb = parseInt(hex.slice(4,6),16);
+      const hex = canvasBg.colorToReplace.replace("#", "");
+      const tr = parseInt(hex.slice(0, 2), 16), tg = parseInt(hex.slice(2, 4), 16), tb = parseInt(hex.slice(4, 6), 16);
       const imgData = ctx.getImageData(0, 0, off.width, off.height);
       const d = imgData.data;
       const tolerance = 60;
       for (let i = 0; i < d.length; i += 4) {
-        const dr2 = Math.abs(d[i]-tr), dg2 = Math.abs(d[i+1]-tg), db2 = Math.abs(d[i+2]-tb);
+        const dr2 = Math.abs(d[i] - tr), dg2 = Math.abs(d[i + 1] - tg), db2 = Math.abs(d[i + 2] - tb);
         if (dr2 < tolerance && dg2 < tolerance && db2 < tolerance) {
-          const strength = 1 - Math.sqrt(dr2*dr2+dg2*dg2+db2*db2) / (tolerance * Math.sqrt(3));
-          d[i]   = Math.round(d[i]   * (1-strength) + br * strength);
-          d[i+1] = Math.round(d[i+1] * (1-strength) + bg2 * strength);
-          d[i+2] = Math.round(d[i+2] * (1-strength) + bb * strength);
+          const strength = 1 - Math.sqrt(dr2 * dr2 + dg2 * dg2 + db2 * db2) / (tolerance * Math.sqrt(3));
+          d[i] = Math.round(d[i] * (1 - strength) + br * strength);
+          d[i + 1] = Math.round(d[i + 1] * (1 - strength) + bg2 * strength);
+          d[i + 2] = Math.round(d[i + 2] * (1 - strength) + bb * strength);
         }
       }
       ctx.putImageData(imgData, 0, 0);
-    } catch(e) { console.warn("Colour replace failed:", e); }
+    } catch (e) { console.warn("Colour replace failed:", e); }
   }
   const scaleX = baseImg.width / displayW, scaleY = baseImg.height / displayH;
   const scale = Math.max(scaleX, scaleY);
@@ -662,15 +662,15 @@ function extractDominantColor(img) {
     const data = ctx2.getImageData(0, 0, 48, 48).data;
     let r = 0, g = 0, b = 0, count = 0;
     for (let i = 0; i < data.length; i += 4) {
-      const a = data[i+3]; if (a < 30) continue;
-      const rv = data[i], gv = data[i+1], bv = data[i+2];
+      const a = data[i + 3]; if (a < 30) continue;
+      const rv = data[i], gv = data[i + 1], bv = data[i + 2];
       const brightness = (rv + gv + bv) / 3;
-      const sat = Math.max(rv,gv,bv) - Math.min(rv,gv,bv);
+      const sat = Math.max(rv, gv, bv) - Math.min(rv, gv, bv);
       if (brightness > 230 || brightness < 25 || sat < 18) continue;
       r += rv; g += gv; b += bv; count++;
     }
     if (count < 10) return null;
-    return { r: Math.round(r/count), g: Math.round(g/count), b: Math.round(b/count) };
+    return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
   } catch { return null; }
 }
 
@@ -689,7 +689,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
         <span className="lcard-title">Text {idx + 1}</span>
         <span className="lcard-prev">{layer.template || "empty"}</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
@@ -697,7 +697,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
       </div>
       {isOpen && (
         <div className="lcard-bd">
-          <input ref={inputRef} className="inp" style={{marginBottom:8}} placeholder="Hi ((name)) at ((company))!"
+          <input ref={inputRef} className="inp" style={{ marginBottom: 8 }} placeholder="Hi ((name)) at ((company))!"
             value={layer.template} onChange={e => onChange({ template: e.target.value })} />
           <div className="tag-btns">
             <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
@@ -715,25 +715,25 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
                 {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
               </select>
             </div>
-            <div style={{gridColumn:"span 2",display:"flex",flexDirection:"column",gap:4}}>
+            <div style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", gap: 4 }}>
               <span className="cg-label">Weight</span>
               <div className="wrow">
-                {[["normal","Regular"],["600","Semi"],["bold","Bold"]].map(([val,lbl]) => {
+                {[["normal", "Regular"], ["600", "Semi"], ["bold", "Bold"]].map(([val, lbl]) => {
                   const isOn = (layer.fontWeight ?? (layer.bold ? "bold" : "normal")) === val;
-                  return <button key={val} className={`wbtn${isOn?" on":""}`} style={{fontWeight:val}} onClick={() => onChange({ fontWeight: val, bold: val==="bold" })}>{lbl}</button>;
+                  return <button key={val} className={`wbtn${isOn ? " on" : ""}`} style={{ fontWeight: val }} onClick={() => onChange({ fontWeight: val, bold: val === "bold" })}>{lbl}</button>;
                 })}
               </div>
             </div>
-            <div className="trow" style={{gridColumn:"span 2"}}>
-              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{fontStyle:"italic"}} onClick={() => onChange({ italic: !layer.italic })}>Italic</button>
+            <div className="trow" style={{ gridColumn: "span 2" }}>
+              <button className={`tbtn${layer.italic ? " on" : ""}`} style={{ fontStyle: "italic" }} onClick={() => onChange({ italic: !layer.italic })}>Italic</button>
               <button className={`tbtn${layer.enabled ? " on" : ""}`} onClick={() => onChange({ enabled: !layer.enabled })}>{layer.enabled ? "Visible" : "Hidden"}</button>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:8,gridColumn:"span 2"}}>
-              <span style={{fontSize:11,color:"var(--t3)"}}>Colour</span>
-              <div className="color-swatch" style={{background:layer.color}}>
-                <input type="color" value={layer.color} onChange={e => onChange({color: e.target.value})} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, gridColumn: "span 2" }}>
+              <span style={{ fontSize: 11, color: "var(--t3)" }}>Colour</span>
+              <div className="color-swatch" style={{ background: layer.color }}>
+                <input type="color" value={layer.color} onChange={e => onChange({ color: e.target.value })} />
               </div>
-              <span style={{fontSize:11,color:"var(--t3)",fontFamily:"monospace"}}>{layer.color}</span>
+              <span style={{ fontSize: 11, color: "var(--t3)", fontFamily: "monospace" }}>{layer.color}</span>
             </div>
           </div>
         </div>
@@ -747,7 +747,7 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
   return (
     <div className="lcard">
       <div className="lcard-hd" onClick={onToggle}>
-        <div style={{ width:8, height:8, borderRadius:"50%", background:color, flexShrink:0 }} />
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
         <span className="lcard-title">Logo {idx + 1}</span>
         <span className="lcard-prev">{inst.size}px</span>
         <span className="lchev">{isOpen ? "▲" : "▼"}</span>
@@ -761,7 +761,7 @@ function LogoInstanceCard({ inst, idx, total, onChange, onRemove, isOpen, onTogg
           </div>
           <div className="sl-wrap">
             <div className="sl-head"><span className="sl-label">Opacity</span>
-            <PxInput value={inst.opacity ?? 100} onChange={v => onChange({ opacity: v })} color={color} suffix="%" min={1} max={100} /></div>
+              <PxInput value={inst.opacity ?? 100} onChange={v => onChange({ opacity: v })} color={color} suffix="%" min={1} max={100} /></div>
             <input type="range" min={10} max={100} value={inst.opacity ?? 100} onChange={e => onChange({ opacity: Number(e.target.value) })} style={{ accentColor: color }} />
           </div>
         </div>
@@ -863,7 +863,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       anode.connect(dest); anode.connect(actx.destination); anode.start(0);
       dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
       audioRes = { actx, anode };
-    } catch(e) { console.warn("Audio skipped:", e.message); }
+    } catch (e) { console.warn("Audio skipped:", e.message); }
 
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     const recorder = new MediaRecorder(stream, { mimeType });
@@ -883,46 +883,46 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
     const rrect = (x, y, w, h, r) => {
       ctx.beginPath();
-      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
     };
 
     const drawPip = () => {
-      if (vid.paused) vid.play().catch(()=>{});
-      ctx.save(); rrect(pipX,pipY,pipW,pipH,R); ctx.clip();
-      ctx.drawImage(vid, pipX,pipY,pipW,pipH);
+      if (vid.paused) vid.play().catch(() => { });
+      ctx.save(); rrect(pipX, pipY, pipW, pipH, R); ctx.clip();
+      ctx.drawImage(vid, pipX, pipY, pipW, pipH);
       ctx.restore();
-      ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.18)"; ctx.lineWidth=1.5;
-      rrect(pipX,pipY,pipW,pipH,R); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1.5;
+      rrect(pipX, pipY, pipW, pipH, R); ctx.stroke(); ctx.restore();
     };
 
     const drawText = () => {
       const fs = Math.round(ovSnap.fontSize * (VW / 760));
-      const font = `${ovSnap.bold?"bold ":""}${fs}px "${ovSnap.fontFamily}", sans-serif`;
+      const font = `${ovSnap.bold ? "bold " : ""}${fs}px "${ovSnap.fontFamily}", sans-serif`;
       const maxW = VW * 0.72;
       ctx.font = font;
       const tw = Math.min(ctx.measureText(resolvedText).width, maxW);
       const pw = tw + 44; const ph = fs + 24;
       const px = (VW - pw) / 2; const py = VH * 0.038;
       ctx.save(); ctx.globalAlpha = Math.min(ovSnap.bgOpacity / 100, 0.88);
-      ctx.fillStyle = "rgba(0,0,0,0.85)"; rrect(px,py,pw,ph,ph/2); ctx.fill(); ctx.restore();
-      ctx.save(); ctx.font=font; ctx.fillStyle=ovSnap.color;
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText(resolvedText, VW/2, py+ph/2, maxW); ctx.restore();
+      ctx.fillStyle = "rgba(0,0,0,0.85)"; rrect(px, py, pw, ph, ph / 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.font = font; ctx.fillStyle = ovSnap.color;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(resolvedText, VW / 2, py + ph / 2, maxW); ctx.restore();
     };
 
     const drawImg = (img) => {
-      if (!img) { ctx.fillStyle="#0d0d14"; ctx.fillRect(0,0,VW,VH); return; }
-      const ar = img.width/img.height;
-      const dw = ar>VW/VH ? VW : VH*ar;
-      const dh = ar>VW/VH ? VW/ar : VH;
-      ctx.drawImage(img,(VW-dw)/2,(VH-dh)/2,dw,dh);
+      if (!img) { ctx.fillStyle = "#0d0d14"; ctx.fillRect(0, 0, VW, VH); return; }
+      const ar = img.width / img.height;
+      const dw = ar > VW / VH ? VW : VH * ar;
+      const dh = ar > VW / VH ? VW / ar : VH;
+      ctx.drawImage(img, (VW - dw) / 2, (VH - dh) / 2, dw, dh);
     };
 
     vid.currentTime = 0;
-    await vid.play().catch(()=>{});
+    await vid.play().catch(() => { });
 
     const blob = await new Promise(resolve => {
       const t0 = performance.now(); let done = false;
@@ -934,7 +934,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         else if (el < total) { drawImg(imgB); drawPip(); }
         if (el >= total && !done) {
           done = true; clearInterval(timerId); recorder.stop(); vid.pause();
-          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
+          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch (_) { } }
         }
       };
       recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
@@ -943,8 +943,8 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
       setTimeout(() => {
         if (!done) {
           done = true; clearInterval(timerId);
-          try { recorder.stop(); } catch(_) {} vid.pause();
-          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch(_){} }
+          try { recorder.stop(); } catch (_) { } vid.pause();
+          if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch (_) { } }
         }
       }, total + 8000);
     });
@@ -956,28 +956,28 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   };
 
   return (
-    <div className="video-workspace" style={{ display:"grid", gridTemplateColumns:"320px 1fr", height:"calc(100vh - 101px)", overflow:"hidden" }}>
+    <div className="video-workspace" style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "calc(100vh - 101px)", overflow: "hidden" }}>
       <div className="sidebar">
         <span className="s-label">Your video</span>
-        <div className="card" style={{margin:"0 10px"}}>
+        <div className="card" style={{ margin: "0 10px" }}>
           <div className="card-pad">
             <DropZone accept="video/*" onFile={f => { if (f.type.startsWith("video/")) { setMyVideoName(f.name); setMyVideo(f); } }} className="upload-zone" style={{}}>
-              <label style={{cursor:"pointer",display:"block"}}>
-                <input type="file" accept="video/*" style={{display:"none"}} onChange={e => { const f=e.target.files[0]; if(f){setMyVideoName(f.name);setMyVideo(f);} }} />
-                <div className="uz-icon" style={{color:"var(--t3)"}}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="M16 10l5-3v10l-5-3V10z"/></svg>
+              <label style={{ cursor: "pointer", display: "block" }}>
+                <input type="file" accept="video/*" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (f) { setMyVideoName(f.name); setMyVideo(f); } }} />
+                <div className="uz-icon" style={{ color: "var(--t3)" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5" /><path d="M16 10l5-3v10l-5-3V10z" /></svg>
                 </div>
                 {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag video here</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
-            <video ref={videoRef} style={{display:"none"}} playsInline muted={false} />
+            <video ref={videoRef} style={{ display: "none" }} playsInline muted={false} />
           </div>
         </div>
 
         <span className="s-label">Intro text overlay</span>
-        <div className="card" style={{margin:"0 10px"}}>
-          <div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div className="card" style={{ margin: "0 10px" }}>
+          <div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <input className="inp" value={overlay.text} placeholder="((name))'s future IR"
               onChange={e => updateOverlay({ text: e.target.value })} />
             <div className="tag-btns">
@@ -991,108 +991,108 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Font</span>
-                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })} style={{background:"var(--bg4)"}}>
-                  {["Inter","Syne","Montserrat","Oswald","Bebas Neue","Raleway","Arial"].map(f => <option key={f}>{f}</option>)}
+                <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })} style={{ background: "var(--bg4)" }}>
+                  {["Inter", "Syne", "Montserrat", "Oswald", "Bebas Neue", "Raleway", "Arial"].map(f => <option key={f}>{f}</option>)}
                 </select>
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Text colour</span>
-                <div style={{display:"flex",alignItems:"center",gap:7}}>
-                  <div className="color-swatch" style={{background:overlay.color}}>
-                    <input type="color" value={overlay.color} onChange={e => updateOverlay({color:e.target.value})} />
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div className="color-swatch" style={{ background: overlay.color }}>
+                    <input type="color" value={overlay.color} onChange={e => updateOverlay({ color: e.target.value })} />
                   </div>
-                  <span style={{fontSize:11,color:"var(--t3)",fontFamily:"monospace"}}>{overlay.color}</span>
+                  <span style={{ fontSize: 11, color: "var(--t3)", fontFamily: "monospace" }}>{overlay.color}</span>
                 </div>
               </div>
               <div className="timing-cell">
                 <span className="timing-label">BG opacity</span>
-                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({bgOpacity:Number(e.target.value)})} style={{accentColor:"#1a82ff"}} />
+                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({ bgOpacity: Number(e.target.value) })} style={{ accentColor: "#1a82ff" }} />
               </div>
             </div>
           </div>
         </div>
 
         <span className="s-label">Timing (seconds)</span>
-        <div className="card" style={{margin:"0 10px"}}>
+        <div className="card" style={{ margin: "0 10px" }}>
           <div className="card-pad">
             <div className="timing-grid">
               <div className="timing-cell">
                 <span className="timing-label">Intro text duration</span>
-                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({duration:Number(e.target.value)})} />
+                <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({ duration: Number(e.target.value) })} />
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Phase 2 (demo)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg} onChange={e => setTimings(t => ({...t, demoImg: Number(e.target.value)}))} />
+                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg} onChange={e => setTimings(t => ({ ...t, demoImg: Number(e.target.value) }))} />
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Phase 3 (website)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot} onChange={e => setTimings(t => ({...t, screenshot: Number(e.target.value)}))} />
+                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot} onChange={e => setTimings(t => ({ ...t, screenshot: Number(e.target.value) }))} />
               </div>
               <div className="timing-cell">
                 <span className="timing-label">Total</span>
-                <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",padding:"6px 0"}}>{totalSec}s</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", padding: "6px 0" }}>{totalSec}s</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
-        <div style={{padding:"10px 18px",borderBottom:"0.5px solid var(--sep)",background:"var(--bg2)",display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:13,color:"var(--t2)"}}>{readyCompanies.length} companies ready</span>
-          <button className="btn-p" style={{marginLeft:"auto",width:"auto",padding:"8px 16px",fontSize:13}}
-            disabled={readyCompanies.length===0||!myVideo||generating!==null}
-            onClick={async()=>{for(const c of readyCompanies)await generateVideo(c);}}>
+      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ padding: "10px 18px", borderBottom: "0.5px solid var(--sep)", background: "var(--bg2)", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, color: "var(--t2)" }}>{readyCompanies.length} companies ready</span>
+          <button className="btn-p" style={{ marginLeft: "auto", width: "auto", padding: "8px 16px", fontSize: 13 }}
+            disabled={readyCompanies.length === 0 || !myVideo || generating !== null}
+            onClick={async () => { for (const c of readyCompanies) await generateVideo(c); }}>
             Generate all ({readyCompanies.length})
           </button>
         </div>
 
-        <div style={{padding:"10px 20px",borderBottom:"0.5px solid var(--sep)",background:"hsl(220 13% 7%)",display:"flex",alignItems:"center",gap:12,minHeight:48}}>
-          <div style={{fontSize:Math.max(overlay.fontSize*0.35,12),fontFamily:overlay.fontFamily,color:overlay.color,fontWeight:overlay.bold?"bold":"normal",background:"rgba(0,0,0,0.55)",display:"inline-block",padding:"4px 14px",borderRadius:100,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"60%"}}>
+        <div style={{ padding: "10px 20px", borderBottom: "0.5px solid var(--sep)", background: "hsl(220 13% 7%)", display: "flex", alignItems: "center", gap: 12, minHeight: 48 }}>
+          <div style={{ fontSize: Math.max(overlay.fontSize * 0.35, 12), fontFamily: overlay.fontFamily, color: overlay.color, fontWeight: overlay.bold ? "bold" : "normal", background: "rgba(0,0,0,0.55)", display: "inline-block", padding: "4px 14px", borderRadius: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
             {previewText}
           </div>
-          <span style={{fontSize:11,color:"var(--t3)",marginLeft:"auto"}}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{color:"var(--blue)"}}>{totalSec}s</strong></span>
+          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{ color: "var(--blue)" }}>{totalSec}s</strong></span>
         </div>
 
-        <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
           {readyCompanies.length === 0 && (
-            <div style={{textAlign:"center",color:"var(--t4)",fontSize:13,paddingTop:40}}>Add companies in Image mode first</div>
+            <div style={{ textAlign: "center", color: "var(--t4)", fontSize: 13, paddingTop: 40 }}>Add companies in Image mode first</div>
           )}
           {readyCompanies.map(c => (
             <div key={c.id} className="contact-row">
-              <div style={{width:30,height:30,background:"#fff",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
-                <img src={c.logoDataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"contain",padding:2}} />
+              <div style={{ width: 30, height: 30, background: "#fff", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+                <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} />
               </div>
-              <div style={{flex:1,minWidth:0}}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="contact-row-name">{c.personName || "—"}</div>
                 <div className="contact-row-company">{c.companyName}</div>
               </div>
               <button className="open-link-btn" onClick={() => window.open(`https://${c.domain}`, "_blank")}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
                 {c.domain}
               </button>
-              <DropZone accept="image/*" onFile={file => handleScreenshotFile(c.id, file)} style={{cursor:"pointer"}}>
-                <label style={{cursor:"pointer"}}>
-                  <input type="file" accept="image/*" style={{display:"none"}} onChange={e => handleScreenshotFile(c.id, e.target.files[0])} />
+              <DropZone accept="image/*" onFile={file => handleScreenshotFile(c.id, file)} style={{ cursor: "pointer" }}>
+                <label style={{ cursor: "pointer" }}>
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleScreenshotFile(c.id, e.target.files[0])} />
                   {screenshots[c.id]
                     ? <img className="screenshot-thumb" src={screenshots[c.id].src} alt="screenshot" />
                     : <div className="screenshot-placeholder">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                      </div>}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
+                    </div>}
                 </label>
               </DropZone>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
+              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                 {generated[c.id] && (
                   <>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
-                      const v=document.createElement("video"); v.src=generated[c.id]; v.controls=true;
-                      v.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
-                      const ov=document.createElement("div"); ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
-                      ov.onclick=()=>{ov.remove();v.remove();}; document.body.append(ov,v);
+                    <button className="btn-s" style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => {
+                      const v = document.createElement("video"); v.src = generated[c.id]; v.controls = true;
+                      v.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
+                      const ov = document.createElement("div"); ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
+                      ov.onclick = () => { ov.remove(); v.remove(); }; document.body.append(ov, v);
                     }}>Play</button>
-                    <button className="btn-s" style={{fontSize:11,padding:"4px 8px"}} onClick={() => {
-                      const a=document.createElement("a"); a.href=generated[c.id];
-                      a.download=c.companyName.toLowerCase().replace(/\s+/g,"_")+"_video.webm"; a.click();
+                    <button className="btn-s" style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => {
+                      const a = document.createElement("a"); a.href = generated[c.id];
+                      a.download = c.companyName.toLowerCase().replace(/\s+/g, "_") + "_video.webm"; a.click();
                     }}>Save</button>
                   </>
                 )}
@@ -1123,7 +1123,7 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
       });
       // Sanitise filename — btoa() crashes on non-Latin1 chars (åäö etc)
       const safeFilename = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "_");
-      const chunk76 = s => { const r=[]; for (let i=0;i<s.length;i+=76) r.push(s.slice(i,i+76)); return r; };
+      const chunk76 = s => { const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r; };
       const raw = [
         `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
         "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
@@ -1138,7 +1138,7 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
       let b64 = ""; const chunk = 8192;
       for (let i = 0; i < bytes.length; i += chunk) b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + chunk)));
       resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
-    } catch(err) { reject(err); }
+    } catch (err) { reject(err); }
   });
 }
 
@@ -1236,20 +1236,20 @@ function DriveUploadField({ token, videoLink, setVideoLink }) {
   };
 
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <label className="field-lbl">
         Video link
-        <span style={{fontWeight:400,color:"var(--t4)",marginLeft:4}}>(optional — adds a Watch demo button)</span>
+        <span style={{ fontWeight: 400, color: "var(--t4)", marginLeft: 4 }}>(optional — adds a Watch demo button)</span>
       </label>
 
       {/* Manual link OR uploaded link */}
-      <div style={{display:"flex",gap:6,alignItems:"center"}}>
-        <input className="modal-inp" style={{flex:1}}
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <input className="modal-inp" style={{ flex: 1 }}
           placeholder="Paste Loom / Drive link, or upload below…"
           value={videoLink} onChange={e => setVideoLink(e.target.value)} />
         {videoLink && (
           <button onClick={() => { setVideoLink(""); setFileName(""); }}
-            style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:16,padding:"0 4px",flexShrink:0}}>×</button>
+            style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 16, padding: "0 4px", flexShrink: 0 }}>×</button>
         )}
       </div>
 
@@ -1260,36 +1260,36 @@ function DriveUploadField({ token, videoLink, setVideoLink }) {
           onDrop={handleDrop}
           onClick={() => !uploading && fileRef.current?.click()}
           style={{
-            border:"1.5px dashed var(--sep)", borderRadius:10, padding:"14px 16px",
-            display:"flex", alignItems:"center", gap:12, cursor: uploading ? "default" : "pointer",
-            background:"var(--bg3)", transition:"border-color .15s",
+            border: "1.5px dashed var(--sep)", borderRadius: 10, padding: "14px 16px",
+            display: "flex", alignItems: "center", gap: 12, cursor: uploading ? "default" : "pointer",
+            background: "var(--bg3)", transition: "border-color .15s",
           }}
           onMouseEnter={e => !uploading && (e.currentTarget.style.borderColor = "var(--blue)")}
           onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--sep)")}
         >
           <input ref={fileRef} type="file" accept="video/*,.mp4,.mov,.webm,.gif"
-            onChange={handleFile} style={{display:"none"}} />
+            onChange={handleFile} style={{ display: "none" }} />
 
           {uploading ? (
             <>
-              <div style={{width:18,height:18,borderRadius:"50%",border:"2.5px solid var(--blue)",borderTopColor:"transparent",animation:"spin 0.7s linear infinite",flexShrink:0}}/>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,color:"var(--t2)",marginBottom:4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fileName}</div>
-                <div style={{height:4,borderRadius:2,background:"var(--bg4)",overflow:"hidden"}}>
-                  <div style={{height:"100%",width:progress+"%",background:"var(--blue)",transition:"width .3s"}}/>
+              <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid var(--blue)", borderTopColor: "transparent", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: "var(--t2)", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</div>
+                <div style={{ height: 4, borderRadius: 2, background: "var(--bg4)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: progress + "%", background: "var(--blue)", transition: "width .3s" }} />
                 </div>
               </div>
-              <span style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>{progress}%</span>
+              <span style={{ fontSize: 11, color: "var(--t3)", flexShrink: 0 }}>{progress}%</span>
             </>
           ) : (
             <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
-                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
               </svg>
-              <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>Upload to Google Drive</div>
-                <div style={{fontSize:11,color:"var(--t4)"}}>MP4, MOV, WebM, GIF · drag & drop or click</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>Upload to Google Drive</div>
+                <div style={{ fontSize: 11, color: "var(--t4)" }}>MP4, MOV, WebM, GIF · drag & drop or click</div>
               </div>
             </>
           )}
@@ -1297,14 +1297,14 @@ function DriveUploadField({ token, videoLink, setVideoLink }) {
       )}
 
       {videoLink && (
-        <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 10px",background:"rgba(26,130,255,.08)",border:"1px solid rgba(26,130,255,.2)",borderRadius:8}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span style={{fontSize:11,color:"var(--t2)",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{videoLink}</span>
-          <a href={videoLink} target="_blank" rel="noreferrer" style={{fontSize:11,color:"var(--blue)",textDecoration:"none",flexShrink:0}}>Preview ↗</a>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", background: "rgba(26,130,255,.08)", border: "1px solid rgba(26,130,255,.2)", borderRadius: 8 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <span style={{ fontSize: 11, color: "var(--t2)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{videoLink}</span>
+          <a href={videoLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "var(--blue)", textDecoration: "none", flexShrink: 0 }}>Preview ↗</a>
         </div>
       )}
 
-      {error && <div style={{fontSize:11,color:"var(--red)"}}>{error}</div>}
+      {error && <div style={{ fontSize: 11, color: "var(--red)" }}>{error}</div>}
     </div>
   );
 }
@@ -1331,7 +1331,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   ctx.clearRect(0, 0, W, H);
 
   // Background
-  const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.8);
+  const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.8);
   bgGrad.addColorStop(0, "#0d1520");
   bgGrad.addColorStop(1, "#070b12");
   ctx.fillStyle = bgGrad;
@@ -1339,7 +1339,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
 
   // Animation transforms
   let scale = 1, tx = 0, ty = 0, skewX = 0;
-  const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+  const ease = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   const p = ease(progress);
 
   if (animType === "zoom") {
@@ -1351,17 +1351,17 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
     skewX = Math.sin(progress * Math.PI * 2) * 0.04;
     scale = 1 + Math.sin(progress * Math.PI) * 0.08;
   } else if (animType === "full") {
-    if (progress < 0.3) { scale = 1 + (progress/0.3)*0.25; }
-    else if (progress < 0.6) { tx = ((progress-0.3)/0.3 - 0.5)*W*0.15; scale = 1.25; }
-    else if (progress < 0.85) { scale = 1.25 + ((progress-0.6)/0.25)*0.1; skewX = ((progress-0.6)/0.25)*0.03; }
-    else { scale = 1.35 - ((progress-0.85)/0.15)*0.35; skewX = 0.03*(1-(progress-0.85)/0.15); }
+    if (progress < 0.3) { scale = 1 + (progress / 0.3) * 0.25; }
+    else if (progress < 0.6) { tx = ((progress - 0.3) / 0.3 - 0.5) * W * 0.15; scale = 1.25; }
+    else if (progress < 0.85) { scale = 1.25 + ((progress - 0.6) / 0.25) * 0.1; skewX = ((progress - 0.6) / 0.25) * 0.03; }
+    else { scale = 1.35 - ((progress - 0.85) / 0.15) * 0.35; skewX = 0.03 * (1 - (progress - 0.85) / 0.15); }
   }
 
   ctx.save();
-  ctx.translate(W/2 + tx, H/2 + ty);
+  ctx.translate(W / 2 + tx, H / 2 + ty);
   ctx.scale(scale, scale);
   if (skewX) ctx.transform(1, 0, skewX, 1, 0, 0);
-  ctx.translate(-W/2, -H/2);
+  ctx.translate(-W / 2, -H / 2);
 
   // Laptop proportions
   const lw = W * 0.86, lh = H * 0.88;
@@ -1383,7 +1383,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
 
   // Screen area (slightly inset)
   const si = 10;
-  const sx = lx + si, sy = ly + si, sw = lw - si*2, sh = screenH - si - 4;
+  const sx = lx + si, sy = ly + si, sw = lw - si * 2, sh = screenH - si - 4;
   ctx.fillStyle = "#000";
   ctx.fillRect(sx, sy, sw, sh);
 
@@ -1396,14 +1396,14 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
     const ir = demoImg.width / demoImg.height;
     const sr = sw / sh;
     let dx, dy, dw2, dh2;
-    if (ir > sr) { dw2 = sw; dh2 = sw / ir; dx = sx; dy = sy + (sh - dh2)/2; }
-    else { dh2 = sh; dw2 = sh * ir; dx = sx + (sw - dw2)/2; dy = sy; }
+    if (ir > sr) { dw2 = sw; dh2 = sw / ir; dx = sx; dy = sy + (sh - dh2) / 2; }
+    else { dh2 = sh; dw2 = sh * ir; dx = sx + (sw - dw2) / 2; dy = sy; }
     ctx.drawImage(demoImg, dx, dy, dw2, dh2);
     ctx.restore();
   }
 
   // Subtle screen glare
-  const glare = ctx.createLinearGradient(sx, sy, sx + sw*0.6, sy + sh*0.4);
+  const glare = ctx.createLinearGradient(sx, sy, sx + sw * 0.6, sy + sh * 0.4);
   glare.addColorStop(0, "rgba(255,255,255,0.07)");
   glare.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = glare;
@@ -1412,22 +1412,22 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   // Camera dot (no branding, just a sensor dot)
   ctx.fillStyle = "#222";
   ctx.beginPath();
-  ctx.arc(lx + lw/2, ly + 7, 2.5, 0, Math.PI*2);
+  ctx.arc(lx + lw / 2, ly + 7, 2.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#1a1a2e";
   ctx.beginPath();
-  ctx.arc(lx + lw/2, ly + 7, 1.5, 0, Math.PI*2);
+  ctx.arc(lx + lw / 2, ly + 7, 1.5, 0, Math.PI * 2);
   ctx.fill();
 
   // Hinge strip
-  const hinge = ctx.createLinearGradient(lx, ly + screenH, lx, ly + screenH + lh*0.025);
+  const hinge = ctx.createLinearGradient(lx, ly + screenH, lx, ly + screenH + lh * 0.025);
   hinge.addColorStop(0, "#1e1e1e");
   hinge.addColorStop(1, "#252525");
   ctx.fillStyle = hinge;
-  ctx.fillRect(lx + lw*0.04, ly + screenH, lw*0.92, lh*0.025);
+  ctx.fillRect(lx + lw * 0.04, ly + screenH, lw * 0.92, lh * 0.025);
 
   // Base / keyboard body
-  const by = ly + screenH + lh*0.025;
+  const by = ly + screenH + lh * 0.025;
   const bh = lh * 0.32;
   const baseGrad = ctx.createLinearGradient(lx, by, lx + lw, by + bh);
   baseGrad.addColorStop(0, "#252525");
@@ -1435,24 +1435,24 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   baseGrad.addColorStop(1, "#1a1a1a");
   ctx.fillStyle = baseGrad;
   ctx.beginPath();
-  ctx.moveTo(lx - lw*0.01, by);
-  ctx.lineTo(lx + lw + lw*0.01, by);
-  ctx.lineTo(lx + lw + lw*0.04, by + bh);
-  ctx.lineTo(lx - lw*0.04, by + bh);
+  ctx.moveTo(lx - lw * 0.01, by);
+  ctx.lineTo(lx + lw + lw * 0.01, by);
+  ctx.lineTo(lx + lw + lw * 0.04, by + bh);
+  ctx.lineTo(lx - lw * 0.04, by + bh);
   ctx.closePath();
   ctx.fill();
 
   // Keyboard area (subtle)
   ctx.fillStyle = "rgba(255,255,255,0.025)";
-  roundRectPath(ctx, lx + lw*0.07, by + bh*0.1, lw*0.86, bh*0.55, 5);
+  roundRectPath(ctx, lx + lw * 0.07, by + bh * 0.1, lw * 0.86, bh * 0.55, 5);
   ctx.fill();
 
   // Key rows (very subtle)
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 14; col++) {
-      const kx = lx + lw*0.08 + col*(lw*0.8/14);
-      const ky = by + bh*0.12 + row*(bh*0.44/4);
-      const kw = lw*0.8/14 - 2, kh = bh*0.44/4 - 2;
+      const kx = lx + lw * 0.08 + col * (lw * 0.8 / 14);
+      const ky = by + bh * 0.12 + row * (bh * 0.44 / 4);
+      const kw = lw * 0.8 / 14 - 2, kh = bh * 0.44 / 4 - 2;
       ctx.fillStyle = "rgba(255,255,255,0.018)";
       roundRectPath(ctx, kx, ky, kw, kh, 1.5);
       ctx.fill();
@@ -1463,7 +1463,7 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   ctx.fillStyle = "rgba(255,255,255,0.04)";
   ctx.strokeStyle = "rgba(255,255,255,0.06)";
   ctx.lineWidth = 0.5;
-  roundRectPath(ctx, lx + lw*0.33, by + bh*0.7, lw*0.34, bh*0.22, 5);
+  roundRectPath(ctx, lx + lw * 0.33, by + bh * 0.7, lw * 0.34, bh * 0.22, 5);
   ctx.fill();
   ctx.stroke();
 
@@ -1473,10 +1473,10 @@ function drawLaptopFrame(ctx, W, H, demoImg, progress, animType) {
   refl.addColorStop(1, "rgba(255,255,255,0.03)");
   ctx.fillStyle = refl;
   ctx.beginPath();
-  ctx.moveTo(lx - lw*0.04, by + bh - 4);
-  ctx.lineTo(lx + lw + lw*0.04, by + bh - 4);
-  ctx.lineTo(lx + lw + lw*0.04, by + bh);
-  ctx.lineTo(lx - lw*0.04, by + bh);
+  ctx.moveTo(lx - lw * 0.04, by + bh - 4);
+  ctx.lineTo(lx + lw + lw * 0.04, by + bh - 4);
+  ctx.lineTo(lx + lw + lw * 0.04, by + bh);
+  ctx.lineTo(lx - lw * 0.04, by + bh);
   ctx.closePath();
   ctx.fill();
 
@@ -1579,41 +1579,41 @@ function MacBookVideoModal({ getImageBlob, companies, onClose }) {
   const canvasW = 680, canvasH = 420;
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
-      <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:760,maxHeight:"92vh",overflow:"auto",padding:"28px 32px"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-          <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("video.title")}</h2>
-          <button onClick={onClose} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22}}>×</button>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "var(--bg2)", border: "0.5px solid var(--sep)", borderRadius: 20, width: "100%", maxWidth: 760, maxHeight: "92vh", overflow: "auto", padding: "28px 32px" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px" }}>{t("video.title")}</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22 }}>×</button>
         </div>
 
         {/* Canvas preview */}
-        <div style={{borderRadius:12,overflow:"hidden",marginBottom:20,background:"#070b12",display:"flex",justifyContent:"center"}}>
+        <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, background: "#070b12", display: "flex", justifyContent: "center" }}>
           {loading
-            ? <div style={{height:canvasH*0.6,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:13}}>{t("video.loading")}</div>
-            : <canvas ref={canvasRef} width={canvasW} height={canvasH} style={{display:"block",maxWidth:"100%"}} />
+            ? <div style={{ height: canvasH * 0.6, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t3)", fontSize: 13 }}>{t("video.loading")}</div>
+            : <canvas ref={canvasRef} width={canvasW} height={canvasH} style={{ display: "block", maxWidth: "100%" }} />
           }
         </div>
-        <canvas ref={recCanvasRef} style={{display:"none"}} />
+        <canvas ref={recCanvasRef} style={{ display: "none" }} />
 
         {/* Controls */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
           {/* Company selector */}
           <div>
-            <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.select_company")}</label>
-            <select value={selectedIdx} onChange={e=>setSelectedIdx(Number(e.target.value))}
-              style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.select_company")}</label>
+            <select value={selectedIdx} onChange={e => setSelectedIdx(Number(e.target.value))}
+              style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
               {readyCompanies.length === 0
                 ? <option>—</option>
-                : readyCompanies.map((c,i) => <option key={i} value={i}>{c.companyName}</option>)
+                : readyCompanies.map((c, i) => <option key={i} value={i}>{c.companyName}</option>)
               }
             </select>
           </div>
 
           {/* Animation type */}
           <div>
-            <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.animation")}</label>
-            <select value={animType} onChange={e=>setAnimType(e.target.value)}
-              style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.animation")}</label>
+            <select value={animType} onChange={e => setAnimType(e.target.value)}
+              style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
               <option value="zoom">{t("video.anim_zoom")}</option>
               <option value="pan">{t("video.anim_pan")}</option>
               <option value="tilt">{t("video.anim_tilt")}</option>
@@ -1623,39 +1623,39 @@ function MacBookVideoModal({ getImageBlob, companies, onClose }) {
         </div>
 
         {/* Duration slider */}
-        <div style={{marginBottom:20}}>
-          <label style={{fontSize:12,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:6}}>{t("video.duration")}: {duration}s</label>
-          <input type="range" min={3} max={20} value={duration} onChange={e=>setDuration(Number(e.target.value))}
-            style={{width:"100%",accentColor:"var(--blue)"}} />
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.duration")}: {duration}s</label>
+          <input type="range" min={3} max={20} value={duration} onChange={e => setDuration(Number(e.target.value))}
+            style={{ width: "100%", accentColor: "var(--blue)" }} />
         </div>
 
         {/* Status */}
         {recording && (
-          <div style={{marginBottom:12,padding:"10px 14px",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:10,fontSize:13,color:"#f87171",display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:"#ef4444",animation:"pulse 1s infinite"}}/>
+          <div style={{ marginBottom: 12, padding: "10px 14px", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 10, fontSize: 13, color: "#f87171", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", animation: "pulse 1s infinite" }} />
             {t("video.recording")} {duration}s
           </div>
         )}
         {videoUrl && (
-          <div style={{marginBottom:12}}>
-            <video src={videoUrl} controls style={{width:"100%",borderRadius:10,maxHeight:200}} />
-            <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{t("video.webm_note")}</div>
+          <div style={{ marginBottom: 12 }}>
+            <video src={videoUrl} controls style={{ width: "100%", borderRadius: 10, maxHeight: 200 }} />
+            <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 6 }}>{t("video.webm_note")}</div>
           </div>
         )}
 
         {!demoImg && !loading && (
-          <div style={{textAlign:"center",padding:"16px 0",color:"var(--t3)",fontSize:13}}>{t("video.no_image")}</div>
+          <div style={{ textAlign: "center", padding: "16px 0", color: "var(--t3)", fontSize: 13 }}>{t("video.no_image")}</div>
         )}
 
         {/* Buttons */}
-        <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button className="btn-s" onClick={onClose}>{t("modal.close")}</button>
           {recording
-            ? <button className="btn-s" style={{background:"rgba(239,68,68,.12)",borderColor:"rgba(239,68,68,.3)",color:"#f87171"}} onClick={stopRecording}>■ Stop</button>
-            : <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} disabled={!demoImg} onClick={startRecording}>● {t("video.record")}</button>
+            ? <button className="btn-s" style={{ background: "rgba(239,68,68,.12)", borderColor: "rgba(239,68,68,.3)", color: "#f87171" }} onClick={stopRecording}>■ Stop</button>
+            : <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} disabled={!demoImg} onClick={startRecording}>● {t("video.record")}</button>
           }
           {videoUrl && (
-            <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={downloadVideo}>↓ {t("video.download")}</button>
+            <button className="btn-p" style={{ width: "auto", padding: "8px 20px", background: "var(--green)" }} onClick={downloadVideo}>↓ {t("video.download")}</button>
           )}
         </div>
       </div>
@@ -1772,7 +1772,7 @@ function buildDefaultMesh(cols, rows, W, H, area, type) {
         const curveMag = 0.06;
         const curve = Math.sin(u * Math.PI) * curveMag;
         y += curve * H * (v - 0.5) * 0.5;
-        x += Math.sin(v * Math.PI - Math.PI/2) * curveMag * W * (u - 0.5) * 0.3;
+        x += Math.sin(v * Math.PI - Math.PI / 2) * curveMag * W * (u - 0.5) * 0.3;
       }
       pts.push({ u, v, x: Math.round(x), y: Math.round(y) });
     }
@@ -1833,48 +1833,48 @@ function drawMeshWarped(ctx, img, pts, cols, rows, W, H) {
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const tl = pts[row * (cols+1) + col];
-      const tr = pts[row * (cols+1) + col + 1];
-      const bl = pts[(row+1) * (cols+1) + col];
-      const br = pts[(row+1) * (cols+1) + col + 1];
+      const tl = pts[row * (cols + 1) + col];
+      const tr = pts[row * (cols + 1) + col + 1];
+      const bl = pts[(row + 1) * (cols + 1) + col];
+      const br = pts[(row + 1) * (cols + 1) + col + 1];
 
       // Subdivide each quad
       for (let sr = 0; sr < subdiv; sr++) {
         for (let sc = 0; sc < subdiv; sc++) {
-          const u0 = sc / subdiv, u1 = (sc+1) / subdiv;
-          const v0 = sr / subdiv, v1 = (sr+1) / subdiv;
+          const u0 = sc / subdiv, u1 = (sc + 1) / subdiv;
+          const v0 = sr / subdiv, v1 = (sr + 1) / subdiv;
 
           // Bilinear interpolation of corners
-          const lerp2 = (a, b, c, d, u, v) => a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v;
-          const px = (u,v) => lerp2(tl.x, tr.x, bl.x, br.x, u, v);
-          const py = (u,v) => lerp2(tl.y, tr.y, bl.y, br.y, u, v);
+          const lerp2 = (a, b, c, d, u, v) => a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
+          const px = (u, v) => lerp2(tl.x, tr.x, bl.x, br.x, u, v);
+          const py = (u, v) => lerp2(tl.y, tr.y, bl.y, br.y, u, v);
 
           // Source UV in logo image
-          const su0 = (col + sc/subdiv) / cols;
-          const su1 = (col + (sc+1)/subdiv) / cols;
-          const sv0 = (row + sr/subdiv) / rows;
-          const sv1 = (row + (sr+1)/subdiv) / rows;
+          const su0 = (col + sc / subdiv) / cols;
+          const su1 = (col + (sc + 1) / subdiv) / cols;
+          const sv0 = (row + sr / subdiv) / rows;
+          const sv1 = (row + (sr + 1) / subdiv) / rows;
 
           // Draw using transform
-          const x0 = px(u0,v0), y0 = py(u0,v0);
-          const x1 = px(u1,v0), y1 = py(u1,v0);
-          const x2 = px(u0,v1), y2 = py(u0,v1);
+          const x0 = px(u0, v0), y0 = py(u0, v0);
+          const x1 = px(u1, v0), y1 = py(u1, v0);
+          const x2 = px(u0, v1), y2 = py(u0, v1);
 
-          const dx1 = x1-x0, dy1 = y1-y0;
-          const dx2 = x2-x0, dy2 = y2-y0;
+          const dx1 = x1 - x0, dy1 = y1 - y0;
+          const dx2 = x2 - x0, dy2 = y2 - y0;
 
-          const srcW = (su1-su0) * iw;
-          const srcH = (sv1-sv0) * ih;
+          const srcW = (su1 - su0) * iw;
+          const srcH = (sv1 - sv0) * ih;
           if (srcW < 0.1 || srcH < 0.1) continue;
 
           ctx.save();
           ctx.setTransform(
-            dx1/srcW, dy1/srcW,
-            dx2/srcH, dy2/srcH,
+            dx1 / srcW, dy1 / srcW,
+            dx2 / srcH, dy2 / srcH,
             x0, y0
           );
           ctx.drawImage(img,
-            su0*iw, sv0*ih, srcW, srcH,
+            su0 * iw, sv0 * ih, srcW, srcH,
             0, 0, srcW, srcH
           );
           ctx.restore();
@@ -1891,33 +1891,33 @@ function drawProductSilhouette(ctx, W, H, type, bgColor) {
 
   if (type === "sphere") {
     // Golf ball
-    const cx = W/2, cy = H*0.46, r = H*0.32;
-    const grad = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.05, cx, cy, r);
+    const cx = W / 2, cy = H * 0.46, r = H * 0.32;
+    const grad = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.05, cx, cy, r);
     grad.addColorStop(0, "#ffffff");
     grad.addColorStop(0.5, "#e8e4dc");
     grad.addColorStop(1, "#c8c0b0");
     ctx.fillStyle = grad;
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
     // Dimples
     ctx.strokeStyle = "rgba(0,0,0,0.06)"; ctx.lineWidth = 1;
     for (let i = 0; i < 40; i++) {
-      const da = (i * 137.5) * Math.PI/180;
+      const da = (i * 137.5) * Math.PI / 180;
       const dr = (i % 3 + 1) / 4 * r * 0.85;
-      const dx = cx + Math.cos(da)*dr, dy = cy + Math.sin(da)*dr;
-      ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI*2); ctx.stroke();
+      const dx = cx + Math.cos(da) * dr, dy = cy + Math.sin(da) * dr;
+      ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI * 2); ctx.stroke();
     }
     // Shadow
-    const shadow = ctx.createRadialGradient(cx, cy+r*1.1, 0, cx, cy+r*1.1, r*0.6);
+    const shadow = ctx.createRadialGradient(cx, cy + r * 1.1, 0, cx, cy + r * 1.1, r * 0.6);
     shadow.addColorStop(0, "rgba(0,0,0,0.2)"); shadow.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = shadow;
-    ctx.beginPath(); ctx.ellipse(cx, cy+r*1.1, r*0.65, r*0.12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx, cy + r * 1.1, r * 0.65, r * 0.12, 0, 0, Math.PI * 2); ctx.fill();
 
   } else if (type === "cylinder") {
     // Mug or bottle
-    const mx = W*0.5, my = H*0.5;
-    const mw = W*0.38, mh = H*0.55;
+    const mx = W * 0.5, my = H * 0.5;
+    const mw = W * 0.38, mh = H * 0.55;
     // Body
-    const bodyGrad = ctx.createLinearGradient(mx-mw/2, 0, mx+mw/2, 0);
+    const bodyGrad = ctx.createLinearGradient(mx - mw / 2, 0, mx + mw / 2, 0);
     bodyGrad.addColorStop(0, "rgba(0,0,0,0.15)");
     bodyGrad.addColorStop(0.2, "rgba(255,255,255,0.1)");
     bodyGrad.addColorStop(0.5, "rgba(255,255,255,0.05)");
@@ -1925,20 +1925,20 @@ function drawProductSilhouette(ctx, W, H, type, bgColor) {
     bodyGrad.addColorStop(1, "rgba(0,0,0,0.2)");
     // Base shape
     ctx.fillStyle = bgColor;
-    roundRectPath(ctx, mx-mw/2, my-mh/2, mw, mh, mw*0.08);
+    roundRectPath(ctx, mx - mw / 2, my - mh / 2, mw, mh, mw * 0.08);
     ctx.fill();
     ctx.fillStyle = bodyGrad;
-    roundRectPath(ctx, mx-mw/2, my-mh/2, mw, mh, mw*0.08);
+    roundRectPath(ctx, mx - mw / 2, my - mh / 2, mw, mh, mw * 0.08);
     ctx.fill();
     // Top ellipse
-    const topGrad = ctx.createLinearGradient(mx-mw/2, my-mh/2-10, mx+mw/2, my-mh/2);
+    const topGrad = ctx.createLinearGradient(mx - mw / 2, my - mh / 2 - 10, mx + mw / 2, my - mh / 2);
     topGrad.addColorStop(0, "rgba(255,255,255,0.3)"); topGrad.addColorStop(1, "rgba(255,255,255,0.05)");
     ctx.fillStyle = topGrad;
-    ctx.beginPath(); ctx.ellipse(mx, my-mh/2, mw/2, mw*0.1, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(mx, my - mh / 2, mw / 2, mw * 0.1, 0, 0, Math.PI * 2); ctx.fill();
     // Handle for mug
     if (type === "cylinder" && bgColor.includes("d4c5")) {
-      ctx.strokeStyle = bgColor; ctx.lineWidth = mw*0.12; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.arc(mx + mw*0.55, my, mw*0.22, -Math.PI*0.65, Math.PI*0.65); ctx.stroke();
+      ctx.strokeStyle = bgColor; ctx.lineWidth = mw * 0.12; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(mx + mw * 0.55, my, mw * 0.22, -Math.PI * 0.65, Math.PI * 0.65); ctx.stroke();
     }
 
   } else if (type === "flat") {
@@ -1946,35 +1946,35 @@ function drawProductSilhouette(ctx, W, H, type, bgColor) {
     const isTshirt = (bgColor === "#c8d4e8" || bgColor === "#2d3748" || bgColor === "#e8d5b0" || bgColor === "#2c2c2c" || bgColor === "#f5e6c8");
     // Simple rectangle with slight shadow
     ctx.fillStyle = bgColor;
-    const fw = W*0.7, fh = H*0.75;
-    const fx = (W-fw)/2, fy = (H-fh)/2;
+    const fw = W * 0.7, fh = H * 0.75;
+    const fx = (W - fw) / 2, fy = (H - fh) / 2;
     roundRectPath(ctx, fx, fy, fw, fh, 8);
     ctx.fill();
     // Subtle sheen
     ctx.fillStyle = "rgba(255,255,255,0.04)";
-    ctx.fillRect(fx, fy, fw, fh/3);
+    ctx.fillRect(fx, fy, fw, fh / 3);
     // Shadow
     ctx.fillStyle = "rgba(0,0,0,0.12)";
-    ctx.fillRect(fx+4, fy+fh, fw-8, 10);
+    ctx.fillRect(fx + 4, fy + fh, fw - 8, 10);
 
   } else if (type === "curve") {
     // Cap — simplified front panel
-    const cx = W/2, cy = H*0.42;
-    const cr = H*0.28;
+    const cx = W / 2, cy = H * 0.42;
+    const cr = H * 0.28;
     ctx.fillStyle = bgColor;
     ctx.beginPath();
-    ctx.arc(cx, cy + cr*0.3, cr, Math.PI, 2*Math.PI);
-    ctx.lineTo(cx + cr, cy + cr*0.3);
+    ctx.arc(cx, cy + cr * 0.3, cr, Math.PI, 2 * Math.PI);
+    ctx.lineTo(cx + cr, cy + cr * 0.3);
     ctx.closePath();
     ctx.fill();
     // Brim
     ctx.fillStyle = "rgba(0,0,0,0.25)";
     ctx.beginPath();
-    ctx.ellipse(cx, cy + cr*1.25, cr*1.1, cr*0.12, 0, 0, Math.PI*2);
+    ctx.ellipse(cx, cy + cr * 1.25, cr * 1.1, cr * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = bgColor;
     ctx.beginPath();
-    ctx.ellipse(cx, cy + cr*1.25, cr*1.1, cr*0.1, 0, 0, Math.PI*2);
+    ctx.ellipse(cx, cy + cr * 1.25, cr * 1.1, cr * 0.1, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -2041,7 +2041,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
     for (let r = 0; r <= rows; r++) {
       ctx.beginPath();
       for (let c = 0; c <= cols; c++) {
-        const pt = pts[r*(cols+1)+c];
+        const pt = pts[r * (cols + 1) + c];
         c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       }
       ctx.stroke();
@@ -2049,17 +2049,17 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
     for (let c = 0; c <= cols; c++) {
       ctx.beginPath();
       for (let r = 0; r <= rows; r++) {
-        const pt = pts[r*(cols+1)+c];
+        const pt = pts[r * (cols + 1) + c];
         r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       }
       ctx.stroke();
     }
     // Dots
     pts.forEach((pt, i) => {
-      const isCorner = [0, cols, rows*(cols+1), rows*(cols+1)+cols].includes(i);
+      const isCorner = [0, cols, rows * (cols + 1), rows * (cols + 1) + cols].includes(i);
       ctx.fillStyle = isCorner ? "rgba(26,130,255,0.9)" : "rgba(26,130,255,0.55)";
       ctx.beginPath();
-      ctx.arc(pt.x, pt.y, isCorner ? 5 : 3.5, 0, Math.PI*2);
+      ctx.arc(pt.x, pt.y, isCorner ? 5 : 3.5, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.restore();
@@ -2112,100 +2112,100 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
   };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
-      <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:980,maxHeight:"94vh",overflow:"auto",padding:"24px 28px",display:"flex",flexDirection:"column",gap:16}} onClick={e=>e.stopPropagation()}>
-        
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "var(--bg2)", border: "0.5px solid var(--sep)", borderRadius: 20, width: "100%", maxWidth: 980, maxHeight: "94vh", overflow: "auto", padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }} onClick={e => e.stopPropagation()}>
+
         {/* Header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("mockup.title")}</h2>
-          <button onClick={onClose} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22}}>×</button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px" }}>{t("mockup.title")}</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22 }}>×</button>
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:20,minHeight:0}}>
-          
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20, minHeight: 0 }}>
+
           {/* Left: Canvas */}
           <div>
             {/* Template picker */}
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
               {MOCKUP_TEMPLATES.map(tmpl => (
                 <button key={tmpl.id} onClick={() => setTemplateId(tmpl.id)} style={{
-                  background: templateId===tmpl.id ? "rgba(26,130,255,.15)" : "rgba(255,255,255,.04)",
-                  border: `1px solid ${templateId===tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
+                  background: templateId === tmpl.id ? "rgba(26,130,255,.15)" : "rgba(255,255,255,.04)",
+                  border: `1px solid ${templateId === tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
                   borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600,
-                  color: templateId===tmpl.id ? "#60a5fa" : "var(--t3)", cursor:"pointer", fontFamily:"inherit",
-                  display:"flex", alignItems:"center", gap:5,
+                  color: templateId === tmpl.id ? "#60a5fa" : "var(--t3)", cursor: "pointer", fontFamily: "inherit",
+                  display: "flex", alignItems: "center", gap: 5,
                 }}>
-                  <span style={{fontSize:14}}>{tmpl.emoji}</span>{tmpl.label}
+                  <span style={{ fontSize: 14 }}>{tmpl.emoji}</span>{tmpl.label}
                 </button>
               ))}
             </div>
 
             {/* Canvas */}
-            <div style={{position:"relative",borderRadius:12,overflow:"hidden",background:"#0d0d14",border:"0.5px solid var(--sep)"}}>
+            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#0d0d14", border: "0.5px solid var(--sep)" }}>
               <canvas ref={canvasRef} width={W} height={H}
-                style={{display:"block",width:"100%",cursor:draggingPt!=null?"grabbing":"crosshair"}}
+                style={{ display: "block", width: "100%", cursor: draggingPt != null ? "grabbing" : "crosshair" }}
                 onMouseDown={onCanvasMouseDown}
                 onMouseMove={onCanvasMouseMove}
                 onMouseUp={onCanvasMouseUp}
                 onMouseLeave={onCanvasMouseUp}
               />
               {loading && (
-                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.5)",color:"var(--t3)",fontSize:13}}>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.5)", color: "var(--t3)", fontSize: 13 }}>
                   {t("video.loading")}
                 </div>
               )}
             </div>
-            <div style={{fontSize:11,color:"var(--t4)",marginTop:6,textAlign:"center"}}>
+            <div style={{ fontSize: 11, color: "var(--t4)", marginTop: 6, textAlign: "center" }}>
               {showMesh ? t("mockup.drag_mesh") : ""} · {t("mockup.drag_corners")}
             </div>
           </div>
 
           {/* Right: Controls */}
-          <div style={{display:"flex",flexDirection:"column",gap:14,overflowY:"auto"}}>
-            
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
+
             {/* Company */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.company")}</label>
-              <select value={selectedIdx} onChange={e=>setSelectedIdx(Number(e.target.value))}
-                style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.company")}</label>
+              <select value={selectedIdx} onChange={e => setSelectedIdx(Number(e.target.value))}
+                style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
                 {readyCompanies.length === 0
                   ? <option>— Add contacts first —</option>
-                  : readyCompanies.map((c,i) => <option key={i} value={i}>{c.companyName}</option>)
+                  : readyCompanies.map((c, i) => <option key={i} value={i}>{c.companyName}</option>)
                 }
               </select>
             </div>
 
             {/* Custom background photo */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.upload_bg")}</label>
-              <label style={{display:"block",cursor:"pointer",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",fontSize:12,color:"var(--t3)",textAlign:"center"}}>
-                <input type="file" accept="image/*" style={{display:"none"}} onChange={bgUpload}/>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.upload_bg")}</label>
+              <label style={{ display: "block", cursor: "pointer", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", fontSize: 12, color: "var(--t3)", textAlign: "center" }}>
+                <input type="file" accept="image/*" style={{ display: "none" }} onChange={bgUpload} />
                 📷 {bgImg ? "✓ Photo uploaded" : t("mockup.or_use_template")}
               </label>
               {bgImg && (
-                <button onClick={()=>setBgImg(null)} style={{marginTop:4,fontSize:11,color:"var(--t3)",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>✕ Remove photo</button>
+                <button onClick={() => setBgImg(null)} style={{ marginTop: 4, fontSize: 11, color: "var(--t3)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>✕ Remove photo</button>
               )}
             </div>
 
             {/* Mesh size */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
                 {t("mockup.mesh_size")}: {meshCols}×{meshRows}
               </label>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 <div>
-                  <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Cols</div>
-                  <input type="range" min={2} max={12} value={meshCols} onChange={e=>setMeshCols(Number(e.target.value))} style={{width:"100%",accentColor:"var(--blue)"}}/>
+                  <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Cols</div>
+                  <input type="range" min={2} max={12} value={meshCols} onChange={e => setMeshCols(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--blue)" }} />
                 </div>
                 <div>
-                  <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>Rows</div>
-                  <input type="range" min={2} max={10} value={meshRows} onChange={e=>setMeshRows(Number(e.target.value))} style={{width:"100%",accentColor:"var(--blue)"}}/>
+                  <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Rows</div>
+                  <input type="range" min={2} max={10} value={meshRows} onChange={e => setMeshRows(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--blue)" }} />
                 </div>
               </div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}}>
-                <button onClick={resetMesh} style={{fontSize:11,color:"var(--t3)",background:"none",border:"0.5px solid var(--sep)",borderRadius:6,padding:"3px 10px",cursor:"pointer",fontFamily:"inherit"}}>↺ {t("mockup.reset_mesh")}</button>
-                <label style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"var(--t3)",cursor:"pointer"}}>
-                  <input type="checkbox" checked={showMesh} onChange={e=>setShowMesh(e.target.checked)} style={{accentColor:"var(--blue)"}}/>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
+                <button onClick={resetMesh} style={{ fontSize: 11, color: "var(--t3)", background: "none", border: "0.5px solid var(--sep)", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontFamily: "inherit" }}>↺ {t("mockup.reset_mesh")}</button>
+                <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--t3)", cursor: "pointer" }}>
+                  <input type="checkbox" checked={showMesh} onChange={e => setShowMesh(e.target.checked)} style={{ accentColor: "var(--blue)" }} />
                   Show mesh
                 </label>
               </div>
@@ -2213,38 +2213,38 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 
             {/* Exposure */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
-                {t("mockup.exposure")}: {exposure > 0 ? "+" : ""}{Math.round(exposure*100)}
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
+                {t("mockup.exposure")}: {exposure > 0 ? "+" : ""}{Math.round(exposure * 100)}
               </label>
               <input type="range" min={-1} max={1} step={0.05} value={exposure}
-                onChange={e=>setExposure(Number(e.target.value))}
-                style={{width:"100%",accentColor:"var(--yellow)"}}/>
+                onChange={e => setExposure(Number(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--yellow)" }} />
             </div>
 
             {/* Opacity */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>
-                {t("mockup.opacity")}: {Math.round(opacity*100)}%
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
+                {t("mockup.opacity")}: {Math.round(opacity * 100)}%
               </label>
               <input type="range" min={0.1} max={1} step={0.05} value={opacity}
-                onChange={e=>setOpacity(Number(e.target.value))}
-                style={{width:"100%",accentColor:"var(--blue)"}}/>
+                onChange={e => setOpacity(Number(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--blue)" }} />
             </div>
 
             {/* Blend mode */}
             <div>
-              <label style={{fontSize:11,fontWeight:600,color:"var(--t3)",display:"block",marginBottom:5}}>{t("mockup.blend")}</label>
-              <select value={blendMode} onChange={e=>setBlendMode(e.target.value)}
-                style={{width:"100%",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",outline:"none"}}>
-                {["normal","multiply","screen","overlay","soft-light","hard-light","luminosity","color-dodge"].map(m=>(
+              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.blend")}</label>
+              <select value={blendMode} onChange={e => setBlendMode(e.target.value)}
+                style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
+                {["normal", "multiply", "screen", "overlay", "soft-light", "hard-light", "luminosity", "color-dodge"].map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
             </div>
 
-            <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
               <button className="btn-s" onClick={onClose}>{t("modal.close")}</button>
-              <button className="btn-p" style={{width:"100%",padding:"10px 0"}} onClick={downloadMockup} disabled={!logoImg}>
+              <button className="btn-p" style={{ width: "100%", padding: "10px 0" }} onClick={downloadMockup} disabled={!logoImg}>
                 ↓ {t("mockup.download")}
               </button>
             </div>
@@ -2280,7 +2280,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     if (!window.google?.accounts?.oauth2) { alert("Google Sign-In failed to load. Check popup blockers."); return; }
     window.google.accounts.oauth2.initTokenClient({
       client_id: GOOGLE_CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
+      scope: "https://www.googleapis.com/auth/gmail.send",
       callback: (r) => {
         if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("compose"); }
         else alert("Login failed: " + (r.error || "unknown"));
@@ -2298,7 +2298,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       getImageBlob(c).then(blob => {
         const url = URL.createObjectURL(blob);
         setPreviews(p => ({ ...p, [c.id]: url }));
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }, [step]);
 
@@ -2309,7 +2309,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     const e = el.selectionEnd ?? el.value.length;
     const next = el.value.slice(0, s) + tag + el.value.slice(e);
     setter(next);
-    setTimeout(() => { el.focus(); el.setSelectionRange(s+tag.length, s+tag.length); }, 0);
+    setTimeout(() => { el.focus(); el.setSelectionRange(s + tag.length, s + tag.length); }, 0);
   };
 
   const sendAll = async () => {
@@ -2337,9 +2337,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const viralFooter = isFreePlan
           ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#1a82ff;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
-        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g,"<br>")}${videoBtn}${viralFooter}</div>`;
+        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
         const blob = await getImageBlob(c);
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`;
+        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
@@ -2356,7 +2356,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         } else {
           setResults(r => ({ ...r, [c.id]: "ok" }));
         }
-      } catch(err) {
+      } catch (err) {
         console.error("Send failed for", c.email, err);
         setResults(r => ({ ...r, [c.id]: "err" }));
         setSendErrMsg(err.message || "Unknown error");
@@ -2394,20 +2394,20 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-body">
           {step === "auth" && (
             <div className="auth-center">
-              <div className="auth-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></div>
-              <div style={{fontSize:17,fontWeight:600,color:"var(--t1)"}}>Connect Gmail</div>
-              <div style={{fontSize:13,color:"var(--t3)",maxWidth:340,lineHeight:1.55}}>
+              <div className="auth-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 7 10-7" /></svg></div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: "var(--t1)" }}>Connect Gmail</div>
+              <div style={{ fontSize: 13, color: "var(--t3)", maxWidth: 340, lineHeight: 1.55 }}>
                 Logoplacers skickar mejl via ditt Gmail-konto. Vi begär <strong>enbart</strong> sändningsbehörighet (gmail.send) — vi läser aldrig din inkorg, dina kontakter eller din historik.
               </div>
               {withEmail.length === 0 ? (
-                <div style={{fontSize:13,color:"var(--orange)",padding:"10px 16px",background:"hsla(31,92%,58%,.1)",borderRadius:8}}>
+                <div style={{ fontSize: 13, color: "var(--orange)", padding: "10px 16px", background: "hsla(31,92%,58%,.1)", borderRadius: 8 }}>
                   No contacts have email addresses. Add them first.
                 </div>
               ) : (
                 <>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>{withEmail.length} contacts with email ready</div>
+                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{withEmail.length} contacts with email ready</div>
                   <button className="google-btn" onClick={login}>
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z"/><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z" /><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z" /><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z" /></svg>
                     Continue with Google
                   </button>
                 </>
@@ -2417,11 +2417,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
           {step === "compose" && (
             <>
-              <div style={{fontSize:13,color:"var(--green)",display:"flex",alignItems:"center",gap:6,fontWeight:500}}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <div style={{ fontSize: 13, color: "var(--green)", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 Gmail connected
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">Subject</label>
                 <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)} />
                 <div className="tag-btns">
@@ -2429,7 +2429,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((company))")}>+ company</button>
                 </div>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">Message body</label>
                 <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
                 <div className="tag-btns">
@@ -2437,23 +2437,23 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
                 </div>
-                <p style={{fontSize:11,color:"var(--t3)"}}>📎 Personalised image attached automatically as .png per recipient.</p>
+                <p style={{ fontSize: 11, color: "var(--t3)" }}>📎 Personalised image attached automatically as .png per recipient.</p>
               </div>
               <DriveUploadField token={token} videoLink={videoLink} setVideoLink={setVideoLink} />
-              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">Recipients ({selectedContacts.length}/{withEmail.length})</label>
-                <div style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:"var(--r-sm)",padding:"4px 12px"}}>
+                <div style={{ background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: "var(--r-sm)", padding: "4px 12px" }}>
                   {withEmail.map(c => (
-                    <label key={c.id} className="rcpt-row" style={{cursor:"pointer"}}>
+                    <label key={c.id} className="rcpt-row" style={{ cursor: "pointer" }}>
                       <input type="checkbox" checked={selected?.has(c.id) || false}
                         onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(c.id) : n.delete(c.id); return n; })}
-                        style={{accentColor:"#1a82ff",width:14,height:14,flexShrink:0}} />
-                      <div style={{width:26,height:26,background:"#fff",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
-                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"contain",padding:2}} /> : <span style={{fontSize:11,color:"#888"}}>{c.companyName[0]}</span>}
+                        style={{ accentColor: "#1a82ff", width: 14, height: 14, flexShrink: 0 }} />
+                      <div style={{ width: 26, height: 26, background: "#fff", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} /> : <span style={{ fontSize: 11, color: "#888" }}>{c.companyName[0]}</span>}
                       </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:500,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.personName || c.companyName}</div>
-                        <div style={{fontSize:11,color:"var(--t3)"}}>{c.email}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: "var(--t1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.personName || c.companyName}</div>
+                        <div style={{ fontSize: 11, color: "var(--t3)" }}>{c.email}</div>
                       </div>
                     </label>
                   ))}
@@ -2464,14 +2464,14 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
           {step === "approve" && (
             <>
-              <p style={{fontSize:13,color:"var(--t2)"}}>Each person gets their personalised image attached. Review below:</p>
+              <p style={{ fontSize: 13, color: "var(--t2)" }}>Each person gets their personalised image attached. Review below:</p>
               {selectedContacts.map(c => (
                 <div key={c.id} className="send-row">
                   {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
                   <div className="send-info">
                     <div className="send-name">{c.personName || c.companyName}</div>
                     <div className="send-detail">{c.email}</div>
-                    <div className="send-detail" style={{color:"var(--t2)"}}><strong>{resolveStr(subject, c)}</strong></div>
+                    <div className="send-detail" style={{ color: "var(--t2)" }}><strong>{resolveStr(subject, c)}</strong></div>
                   </div>
                 </div>
               ))}
@@ -2481,9 +2481,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {(step === "sending" || step === "done") && (
             <>
               {step === "sending" && countdown !== null && (
-                <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"hsla(31,92%,58%,.1)",border:"0.5px solid hsla(31,92%,58%,.35)",borderRadius:"var(--r-sm)"}}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span style={{fontSize:13,color:"var(--orange)"}}>Waiting {countdown}s before next send — anti-spam protection</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "hsla(31,92%,58%,.1)", border: "0.5px solid hsla(31,92%,58%,.35)", borderRadius: "var(--r-sm)" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  <span style={{ fontSize: 13, color: "var(--orange)" }}>Waiting {countdown}s before next send — anti-spam protection</span>
                 </div>
               )}
               {selectedContacts.map(c => (
@@ -2491,7 +2491,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
                   <div className="send-info"><div className="send-name">{c.personName || c.companyName}</div><div className="send-detail">{c.email}</div></div>
                   <div className={`send-st ${results[c.id] || ""}`}>
-                    {!results[c.id] && <span style={{color:"var(--t4)"}}>waiting</span>}
+                    {!results[c.id] && <span style={{ color: "var(--t4)" }}>waiting</span>}
                     {results[c.id] === "ing" && "sending…"}
                     {results[c.id] === "ok" && "✓ Sent"}
                     {results[c.id] === "err" && "✕ Error"}
@@ -2499,11 +2499,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                 </div>
               ))}
               {step === "done" && (
-                <div style={{textAlign:"center",padding:"12px 0"}}>
-                  <div style={{fontSize:28}}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>}</div>
-                  <div style={{fontSize:15,fontWeight:600,color:"var(--t1)",marginTop:6}}>{doneOk} of {selectedContacts.length} sent</div>
-                  {doneErr > 0 && sendErrMsg && <div style={{fontSize:12,color:"var(--red)",marginTop:4}}>{sendErrMsg}</div>}
-                  {doneErr > 0 && !sendErrMsg && <div style={{fontSize:12,color:"var(--t3)",marginTop:4}}>{doneErr} failed</div>}
+                <div style={{ textAlign: "center", padding: "12px 0" }}>
+                  <div style={{ fontSize: 28 }}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", marginTop: 6 }}>{doneOk} of {selectedContacts.length} sent</div>
+                  {doneErr > 0 && sendErrMsg && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{sendErrMsg}</div>}
+                  {doneErr > 0 && !sendErrMsg && <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 4 }}>{doneErr} failed</div>}
                 </div>
               )}
             </>
@@ -2514,7 +2514,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {step === "compose" && (
             <>
               <button className="btn-s" onClick={onClose}>{t("modal.cancel")}</button>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px"}}
+              <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }}
                 disabled={!selectedContacts.length} onClick={() => setStep("approve")}>
                 Preview ({selectedContacts.length}) →
               </button>
@@ -2523,16 +2523,16 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {step === "approve" && (
             <>
               <button className="btn-s" onClick={() => setStep("compose")}>{t("modal.back")}</button>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px",background:"var(--green)"}} onClick={sendAll}>
+              <button className="btn-p" style={{ width: "auto", padding: "8px 20px", background: "var(--green)" }} onClick={sendAll}>
                 ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
               </button>
             </>
           )}
-          {step === "done" && <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={onClose}>Close</button>}
+          {step === "done" && <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={onClose}>Close</button>}
           {step === "reauth" && (
             <>
-              <div style={{fontSize:12,color:"var(--red)",flex:1}}>Gmail session expired. Reconnect and try again.</div>
-              <button className="btn-p" style={{width:"auto",padding:"8px 20px"}} onClick={() => {
+              <div style={{ fontSize: 12, color: "var(--red)", flex: 1 }}>Gmail session expired. Reconnect and try again.</div>
+              <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={() => {
                 window.google?.accounts?.oauth2?.initTokenClient({
                   client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
                   scope: "https://www.googleapis.com/auth/gmail.send",
@@ -2541,7 +2541,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               }}>Reconnect Gmail →</button>
             </>
           )}
-          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step==="sending"} onClick={onClose}>{t("modal.cancel")}</button>}
+          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step === "sending"} onClick={onClose}>{t("modal.cancel")}</button>}
         </div>
       </div>
     </div>
@@ -2553,15 +2553,15 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 function LangToggle() {
   const { lang, setLang } = useLang();
   return (
-    <div style={{display:"flex",alignItems:"center",gap:2,background:"rgba(255,255,255,.05)",border:"0.5px solid var(--sep)",borderRadius:8,padding:2,flexShrink:0}}>
-      {["en","sv"].map(l => (
-        <button key={l} onClick={()=>setLang(l)} style={{
-          background: lang===l ? "rgba(26,130,255,.25)" : "none",
-          border: "none", borderRadius:6, padding:"3px 8px",
-          color: lang===l ? "#60a5fa" : "var(--t3)",
-          fontSize:11, fontWeight:700, cursor:"pointer",
-          fontFamily:"inherit", textTransform:"uppercase", letterSpacing:"0.5px",
-          transition:"all .15s",
+    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "rgba(255,255,255,.05)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: 2, flexShrink: 0 }}>
+      {["en", "sv"].map(l => (
+        <button key={l} onClick={() => setLang(l)} style={{
+          background: lang === l ? "rgba(26,130,255,.25)" : "none",
+          border: "none", borderRadius: 6, padding: "3px 8px",
+          color: lang === l ? "#60a5fa" : "var(--t3)",
+          fontSize: 11, fontWeight: 700, cursor: "pointer",
+          fontFamily: "inherit", textTransform: "uppercase", letterSpacing: "0.5px",
+          transition: "all .15s",
         }}>{l}</button>
       ))}
     </div>
@@ -2601,29 +2601,29 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
       ctx.fillStyle = "#070b12"; ctx.fillRect(0, 0, W, H);
       orbs.forEach(o => {
         o.x += o.vx; o.y += o.vy;
-        if (o.x < -o.r) o.x = W+o.r; if (o.x > W+o.r) o.x = -o.r;
-        if (o.y < -o.r) o.y = H+o.r; if (o.y > H+o.r) o.y = -o.r;
-        const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+        if (o.x < -o.r) o.x = W + o.r; if (o.x > W + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = H + o.r; if (o.y > H + o.r) o.y = -o.r;
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
         g.addColorStop(0, `rgba(${o.color},${o.alpha})`); g.addColorStop(1, `rgba(${o.color},0)`);
-        ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
       });
       particles.forEach(p => {
         p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
-        if (p.x < 0) p.x=W; if (p.x > W) p.x=0; if (p.y < 0) p.y=H; if (p.y > H) p.y=0;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
         const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
         const r = p.r / p.z;
-        const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3);
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
         g.addColorStop(0, `${p.color}${a})`); g.addColorStop(1, `${p.color}0)`);
-        ctx.beginPath(); ctx.arc(p.x,p.y,r*3,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-        ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fillStyle=`${p.color}${Math.min(a*2,1)})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`; ctx.fill();
       });
-      for (let i=0; i<particles.length; i++) {
-        for (let j=i+1; j<particles.length; j++) {
-          const a=particles[i], b=particles[j];
-          const dx=a.x-b.x, dy=a.y-b.y, dist=Math.sqrt(dx*dx+dy*dy);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i], b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y, dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 90) {
-            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
-            ctx.strokeStyle=`rgba(26,130,255,${(1-dist/90)*0.07})`; ctx.lineWidth=0.5; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`; ctx.lineWidth = 0.5; ctx.stroke();
           }
         }
       }
@@ -2633,40 +2633,40 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
   }, []);
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"#070b12", overflow:"hidden" }}>
-      <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
-      <div style={{ position:"absolute", inset:0, zIndex:10, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:52 }}>
-          <div style={{ width:50, height:50, borderRadius:15, background:"linear-gradient(135deg,#1a82ff,#5b4fff)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 0 48px rgba(26,130,255,0.45)" }}>
-            <Logo size={26}/>
+    <div style={{ position: "fixed", inset: 0, background: "#070b12", overflow: "hidden" }}>
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 52 }}>
+          <div style={{ width: 50, height: 50, borderRadius: 15, background: "linear-gradient(135deg,#1a82ff,#5b4fff)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 48px rgba(26,130,255,0.45)" }}>
+            <Logo size={26} />
           </div>
           <div>
-            <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-1px" }}>LogoPlacer</div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", marginTop:3, letterSpacing:"1px", textTransform:"uppercase" }}>Personalised demos</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>LogoPlacer</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 3, letterSpacing: "1px", textTransform: "uppercase" }}>Personalised demos</div>
           </div>
         </div>
-        <div style={{ background:"rgba(10,16,26,0.8)", backdropFilter:"blur(32px)", WebkitBackdropFilter:"blur(32px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:24, padding:"40px 44px", width:"100%", maxWidth:390, display:"flex", flexDirection:"column", alignItems:"center", gap:26, boxShadow:"0 48px 96px rgba(0,0,0,0.7)" }}>
-          <div style={{ textAlign:"center" }}>
-            <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-.4px", marginBottom:8 }}>Sign in</div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.35)", lineHeight:1.65 }}>Use your Google account to<br/>access the app.</div>
+        <div style={{ background: "rgba(10,16,26,0.8)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 24, padding: "40px 44px", width: "100%", maxWidth: 390, display: "flex", flexDirection: "column", alignItems: "center", gap: 26, boxShadow: "0 48px 96px rgba(0,0,0,0.7)" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 8 }}>Sign in</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>Use your Google account to<br />access the app.</div>
           </div>
-          <div style={{ width:"100%", height:"1px", background:"rgba(255,255,255,0.05)" }} />
+          <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.05)" }} />
           {/* GDPR Consent */}
-          <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",width:"100%"}}>
-            <input type="checkbox" checked={gdprConsent} onChange={e=>onSetGdprConsent(e.target.checked)}
-              style={{marginTop:2,accentColor:"#1a82ff",flexShrink:0,width:14,height:14,cursor:"pointer"}} />
-            <span style={{fontSize:11,color:"rgba(255,255,255,0.32)",lineHeight:1.6}}>
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", width: "100%" }}>
+            <input type="checkbox" checked={gdprConsent} onChange={e => onSetGdprConsent(e.target.checked)}
+              style={{ marginTop: 2, accentColor: "#1a82ff", flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", lineHeight: 1.6 }}>
               Jag godkänner att Logoplacers lagrar min e-post och plan för att hantera mitt konto.
-              Läs vår <a href="#privacy" style={{color:"rgba(100,180,255,0.7)",textDecoration:"underline"}}>integritetspolicy</a>.
+              Läs vår <a href="#privacy" style={{ color: "rgba(100,180,255,0.7)", textDecoration: "underline" }}>integritetspolicy</a>.
             </span>
           </label>
           <button onClick={onLogin} disabled={loading || !gdprConsent}
             onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-            style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 20px", borderRadius:12, border:"none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize:14, fontWeight:600, fontFamily:"inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition:"all .18s" }}>
-            <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent||loading)?"#aaa":"#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill={(!gdprConsent||loading)?"#aaa":"#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill={(!gdprConsent||loading)?"#aaa":"#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill={(!gdprConsent||loading)?"#aaa":"#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s" }}>
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent || loading) ? "#aaa" : "#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
             {loading ? "Loggar in..." : gdprConsent ? "Fortsätt med Google" : "Godkänn för att fortsätta"}
           </button>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,0.18)", textAlign:"center", marginTop:-10 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center", marginTop: -10 }}>
             Vi läser aldrig din inkorg — vi skickar bara mejl <em>från</em> dig.
           </div>
         </div>
@@ -2682,15 +2682,15 @@ function Logo({ size = 32 }) {
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1a82ff"/><stop offset="1" stopColor="#5b4fff"/>
+          <stop stopColor="#1a82ff" /><stop offset="1" stopColor="#5b4fff" />
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="8" fill={`url(#${id})`}/>
-      <rect x="4" y="4" width="10" height="10" rx="2.5" fill="white" opacity=".95"/>
-      <rect x="18" y="4" width="10" height="10" rx="2" fill="white" opacity=".55"/>
-      <rect x="4" y="18" width="10" height="10" rx="2" fill="white" opacity=".55"/>
-      <rect x="18" y="18" width="10" height="10" rx="2.5" fill="white" opacity=".9"/>
-      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".3"/>
+      <rect width="32" height="32" rx="8" fill={`url(#${id})`} />
+      <rect x="4" y="4" width="10" height="10" rx="2.5" fill="white" opacity=".95" />
+      <rect x="18" y="4" width="10" height="10" rx="2" fill="white" opacity=".55" />
+      <rect x="4" y="18" width="10" height="10" rx="2" fill="white" opacity=".55" />
+      <rect x="18" y="18" width="10" height="10" rx="2.5" fill="white" opacity=".9" />
+      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".3" />
     </svg>
   );
 }
@@ -2869,10 +2869,10 @@ const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 3
 // CREDIT SYSTEM
 // ─────────────────────────────────────────────
 const PLANS = {
-  free:       { label: "Free",       creditsPerDay: 4,    monthly: null, bulkMax: 1 },
-  sdr:        { label: "SDR",        creditsPerDay: null, monthly: 300,  bulkMax: Infinity },
-  salespro:   { label: "Sales Pro",  creditsPerDay: null, monthly: 2000, bulkMax: Infinity },
-  team:       { label: "Team",       creditsPerDay: null, monthly: 10000,bulkMax: Infinity },
+  free: { label: "Free", creditsPerDay: 4, monthly: null, bulkMax: 1 },
+  sdr: { label: "SDR", creditsPerDay: null, monthly: 300, bulkMax: Infinity },
+  salespro: { label: "Sales Pro", creditsPerDay: null, monthly: 2000, bulkMax: Infinity },
+  team: { label: "Team", creditsPerDay: null, monthly: 10000, bulkMax: Infinity },
 };
 
 // Credits stored in localStorage: { plan, balance, resetAt (ISO date string) }
@@ -2899,12 +2899,12 @@ function initCredits(plan = "free") {
   let resetAt, balance;
   if (p.creditsPerDay) {
     // Reset daily at midnight
-    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0,0,0,0);
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0, 0, 0, 0);
     resetAt = tomorrow.toISOString();
     balance = p.creditsPerDay;
   } else {
     // Reset monthly
-    const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth() + 1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
+    const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth() + 1); nextMonth.setDate(1); nextMonth.setHours(0, 0, 0, 0);
     resetAt = nextMonth.toISOString();
     balance = p.monthly;
   }
@@ -3007,29 +3007,29 @@ function CreditBadge({ credits, onUpgrade }) {
     }
   }, [credits.balance]);
   const total = plan.creditsPerDay ?? plan.monthly;
-  const pct   = total ? Math.round((credits.balance / total) * 100) : 100;
-  const low   = pct <= 20;
+  const pct = total ? Math.round((credits.balance / total) * 100) : 100;
+  const low = pct <= 20;
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:8, cursor: low ? "pointer" : "default" }}
+    <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: low ? "pointer" : "default" }}
       onClick={low ? onUpgrade : undefined}
-      title={`${credits.balance} credits remaining`} style={{transition:"transform .1s",transform:pulse?"scale(1.15)":"scale(1)"}}>
+      title={`${credits.balance} credits remaining`} style={{ transition: "transform .1s", transform: pulse ? "scale(1.15)" : "scale(1)" }}>
       <div style={{
         background: low ? "rgba(239,68,68,0.12)" : "rgba(26,130,255,0.1)",
         border: `0.5px solid ${low ? "rgba(239,68,68,0.35)" : "rgba(26,130,255,0.25)"}`,
-        borderRadius: 8, padding: "4px 10px", display:"flex", alignItems:"center", gap:6,
+        borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6,
       }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low?"#ef4444":"#5ba4ff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low ? "#ef4444" : "#5ba4ff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
-        <span style={{ fontSize:12, fontWeight:600, color: low?"#ef4444":"#7db8ff", fontVariantNumeric:"tabular-nums" }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: low ? "#ef4444" : "#7db8ff", fontVariantNumeric: "tabular-nums" }}>
           {credits.balance.toLocaleString()}
         </span>
-        <span style={{ fontSize:10, color:"var(--t4)" }}>/ {plan.label}</span>
+        <span style={{ fontSize: 10, color: "var(--t4)" }}>/ {plan.label}</span>
       </div>
       {low && (
         <button onClick={onUpgrade} style={{
-          background:"linear-gradient(135deg,#1a82ff,#5b4fff)", color:"#fff", border:"none",
-          borderRadius:7, padding:"4px 10px", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+          background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
+          borderRadius: 7, padding: "4px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
         }}>Upgrade</button>
       )}
     </div>
@@ -3043,16 +3043,16 @@ function UpgradeModal({ onClose, credits }) {
   const user = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
 
   const STRIPE_PRICES = {
-    sdr:      "price_1T94U1A1MErAKbCi3MOZydEy",
+    sdr: "price_1T94U1A1MErAKbCi3MOZydEy",
     salespro: "price_1T94U1A1MErAKbCiPMitkjPc",
-    team:     "price_1T94U0A1MErAKbCioJt6SdZa",
+    team: "price_1T94U0A1MErAKbCioJt6SdZa",
   };
 
   const plans = [
-    { key:"free",     label:"Free",      price:"Free", period:"",    features:["4 credits / day","Single export only"], current: credits.plan === "free" },
-    { key:"sdr",      label:"SDR",       price:"$19",  period:"/mo", features:["300 credits / month","Bulk send + export"], current: credits.plan === "sdr" },
-    { key:"salespro", label:"Sales Pro", price:"$29",  period:"/mo", features:["2 000 credits / month","Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
-    { key:"team",     label:"Team",      price:"$59",  period:"/mo", features:["10 000 credits / month","Up to 5 seats"], current: credits.plan === "team" },
+    { key: "free", label: "Free", price: "Free", period: "", features: ["4 credits / day", "Single export only"], current: credits.plan === "free" },
+    { key: "sdr", label: "SDR", price: "$19", period: "/mo", features: ["300 credits / month", "Bulk send + export"], current: credits.plan === "sdr" },
+    { key: "salespro", label: "Sales Pro", price: "$29", period: "/mo", features: ["2 000 credits / month", "Everything in SDR"], highlight: true, current: credits.plan === "salespro" },
+    { key: "team", label: "Team", price: "$59", period: "/mo", features: ["10 000 credits / month", "Up to 5 seats"], current: credits.plan === "team" },
   ];
 
   const handleUpgrade = async (plan) => {
@@ -3068,13 +3068,13 @@ function UpgradeModal({ onClose, credits }) {
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-    } catch {}
+    } catch { }
     setLoading(null);
   };
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal-box" style={{ maxWidth:700 }}>
+      <div className="modal-box" style={{ maxWidth: 700 }}>
         <div className="modal-head">
           <div>
             <div className="modal-title">{t("upgrade.title")}</div>
@@ -3083,23 +3083,23 @@ function UpgradeModal({ onClose, credits }) {
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12 }}>
             {plans.map(p => (
               <div key={p.key} style={{
                 border: `1px solid ${p.highlight ? "rgba(26,130,255,0.5)" : "rgba(255,255,255,0.07)"}`,
-                borderRadius:14, padding:"18px 16px",
+                borderRadius: 14, padding: "18px 16px",
                 background: p.highlight ? "rgba(26,130,255,0.08)" : "rgba(255,255,255,0.02)",
-                display:"flex", flexDirection:"column", gap:10,
+                display: "flex", flexDirection: "column", gap: 10,
               }}>
-                <div style={{ fontSize:11, fontWeight:700, letterSpacing:"1.5px", color: p.highlight?"#5ba4ff":"rgba(255,255,255,0.4)", textTransform:"uppercase" }}>{p.label}</div>
-                <div style={{ fontSize:28, fontWeight:800, letterSpacing:"-1.5px", color:"#fff", lineHeight:1 }}>
-                  {p.price}<span style={{ fontSize:12, color:"var(--t3)", fontWeight:400 }}>{p.period}</span>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>{p.label}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", lineHeight: 1 }}>
+                  {p.price}<span style={{ fontSize: 12, color: "var(--t3)", fontWeight: 400 }}>{p.period}</span>
                 </div>
-                <div style={{ display:"flex", flexDirection:"column", gap:6, flex:1 }}>
-                  {p.features.map((f,i) => (
-                    <div key={i} style={{ display:"flex", gap:7, alignItems:"flex-start" }}>
-                      <span style={{ color: p.highlight?"#5ba4ff":"var(--t3)", fontSize:11, marginTop:1 }}>✓</span>
-                      <span style={{ fontSize:12, color:"var(--t2)", lineHeight:1.45 }}>{f}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                  {p.features.map((f, i) => (
+                    <div key={i} style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+                      <span style={{ color: p.highlight ? "#5ba4ff" : "var(--t3)", fontSize: 11, marginTop: 1 }}>✓</span>
+                      <span style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.45 }}>{f}</span>
                     </div>
                   ))}
                 </div>
@@ -3109,9 +3109,9 @@ function UpgradeModal({ onClose, credits }) {
                   style={{
                     background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
                     color: p.current ? "var(--t4)" : "#fff",
-                    border: p.highlight?"none":"0.5px solid rgba(255,255,255,0.1)",
-                    borderRadius:9, padding:"9px 0", fontSize:12, fontWeight:700,
-                    cursor: p.current ? "default" : "pointer", fontFamily:"inherit", width:"100%",
+                    border: p.highlight ? "none" : "0.5px solid rgba(255,255,255,0.1)",
+                    borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700,
+                    cursor: p.current ? "default" : "pointer", fontFamily: "inherit", width: "100%",
                   }}>
                   {p.current ? "Current plan" : loading === p.key ? "Loading…" : `Get ${p.label}`}
                 </button>
@@ -3120,14 +3120,14 @@ function UpgradeModal({ onClose, credits }) {
           </div>
         </div>
         {credits.plan !== "free" && (
-          <div style={{padding:"16px 24px",borderTop:"0.5px solid var(--sep)",textAlign:"center"}}>
+          <div style={{ padding: "16px 24px", borderTop: "0.5px solid var(--sep)", textAlign: "center" }}>
             <button onClick={async () => {
-              const user = JSON.parse(sessionStorage.getItem("lp_user")||"{}");
+              const user = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
               if (!user.email) return;
-              const res = await fetch("/api/portal", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: user.email }) });
+              const res = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email }) });
               const data = await res.json();
               if (data.url) window.location.href = data.url;
-            }} style={{background:"none",border:"none",color:"var(--t3)",fontSize:13,cursor:"pointer",fontFamily:"inherit",textDecoration:"underline"}}>
+            }} style={{ background: "none", border: "none", color: "var(--t3)", fontSize: 13, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
               Manage or cancel subscription
             </button>
           </div>
@@ -3150,57 +3150,57 @@ function App() {
       await new Promise((resolve, reject) => {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
-          scope: "openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/drive.file",
+          scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
           callback: (resp) => {
             if (resp.error) { reject(resp.error); return; }
             fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
               headers: { Authorization: `Bearer ${resp.access_token}` }
             })
-            .then(r => r.json())
-            .then(user => {
-              sessionStorage.setItem("lp_authed", "1");
-              sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
-              sessionStorage.setItem("lp_gtoken", resp.access_token);
-              // Set free plan immediately to prevent flash, Supabase will override below
-              sessionStorage.setItem("lp_verified_plan", "free");
-              // Sync plan from Supabase
-              sbGetUser(user.email).then(row => {
-                if (row) {
-                  // Check trial — if trial_until is in the future, upgrade to salespro temporarily
-                  let effectivePlan = row.plan;
-                  if (row.trial_until && new Date(row.trial_until) > new Date()) {
-                    effectivePlan = "pro";
+              .then(r => r.json())
+              .then(user => {
+                sessionStorage.setItem("lp_authed", "1");
+                sessionStorage.setItem("lp_user", JSON.stringify({ name: user.name, email: user.email, picture: user.picture }));
+                sessionStorage.setItem("lp_gtoken", resp.access_token);
+                // Set free plan immediately to prevent flash, Supabase will override below
+                sessionStorage.setItem("lp_verified_plan", "free");
+                // Sync plan from Supabase
+                sbGetUser(user.email).then(row => {
+                  if (row) {
+                    // Check trial — if trial_until is in the future, upgrade to salespro temporarily
+                    let effectivePlan = row.plan;
+                    if (row.trial_until && new Date(row.trial_until) > new Date()) {
+                      effectivePlan = "pro";
+                    }
+                    sessionStorage.setItem("lp_verified_plan", effectivePlan);
+                    const existing = loadCredits();
+                    if (!existing || existing.plan !== effectivePlan) {
+                      initCredits(effectivePlan);
+                    }
+                  } else {
+                    // New user → create with free plan
+                    sessionStorage.setItem("lp_verified_plan", "free");
+                    initCredits("free");
+                    sbUpsertUser(user.email, { plan: "free", name: user.name, picture: user.picture });
                   }
-                  sessionStorage.setItem("lp_verified_plan", effectivePlan);
-                  const existing = loadCredits();
-                  if (!existing || existing.plan !== effectivePlan) {
-                    initCredits(effectivePlan);
+                  // If user came from pricing page, redirect to Stripe checkout
+                  const pendingPrice = sessionStorage.getItem("lp_pending_price");
+                  if (pendingPrice) {
+                    sessionStorage.removeItem("lp_pending_price");
+                    fetch("/api/checkout", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ priceId: pendingPrice, email: user.email }),
+                    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
                   }
-                } else {
-                  // New user → create with free plan
-                  sessionStorage.setItem("lp_verified_plan", "free");
-                  initCredits("free");
-                  sbUpsertUser(user.email, { plan: "free", name: user.name, picture: user.picture });
-                }
-                // If user came from pricing page, redirect to Stripe checkout
-                const pendingPrice = sessionStorage.getItem("lp_pending_price");
-                if (pendingPrice) {
-                  sessionStorage.removeItem("lp_pending_price");
-                  fetch("/api/checkout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ priceId: pendingPrice, email: user.email }),
-                  }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
-                }
-              }).catch(() => {});
-              setAuthed(true);
-              // Small delay so React re-renders before hash change (prevents white screen)
-              setTimeout(() => {
-                if (window.location.hash !== "#app") window.location.hash = "app";
-              }, 50);
-              resolve();
-            })
-            .catch(reject);
+                }).catch(() => { });
+                setAuthed(true);
+                // Small delay so React re-renders before hash change (prevents white screen)
+                setTimeout(() => {
+                  if (window.location.hash !== "#app") window.location.hash = "app";
+                }, 50);
+                resolve();
+              })
+              .catch(reject);
           },
         });
         client.requestAccessToken({ prompt: "select_account" });
@@ -3221,7 +3221,7 @@ function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ priceId: pendingPrice, email: sessionUser.email }),
-    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
+    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
   }, [authed]);
 
   const [converting, setConverting] = useState(false);
@@ -3243,6 +3243,7 @@ function App() {
   const [pasteText, setPasteText] = useState("");
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
+  const [singleEmail, setSingleEmail] = useState("");
   const [logoInstances, setLogoInstances] = useState([{ id: uid(), size: 120, opacity: 100, pos: { x: 50, y: 50 } }]);
   const [openLogoId, setOpenLogoId] = useState(null);
   const [myLogoEl, setMyLogoEl] = useState(null);
@@ -3296,7 +3297,7 @@ function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ priceId: pendingPrice, email: sessionUser.email }),
-    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => {});
+    }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
   }, []);
 
   const canvasRef = useRef(null);
@@ -3306,7 +3307,7 @@ function App() {
   const pendingLoadImgRef = useRef(null); // base image waiting for canvas to mount
 
   useEffect(() => {
-    try { localStorage.setItem(companiesKey, JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch {}
+    try { localStorage.setItem(companiesKey, JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch { }
     if (sessionLoaded) triggerSave();
   }, [companies]);
 
@@ -3331,23 +3332,7 @@ function App() {
       if (s.colorToReplace) setColorToReplace(s.colorToReplace);
       if (s.myLogoSize) setMyLogoSize(s.myLogoSize);
       if (s.myLogoPos) setMyLogoPos(s.myLogoPos);
-      // Load base image from Storage
-      if (project.base_image_url) {
-        const signedUrl = await sbGetSignedUrl(project.base_image_url);
-        if (signedUrl) {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => {
-            if (canvasRef.current) {
-              drawImageToCanvas(img);
-            } else {
-              // Canvas not mounted yet — store for later
-              pendingLoadImgRef.current = img;
-            }
-          };
-          img.src = signedUrl;
-        }
-      }
+      // Base image intentionally NOT auto-loaded — user chooses their own image each session
       // Load companies (without logos)
       const savedCompanies = await sbLoadCompanies(project.id);
       if (savedCompanies.length > 0) setCompanies(savedCompanies);
@@ -3387,7 +3372,7 @@ function App() {
         setProjectId(pid);
         await sbSaveCompanies(pid, companies);
       }
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 
@@ -3405,7 +3390,7 @@ function App() {
   };
   const addSymbol = (char) => {
     const { w, h } = canvasSizeRef.current;
-    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w/2)-20, y: Math.floor(h/2)-30 } }]);
+    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
   };
   const updateSymbol = (id, patch) => setSymbols(s => s.map(x => x.id === id ? { ...x, ...patch } : x));
   const removeSymbol = (id) => setSymbols(s => s.filter(x => x.id !== id));
@@ -3418,7 +3403,7 @@ function App() {
     localStorage.setItem("lp_templates", JSON.stringify(updated));
     setTemplateName("");
     // Save to Supabase
-    sbSaveTemplate(sessionUser.email, tpl).catch(() => {});
+    sbSaveTemplate(sessionUser.email, tpl).catch(() => { });
     showToast(`Template "${name}" saved`);
   };
 
@@ -3503,7 +3488,7 @@ function App() {
 
   const commitDomain = (id, raw) => {
     const domain = guessDomain(raw.trim() || "x.com");
-    setEditingDomain(ed => { const n = {...ed}; delete n[id]; return n; });
+    setEditingDomain(ed => { const n = { ...ed }; delete n[id]; return n; });
     setCompanies(cs => cs.map(c => c.id === id ? { ...c, domain, status: "loading", logoDataUrl: null, logoEl: null } : c));
     fetchLogoDataURL(domain)
       .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
@@ -3514,7 +3499,7 @@ function App() {
     const contacts = extractContacts(pasteText);
     if (contacts.length === 0) { showToast("No contacts found — try manual"); return; }
     contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
-    showToast(`${contacts.length} contacts added${contacts.filter(c=>c.email).length ? ` · ${contacts.filter(c=>c.email).length} with email` : ""}`);
+    showToast(`${contacts.length} contacts added${contacts.filter(c => c.email).length ? ` · ${contacts.filter(c => c.email).length} with email` : ""}`);
     setPasteText("");
   };
 
@@ -3535,7 +3520,7 @@ function App() {
     for (const c of ready) {
       const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl, canvasBg);
       const blob = await new Promise(res => off.toBlob(res, "image/png"));
-      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g,"_")}.png`, blob);
+      folder.file(`${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`, blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(zipBlob); a.download = "images.zip"; a.click();
@@ -3576,7 +3561,7 @@ function App() {
         const ctx = canvas.getContext("2d");
         const px = Math.round(mx), py = Math.round(my);
         const [r, g, b] = ctx.getImageData(px, py, 1, 1).data;
-        const hex = "#" + [r,g,b].map(v => v.toString(16).padStart(2,"0")).join("");
+        const hex = "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("");
         setColorToReplace(hex);
         setEyedropperActive(false);
         showToast("Colour picked: " + hex);
@@ -3585,21 +3570,21 @@ function App() {
     }
     for (const sym of symbols) {
       if (mx >= sym.pos.x && mx <= sym.pos.x + sym.size && my >= sym.pos.y && my <= sym.pos.y + sym.size) {
-        setDragging({ target:"symbol", id:sym.id, ox:mx-sym.pos.x, oy:my-sym.pos.y }); e.preventDefault(); return;
+        setDragging({ target: "symbol", id: sym.id, ox: mx - sym.pos.x, oy: my - sym.pos.y }); e.preventDefault(); return;
       }
     }
     if (myLogoEl && mx >= myLogoPos.x && mx <= myLogoPos.x + myLogoSize && my >= myLogoPos.y && my <= myLogoPos.y + myLogoSize) {
-      setDragging({ target:"mylogo", ox:mx-myLogoPos.x, oy:my-myLogoPos.y }); e.preventDefault(); return;
+      setDragging({ target: "mylogo", ox: mx - myLogoPos.x, oy: my - myLogoPos.y }); e.preventDefault(); return;
     }
     for (const inst of logoInstances) {
       if (mx >= inst.pos.x && mx <= inst.pos.x + inst.size && my >= inst.pos.y && my <= inst.pos.y + inst.size) {
-        setDragging({ target:"logo", id:inst.id, ox:mx-inst.pos.x, oy:my-inst.pos.y }); e.preventDefault(); return;
+        setDragging({ target: "logo", id: inst.id, ox: mx - inst.pos.x, oy: my - inst.pos.y }); e.preventDefault(); return;
       }
     }
     for (const layer of textLayers) {
       if (layer.enabled && layer.template) {
         if (mx >= layer.pos.x && mx <= layer.pos.x + 300 && my >= layer.pos.y && my <= layer.pos.y + 70) {
-          setDragging({ target:"text", id:layer.id, ox:mx-layer.pos.x, oy:my-layer.pos.y }); e.preventDefault(); return;
+          setDragging({ target: "text", id: layer.id, ox: mx - layer.pos.x, oy: my - layer.pos.y }); e.preventDefault(); return;
         }
       }
     }
@@ -3611,10 +3596,10 @@ function App() {
     const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
     const { w, h } = canvasSizeRef.current;
     const clamp = (v, max) => Math.max(0, Math.min(v, max));
-    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
-    else if (dragging.target === "mylogo") setMyLogoPos({ x:clamp(mx-dragging.ox,w-myLogoSize), y:clamp(my-dragging.oy,h-myLogoSize) });
-    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
-    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x:clamp(mx-dragging.ox,w-20), y:clamp(my-dragging.oy,h-20) } });
+    if (dragging.target === "logo") updateLogoInst(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
+    else if (dragging.target === "mylogo") setMyLogoPos({ x: clamp(mx - dragging.ox, w - myLogoSize), y: clamp(my - dragging.oy, h - myLogoSize) });
+    else if (dragging.target === "text") updateTextLayer(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
+    else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
   };
 
   const { w: cw, h: ch } = canvasSizeRef.current;
@@ -3640,46 +3625,46 @@ function App() {
       <div className="app" onMouseMove={onMouseMove} onMouseUp={() => setDragging(null)}>
         <div className="header">
           <div className="header-brand">
-            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95"/><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28"/></svg></div>
-            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0,22)}…</div></div>
+            <div className="header-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".95" /><rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity=".6" /><rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".6" /><rect x="10" y="10" width="6" height="6" rx="1.5" fill="white" opacity=".95" /><rect x="7.5" y="7.5" width="3" height="3" rx="0.75" fill="white" opacity=".28" /></svg></div>
+            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0, 22)}…</div></div>
           </div>
           <div className="header-btns">
             <LangToggle />
             {sessionUser?.picture && (
-              <div style={{display:"flex",alignItems:"center",gap:8,marginRight:4}}>
-                <img src={sessionUser.picture} alt="" style={{width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--sep)"}} />
-                <span style={{fontSize:12,color:"var(--t3)"}}>{sessionUser.name?.split(" ")[0]}</span>
-                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{fontSize:11,padding:"3px 8px"}}>{t("app.sign_out")}</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 4 }}>
+                <img src={sessionUser.picture} alt="" style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid var(--sep)" }} />
+                <span style={{ fontSize: 12, color: "var(--t3)" }}>{sessionUser.name?.split(" ")[0]}</span>
+                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{ fontSize: 11, padding: "3px 8px" }}>{t("app.sign_out")}</button>
               </div>
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
-            {saving && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>{t("app.saving")}</span>}
-            {!saving && sessionLoaded && <span style={{fontSize:11,color:"var(--t3)",display:"flex",alignItems:"center",gap:4}}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{t("app.saved")}</span>}
-            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{background:"rgba(255,255,255,.06)",border:"0.5px solid var(--sep)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--t2)",fontSize:15,fontWeight:700,flexShrink:0}}>?</button>
-            <button onClick={() => setShowFeedback(true)} style={{background:"rgba(255,255,255,.06)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"0 10px",height:30,display:"flex",alignItems:"center",gap:5,cursor:"pointer",color:"var(--t2)",fontSize:12,fontWeight:600,fontFamily:"inherit",flexShrink:0}}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            {saving && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>{t("app.saving")}</span>}
+            {!saving && sessionLoaded && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>{t("app.saved")}</span>}
+            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>?</button>
+            <button onClick={() => setShowFeedback(true)} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "0 10px", height: 30, display: "flex", alignItems: "center", gap: 5, cursor: "pointer", color: "var(--t2)", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               {t("app.feedback")}
             </button>
             <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
-              <span style={{display:"flex",alignItems:"center",gap:6}}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMacBookModal(true)} disabled={!hasImage}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
+            <button className="btn-s" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }} onClick={() => setShowMacBookModal(true)} disabled={!hasImage}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 20h8M12 17v3" /></svg>
               {t("app.macbook_video")}
             </button>
-            <button className="btn-s" style={{display:"flex",alignItems:"center",gap:6,fontSize:12}} onClick={() => setShowMockupModal(true)} disabled={!hasImage}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <button className="btn-s" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }} onClick={() => setShowMockupModal(true)} disabled={!hasImage}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
               {t("app.product_mockup")}
             </button>
-            <button className="btn-s" onClick={() => setShowSendModal(true)} style={{display:"flex",alignItems:"center",gap:6}}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+            <button className="btn-s" onClick={() => setShowSendModal(true)} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2L15 22 11 13 2 9l20-7z" /></svg>
               {t("app.send")}
-              {companies.filter(c=>c.email).length > 0 && <span style={{fontSize:10,background:"var(--blue)",color:"#fff",borderRadius:"100px",padding:"1px 5px"}}>{companies.filter(c=>c.email).length}</span>}
+              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "var(--blue)", color: "#fff", borderRadius: "100px", padding: "1px 5px" }}>{companies.filter(c => c.email).length}</span>}
             </button>
-            <button className="btn-p" style={{width:"auto",padding:"8px 16px",fontSize:13}} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
+            <button className="btn-p" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? t("app.packing") : `${t("app.download")} (${readyCount})`}
             </button>
           </div>
@@ -3689,29 +3674,29 @@ function App() {
 
         {/* USER MANUAL MODAL */}
         {showManual && (
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setShowManual(false)}>
-            <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"85vh",overflow:"auto",padding:"32px 36px"}} onClick={e=>e.stopPropagation()}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
-                <h2 style={{margin:0,fontSize:20,fontWeight:800,letterSpacing:"-1px"}}>{t("manual.title")}</h2>
-                <button onClick={()=>setShowManual(false)} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22,lineHeight:1}}>×</button>
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowManual(false)}>
+            <div style={{ background: "var(--bg2)", border: "0.5px solid var(--sep)", borderRadius: 20, width: "100%", maxWidth: 620, maxHeight: "85vh", overflow: "auto", padding: "32px 36px" }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: "-1px" }}>{t("manual.title")}</h2>
+                <button onClick={() => setShowManual(false)} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
               </div>
               {[
-                { step:"1", tkey:"manual.step1" },
-                { step:"2", tkey:"manual.step2" },
-                { step:"3", tkey:"manual.step3" },
-                { step:"4", tkey:"manual.step4" },
-                { step:"5", tkey:"manual.step5" },
-                { step:"6", tkey:"manual.step6" },
+                { step: "1", tkey: "manual.step1" },
+                { step: "2", tkey: "manual.step2" },
+                { step: "3", tkey: "manual.step3" },
+                { step: "4", tkey: "manual.step4" },
+                { step: "5", tkey: "manual.step5" },
+                { step: "6", tkey: "manual.step6" },
               ].map(s => (
-                <div key={s.step} style={{display:"flex",gap:16,marginBottom:20}}>
-                  <div style={{width:28,height:28,borderRadius:8,background:"var(--blue-dim)",border:"1px solid rgba(26,130,255,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"var(--blue)",flexShrink:0}}>{s.step}</div>
+                <div key={s.step} style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--blue-dim)", border: "1px solid rgba(26,130,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--blue)", flexShrink: 0 }}>{s.step}</div>
                   <div>
-                    <div style={{fontSize:14,fontWeight:700,color:"var(--t1)",marginBottom:4}}>{t(`${s.tkey}.title`)}</div>
-                    <div style={{fontSize:13,color:"var(--t3)",lineHeight:1.6}}>{t(`${s.tkey}.body`)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t1)", marginBottom: 4 }}>{t(`${s.tkey}.title`)}</div>
+                    <div style={{ fontSize: 13, color: "var(--t3)", lineHeight: 1.6 }}>{t(`${s.tkey}.body`)}</div>
                   </div>
                 </div>
               ))}
-              <div style={{marginTop:8,padding:"14px 18px",background:"rgba(26,130,255,.06)",border:"1px solid rgba(26,130,255,.15)",borderRadius:12,fontSize:13,color:"var(--t2)",lineHeight:1.7}}>
+              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(26,130,255,.06)", border: "1px solid rgba(26,130,255,.15)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
                 {t("app.credits_info")}
               </div>
             </div>
@@ -3720,26 +3705,26 @@ function App() {
 
         {/* FEEDBACK MODAL */}
         {showFeedback && (
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>{setShowFeedback(false);setFeedbackSent(false);}}>
-            <div style={{background:"var(--bg2)",border:"0.5px solid var(--sep)",borderRadius:20,width:"100%",maxWidth:480,padding:"32px 36px"}} onClick={e=>e.stopPropagation()}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-                <h2 style={{margin:0,fontSize:18,fontWeight:800,letterSpacing:"-0.5px"}}>{t("feedback.title")}</h2>
-                <button onClick={()=>{setShowFeedback(false);setFeedbackSent(false);}} style={{background:"none",border:"none",color:"var(--t3)",cursor:"pointer",fontSize:22,lineHeight:1}}>×</button>
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => { setShowFeedback(false); setFeedbackSent(false); }}>
+            <div style={{ background: "var(--bg2)", border: "0.5px solid var(--sep)", borderRadius: 20, width: "100%", maxWidth: 480, padding: "32px 36px" }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px" }}>{t("feedback.title")}</h2>
+                <button onClick={() => { setShowFeedback(false); setFeedbackSent(false); }} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
               </div>
               {feedbackSent ? (
-                <div style={{textAlign:"center",padding:"24px 0"}}>
-                  <div style={{fontSize:32,marginBottom:12}}>✓</div>
-                  <div style={{fontSize:15,fontWeight:700,color:"var(--t1)",marginBottom:6}}>{t("feedback.sent_title")}</div>
-                  <div style={{fontSize:13,color:"var(--t3)"}}>{t("feedback.sent_body")}</div>
+                <div style={{ textAlign: "center", padding: "24px 0" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "var(--t1)", marginBottom: 6 }}>{t("feedback.sent_title")}</div>
+                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{t("feedback.sent_body")}</div>
                 </div>
               ) : (<>
-                <textarea value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}
+                <textarea value={feedbackText} onChange={e => setFeedbackText(e.target.value)}
                   placeholder={t("feedback.placeholder")}
-                  style={{width:"100%",minHeight:120,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"12px 14px",color:"var(--t1)",fontSize:13,fontFamily:"inherit",resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:12}} />
-                <div style={{marginBottom:16}}>
-                  <label style={{fontSize:12,color:"var(--t3)",display:"block",marginBottom:6}}>{t("feedback.attach")}</label>
-                  <input type="file" accept="image/*" onChange={e=>setFeedbackImg(e.target.files[0])}
-                    style={{fontSize:12,color:"var(--t3)"}} />
+                  style={{ width: "100%", minHeight: 120, background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 10, padding: "12px 14px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("feedback.attach")}</label>
+                  <input type="file" accept="image/*" onChange={e => setFeedbackImg(e.target.files[0])}
+                    style={{ fontSize: 12, color: "var(--t3)" }} />
                 </div>
                 <button disabled={!feedbackText.trim()} onClick={async () => {
                   const body = new FormData();
@@ -3753,7 +3738,7 @@ function App() {
                   setFeedbackSent(true);
                   setFeedbackText("");
                   setFeedbackImg(null);
-                }} style={{width:"100%",padding:"11px 0",background:"var(--blue)",border:"none",borderRadius:10,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",opacity:feedbackText.trim()?1:0.4}}>
+                }} style={{ width: "100%", padding: "11px 0", background: "var(--blue)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: feedbackText.trim() ? 1 : 0.4 }}>
                   Send feedback
                 </button>
               </>)}
@@ -3777,9 +3762,9 @@ function App() {
             <span className="s-label">{t("app.base_image")}</span>
             <div className="card"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => handleFileUpload({ target: { files: [file] } })} className="upload-zone" style={{}}>
-                <label style={{cursor:"pointer",display:"block",textAlign:"center"}}>
-                  <input type="file" accept="image/*,.heic,.heif" style={{display:"none"}} onChange={handleFileUpload} />
-                  <div className="uz-icon" style={{color:"var(--t3)"}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+                <label style={{ cursor: "pointer", display: "block", textAlign: "center" }}>
+                  <input type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
+                  <div className="uz-icon" style={{ color: "var(--t3)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
                   {converting && <p className="uz-active">Converting...</p>}
                   {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
                   {!converting && !baseImageName && <p className="uz-text">Click or drag here</p>}
@@ -3793,57 +3778,59 @@ function App() {
                   baseImageRef.current = null;
                   setHasImage(false);
                   setBaseImageName(null);
-                }} style={{marginTop:8,width:"100%",padding:"6px 0",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:8,color:"#f87171",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{t("app.remove_image")}</button>
+                }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{t("app.remove_image")}</button>
               )}
             </div></div>
 
-            <div className="card" style={{margin:"0 10px 6px",padding:"10px 14px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:canvasBg.enabled?10:0}}>
-                <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>{t("app.background_color")}</span>
-                <div style={{width:34,height:20,borderRadius:10,background:canvasBg.enabled?"var(--blue)":"var(--bg4)",border:"0.5px solid var(--sep)",position:"relative",cursor:"pointer",transition:"background .2s"}}
+            <div className="card" style={{ margin: "0 10px 6px", padding: "10px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: canvasBg.enabled ? 10 : 0 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>{t("app.background_color")}</span>
+                <div style={{ width: 34, height: 20, borderRadius: 10, background: canvasBg.enabled ? "var(--blue)" : "var(--bg4)", border: "0.5px solid var(--sep)", position: "relative", cursor: "pointer", transition: "background .2s" }}
                   onClick={() => setCanvasBg(bg => ({ ...bg, enabled: !bg.enabled }))}>
-                  <div style={{position:"absolute",top:3,left:canvasBg.enabled?16:3,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.4)"}} />
+                  <div style={{ position: "absolute", top: 3, left: canvasBg.enabled ? 16 : 3, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.4)" }} />
                 </div>
               </div>
               {canvasBg.enabled && (
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <input type="color" value={canvasBg.color} onChange={e => setCanvasBg(bg => ({ ...bg, color: e.target.value }))}
-                    style={{width:32,height:32,borderRadius:8,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none"}} />
-                  <span style={{fontSize:12,color:"var(--t3)",fontFamily:"monospace"}}>{canvasBg.color}</span>
+                    style={{ width: 32, height: 32, borderRadius: 8, border: "1.5px solid var(--sep)", cursor: "pointer", padding: 2, background: "none" }} />
+                  <span style={{ fontSize: 12, color: "var(--t3)", fontFamily: "monospace" }}>{canvasBg.color}</span>
                 </div>
               )}
             </div>
 
-            <div style={{margin:"0 10px 6px",background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:10,padding:"10px 12px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+            <div style={{ margin: "0 10px 6px", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 10, padding: "10px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                 <div>
-                  <span style={{fontSize:12,fontWeight:600,color:"var(--t2)"}}>{t("app.match_brand")}</span>
-                  <div style={{fontSize:10,color:"var(--t3)",marginTop:2}}>{t("app.match_brand_sub")}</div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>{t("app.match_brand")}</span>
+                  <div style={{ fontSize: 10, color: "var(--t3)", marginTop: 2 }}>{t("app.match_brand_sub")}</div>
                 </div>
-                <label style={{position:"relative",display:"inline-block",width:32,height:18,cursor:"pointer",flexShrink:0}}>
-                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)} style={{opacity:0,width:0,height:0,position:"absolute"}}/>
-                  <span style={{position:"absolute",inset:0,borderRadius:9,background:personalisedColors?"var(--blue)":"var(--bg4)",transition:"background .2s"}}>
-                    <span style={{position:"absolute",top:2,left:personalisedColors?16:2,width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+                <label style={{ position: "relative", display: "inline-block", width: 32, height: 18, cursor: "pointer", flexShrink: 0 }}>
+                  <input type="checkbox" checked={personalisedColors} onChange={e => setPersonalisedColors(e.target.checked)} style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
+                  <span style={{ position: "absolute", inset: 0, borderRadius: 9, background: personalisedColors ? "var(--blue)" : "var(--bg4)", transition: "background .2s" }}>
+                    <span style={{ position: "absolute", top: 2, left: personalisedColors ? 16 : 2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .2s" }} />
                   </span>
                 </label>
               </div>
               {personalisedColors && (
-                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6,flexWrap:"wrap"}}>
-                  <div style={{fontSize:11,color:"var(--t3)",flexShrink:0}}>Replace:</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 11, color: "var(--t3)", flexShrink: 0 }}>Replace:</div>
                   <input type="color" value={colorToReplace} onChange={e => setColorToReplace(e.target.value)}
-                    style={{width:32,height:28,borderRadius:6,border:"1.5px solid var(--sep)",cursor:"pointer",padding:2,background:"none",flexShrink:0}} />
+                    style={{ width: 32, height: 28, borderRadius: 6, border: "1.5px solid var(--sep)", cursor: "pointer", padding: 2, background: "none", flexShrink: 0 }} />
                   <button onClick={() => setEyedropperActive(v => !v)} title="Pick colour from image"
-                    style={{display:"flex",alignItems:"center",justifyContent:"center",width:28,height:28,borderRadius:6,
-                      border:`1.5px solid ${eyedropperActive?"var(--blue)":"var(--sep)"}`,
-                      background:eyedropperActive?"rgba(26,130,255,.15)":"var(--bg4)",
-                      cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive?"#5ba4ff":"var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33L20.84 9.5a5.5 5.5 0 0 0 0-7.78v-.91z"/>
-                      <line x1="18" y1="11.5" x2="6" y2="23.5"/>
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6,
+                      border: `1.5px solid ${eyedropperActive ? "var(--blue)" : "var(--sep)"}`,
+                      background: eyedropperActive ? "rgba(26,130,255,.15)" : "var(--bg4)",
+                      cursor: "pointer", flexShrink: 0, transition: "all .15s"
+                    }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive ? "#5ba4ff" : "var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L3 14.67V21h6.33L20.84 9.5a5.5 5.5 0 0 0 0-7.78v-.91z" />
+                      <line x1="18" y1="11.5" x2="6" y2="23.5" />
                     </svg>
                   </button>
-                  <div style={{fontSize:10,color:"var(--t4)",fontFamily:"monospace"}}>{colorToReplace}</div>
-                  {eyedropperActive && <div style={{fontSize:10,color:"var(--blue)",fontWeight:600}}>Click image to pick</div>}
+                  <div style={{ fontSize: 10, color: "var(--t4)", fontFamily: "monospace" }}>{colorToReplace}</div>
+                  {eyedropperActive && <div style={{ fontSize: 10, color: "var(--blue)", fontWeight: 600 }}>Click image to pick</div>}
                 </div>
               )}
             </div>
@@ -3852,7 +3839,7 @@ function App() {
               <span className="s-label">{t("app.recipient_logo")}</span>
               <button className="btn-text" onClick={addLogoInst}>+ New</button>
             </div>
-            <div style={{padding:"0 10px"}}>
+            <div style={{ padding: "0 10px" }}>
               {logoInstances.map((inst, idx) => (
                 <LogoInstanceCard key={inst.id} inst={inst} idx={idx} total={logoInstances.length}
                   onChange={patch => updateLogoInst(inst.id, patch)}
@@ -3866,7 +3853,7 @@ function App() {
               <span className="s-label">{t("app.text_layers")}</span>
               <button className="btn-text" onClick={addTextLayer}>+ New</button>
             </div>
-            <div style={{padding:"0 10px"}}>
+            <div style={{ padding: "0 10px" }}>
               {textLayers.map((layer, idx) => (
                 <TextLayerCard key={layer.id} layer={layer} idx={idx} total={textLayers.length}
                   onChange={patch => updateTextLayer(layer.id, patch)}
@@ -3876,25 +3863,25 @@ function App() {
               ))}
             </div>
 
-            <div style={{margin:"0 10px 4px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span className="s-label" style={{padding:0}}>Templates</span>
-              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{fontSize:11}}>{showTemplates ? "Hide" : `Saved (${templates.length})`}</button>
+            <div style={{ margin: "0 10px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span className="s-label" style={{ padding: 0 }}>Templates</span>
+              <button className="btn-text" onClick={() => setShowTemplates(v => !v)} style={{ fontSize: 11 }}>{showTemplates ? "Hide" : `Saved (${templates.length})`}</button>
             </div>
-            <div style={{margin:"0 10px 8px",display:"flex",gap:6}}>
-              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder={t("app.template_name")} onKeyDown={e => e.key==="Enter" && saveTemplate()}
-                style={{flex:1,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:7,padding:"7px 10px",color:"var(--t1)",fontSize:12,fontFamily:"inherit",outline:"none"}} />
-              <button onClick={saveTemplate} className="btn-s" style={{fontSize:12,padding:"6px 12px",flexShrink:0}}>Save</button>
+            <div style={{ margin: "0 10px 8px", display: "flex", gap: 6 }}>
+              <input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder={t("app.template_name")} onKeyDown={e => e.key === "Enter" && saveTemplate()}
+                style={{ flex: 1, background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 7, padding: "7px 10px", color: "var(--t1)", fontSize: 12, fontFamily: "inherit", outline: "none" }} />
+              <button onClick={saveTemplate} className="btn-s" style={{ fontSize: 12, padding: "6px 12px", flexShrink: 0 }}>Save</button>
             </div>
             {showTemplates && templates.length > 0 && (
-              <div style={{margin:"0 10px 8px",display:"flex",flexDirection:"column",gap:4,maxHeight:220,overflowY:"auto"}}>
+              <div style={{ margin: "0 10px 8px", display: "flex", flexDirection: "column", gap: 4, maxHeight: 220, overflowY: "auto" }}>
                 {templates.map(tpl => (
-                  <div key={tpl.id} style={{display:"flex",alignItems:"center",gap:6,background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"7px 10px"}}>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12,fontWeight:600,color:"var(--t1)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{tpl.name}</div>
-                      <div style={{fontSize:10,color:"var(--t4)"}}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
+                  <div key={tpl.id} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "7px 10px" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--t1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tpl.name}</div>
+                      <div style={{ fontSize: 10, color: "var(--t4)" }}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
                     </div>
-                    <button onClick={() => loadTemplate(tpl)} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:"none",background:"var(--blue)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Load</button>
-                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); sbDeleteTemplate(tpl.id).catch(()=>{}); }} style={{fontSize:11,padding:"4px 7px",borderRadius:6,border:"0.5px solid var(--sep)",background:"none",color:"var(--t3)",cursor:"pointer",fontFamily:"inherit"}}>✕</button>
+                    <button onClick={() => loadTemplate(tpl)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: "var(--blue)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Load</button>
+                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); sbDeleteTemplate(tpl.id).catch(() => { }); }} style={{ fontSize: 11, padding: "4px 7px", borderRadius: 6, border: "0.5px solid var(--sep)", background: "none", color: "var(--t3)", cursor: "pointer", fontFamily: "inherit" }}>✕</button>
                   </div>
                 ))}
               </div>
@@ -3906,15 +3893,15 @@ function App() {
                 {SYMBOL_OPTIONS.map(char => <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>)}
               </div>
               {symbols.length > 0 && (
-                <div style={{display:"flex",flexDirection:"column",gap:6,padding:"0 8px 8px"}}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "0 8px 8px" }}>
                   {symbols.map(sym => (
-                    <div key={sym.id} style={{background:"var(--bg3)",border:"0.5px solid var(--sep)",borderRadius:8,padding:"8px 10px",display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:20,minWidth:28,textAlign:"center"}}>{sym.char}</span>
-                      <div style={{flex:1}}>
-                        <div style={{display:"flex",alignItems:"center",gap:6}}>
-                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{flex:1,accentColor:"#fbbf24"}} />
-                          <span style={{fontSize:11,color:"var(--yellow)",minWidth:28}}>{sym.size}px</span>
-                          <div className="color-swatch" style={{background:sym.color}}><input type="color" value={sym.color} onChange={e => updateSymbol(sym.id,{color:e.target.value})} /></div>
+                    <div key={sym.id} style={{ background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 20, minWidth: 28, textAlign: "center" }}>{sym.char}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{ flex: 1, accentColor: "#fbbf24" }} />
+                          <span style={{ fontSize: 11, color: "var(--yellow)", minWidth: 28 }}>{sym.size}px</span>
+                          <div className="color-swatch" style={{ background: sym.color }}><input type="color" value={sym.color} onChange={e => updateSymbol(sym.id, { color: e.target.value })} /></div>
                         </div>
                       </div>
                       <button className="ico-rm" onClick={() => removeSymbol(sym.id)}>×</button>
@@ -3925,79 +3912,80 @@ function App() {
             </div>
 
             <span className="s-label">{t("app.contacts")}</span>
-            <div className="card"><div className="card-pad" style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Acme Corp"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
               <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>{t("app.extract_contacts")}</button>
-              <div style={{borderTop:"0.5px solid var(--sep)",paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
-                <p style={{fontSize:12,color:"var(--t3)"}}>{t("app.add_manually")}</p>
+              <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                <p style={{ fontSize: 12, color: "var(--t3)" }}>{t("app.add_manually")}</p>
                 <input className="inp sm" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
-                <div style={{display:"flex",gap:7}}>
-                  <input className="inp sm" style={{flex:1}} placeholder={t("app.company_placeholder")} value={singleCompany}
+                <input className="inp sm" placeholder={t("app.email_placeholder")} value={singleEmail} onChange={e => setSingleEmail(e.target.value)} />
+                <div style={{ display: "flex", gap: 7 }}>
+                  <input className="inp sm" style={{ flex: 1 }} placeholder={t("app.company_placeholder")} value={singleCompany}
                     onChange={e => setSingleCompany(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany); setSingleCompany(""); setSinglePerson(""); } }} />
+                    onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); } }} />
                   <button className="btn-s" disabled={!singleCompany.trim()}
-                    onClick={() => { addContact(singlePerson, singleCompany); setSingleCompany(""); setSinglePerson(""); }}>+</button>
+                    onClick={() => { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); }}>+</button>
                 </div>
               </div>
             </div></div>
 
             {companies.length > 0 && (<>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 16px 6px"}}>
-                <span style={{fontSize:13,color:"var(--t2)"}}>{companies.length} companies · {readyCount} ready</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 6px" }}>
+                <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} companies · {readyCount} ready</span>
                 <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
               </div>
               <div className="co-list-wrap">
                 {companies.map(c => (
                   <div key={c.id}>
                     <div className="co-row">
-                      <div className="co-logo" style={{cursor:c.status==="error"?"pointer":"default"}} onClick={() => c.status==="error" && retryCompany(c)}>
+                      <div className="co-logo" style={{ cursor: c.status === "error" ? "pointer" : "default" }} onClick={() => c.status === "error" && retryCompany(c)}>
                         {c.status === "loading" && <div className="spinner" />}
                         {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
                         {c.status === "error" && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
                       </div>
-                      <div className="co-info" style={{flex:1,minWidth:0}}>
+                      <div className="co-info" style={{ flex: 1, minWidth: 0 }}>
                         <div className="co-name">{c.companyName}
-                          {c.personName && <span style={{fontWeight:400,color:"var(--t3)",marginLeft:5,fontSize:12}}>· {c.personName}</span>}
+                          {c.personName && <span style={{ fontWeight: 400, color: "var(--t3)", marginLeft: 5, fontSize: 12 }}>· {c.personName}</span>}
                         </div>
                         {editingDomain[c.id] !== undefined ? (
-                          <div style={{display:"flex",alignItems:"center",gap:4,marginTop:2}}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                             <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="e.g. lysa.se"
-                              onChange={e => setEditingDomain(ed => ({...ed, [c.id]: e.target.value}))}
-                              onKeyDown={e => { if (e.key==="Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key==="Escape") setEditingDomain(ed=>{const n={...ed};delete n[c.id];return n;}); }}
+                              onChange={e => setEditingDomain(ed => ({ ...ed, [c.id]: e.target.value }))}
+                              onKeyDown={e => { if (e.key === "Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key === "Escape") setEditingDomain(ed => { const n = { ...ed }; delete n[c.id]; return n; }); }}
                               onBlur={() => commitDomain(c.id, editingDomain[c.id])} />
                           </div>
                         ) : (
-                          <div style={{display:"flex",alignItems:"center",gap:3,marginTop:1}}>
-                            <span className="co-sub" style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.domain}</span>
-                            <button className="ico-edit" onClick={() => setEditingDomain(ed => ({...ed, [c.id]: c.domain}))}>✎</button>
+                          <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 1 }}>
+                            <span className="co-sub" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.domain}</span>
+                            <button className="ico-edit" onClick={() => setEditingDomain(ed => ({ ...ed, [c.id]: c.domain }))}>✎</button>
                           </div>
                         )}
                       </div>
-                      {c.email && <span title={c.email} style={{fontSize:11,color:"var(--green)",flexShrink:0}}>@</span>}
-                      {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                      {c.email && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
+                      {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>}
                       {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
-                      <button className="ico-edit" style={{fontSize:11,padding:"2px 5px"}}
-                        onClick={() => setEditingContact(ec => ec?.id===c.id ? null : {id:c.id, name:c.personName||"", email:c.email||""})}>
-                        {editingContact?.id===c.id ? "▲" : "▼"}
+                      <button className="ico-edit" style={{ fontSize: 11, padding: "2px 5px" }}
+                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, name: c.personName || "", email: c.email || "" })}>
+                        {editingContact?.id === c.id ? "▲" : "▼"}
                       </button>
                       <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                     </div>
                     {editingContact?.id === c.id && (
-                      <div style={{padding:"8px 12px 10px 54px",background:"var(--bg)",borderBottom:"0.5px solid var(--sep)",display:"flex",flexDirection:"column",gap:6}}>
-                        <div style={{display:"flex",gap:6}}>
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>{t("contact.name_label")}</div>
-                            <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({...ec, name:e.target.value}))} />
+                      <div style={{ padding: "8px 12px 10px 54px", background: "var(--bg)", borderBottom: "0.5px solid var(--sep)", display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.name_label")}</div>
+                            <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
                           </div>
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"var(--t4)",marginBottom:3}}>{t("contact.email_label")}</div>
-                            <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({...ec, email:e.target.value}))} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.email_label")}</div>
+                            <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
                           </div>
                         </div>
-                        <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
-                          <button className="btn-s" style={{padding:"4px 10px",fontSize:11}} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
-                          <button className="btn-p" style={{width:"auto",padding:"4px 12px",fontSize:11}} onClick={() => {
-                            setCompanies(cs => cs.map(x => x.id===c.id ? {...x, personName:editingContact.name, email:editingContact.email||null} : x));
+                        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                          <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
+                          <button className="btn-p" style={{ width: "auto", padding: "4px 12px", fontSize: 11 }} onClick={() => {
+                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, personName: editingContact.name, email: editingContact.email || null } : x));
                             setEditingContact(null);
                           }}>Save</button>
                         </div>
@@ -4013,65 +4001,65 @@ function App() {
             <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001))); }}>
               {!hasImage ? (
                 <div className="empty-state">
-                  <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+                  <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
                   <p className="empty-title">No image selected</p>
                   <p className="empty-sub">Upload a base image on the left</p>
                 </div>
               ) : (
-                <div style={{ width: (cw||0)*canvasZoom, height: (ch||0)*canvasZoom, flexShrink:0 }}>
-                <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                  style={{ width:cw||"auto", height:ch||"auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform:`scale(${canvasZoom})`, transformOrigin:"top left" }}>
-                  <canvas ref={canvasRef} />
-                  {cw > 0 && (
-                    <>
-                      {logoInstances.map((inst, idx) => {
-                        const color = LAYER_COLORS[(idx + 4) % LAYER_COLORS.length];
-                        return (
-                          <div key={inst.id} className="overlay-box"
-                            style={{ left:inst.pos.x, top:inst.pos.y, width:inst.size, height:inst.size, borderColor:color, background:`${color}11`, borderRadius:Math.min(inst.size*0.15,12) }}>
-                            <div className="ov-pill" style={{background:color}}>Logo {idx+1}</div>
-                            <span style={{fontSize:10,color,textTransform:"uppercase",pointerEvents:"none"}}>{companyLogoEl?"▣":"LOGO"}</span>
+                <div style={{ width: (cw || 0) * canvasZoom, height: (ch || 0) * canvasZoom, flexShrink: 0 }}>
+                  <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
+                    style={{ width: cw || "auto", height: ch || "auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "top left" }}>
+                    <canvas ref={canvasRef} />
+                    {cw > 0 && (
+                      <>
+                        {logoInstances.map((inst, idx) => {
+                          const color = LAYER_COLORS[(idx + 4) % LAYER_COLORS.length];
+                          return (
+                            <div key={inst.id} className="overlay-box"
+                              style={{ left: inst.pos.x, top: inst.pos.y, width: inst.size, height: inst.size, borderColor: color, background: `${color}11`, borderRadius: Math.min(inst.size * 0.15, 12) }}>
+                              <div className="ov-pill" style={{ background: color }}>Logo {idx + 1}</div>
+                              <span style={{ fontSize: 10, color, textTransform: "uppercase", pointerEvents: "none" }}>{companyLogoEl ? "▣" : "LOGO"}</span>
+                            </div>
+                          );
+                        })}
+                        {myLogoEl && (
+                          <div className="overlay-box" style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
+                            <div className="ov-pill" style={{ background: "var(--purple)" }}>My logo</div>
+                            <span style={{ fontSize: 10, color: "var(--purple)", pointerEvents: "none" }}>▣</span>
                           </div>
-                        );
-                      })}
-                      {myLogoEl && (
-                        <div className="overlay-box" style={{ left:myLogoPos.x, top:myLogoPos.y, width:myLogoSize, height:myLogoSize, borderColor:"#a78bfa", background:"rgba(167,139,250,0.07)", borderRadius:Math.min(myLogoSize*0.15,12) }}>
-                          <div className="ov-pill" style={{background:"var(--purple)"}}>My logo</div>
-                          <span style={{fontSize:10,color:"var(--purple)",pointerEvents:"none"}}>▣</span>
-                        </div>
-                      )}
-                      {textLayers.map((layer, idx) => {
-                        const color = LAYER_COLORS[idx % LAYER_COLORS.length];
-                        if (!layer.enabled || !layer.template) return null;
-                        return (
-                          <div key={layer.id} className="overlay-box text-box"
-                            style={{ left:layer.pos.x, top:layer.pos.y, borderColor:color, background:`${color}11`, fontSize:layer.fontSize, fontFamily:layer.fontFamily, color:layer.color, fontWeight:layer.fontWeight??(layer.bold?"bold":"normal"), fontStyle:layer.italic?"italic":"normal", lineHeight:1.4 }}>
-                            <div className="ov-pill" style={{background:color}}>Text {idx+1}</div>
-                            <span className="inner-text">{resolveTemplate(layer.template, previewPerson, previewCompany)}</span>
+                        )}
+                        {textLayers.map((layer, idx) => {
+                          const color = LAYER_COLORS[idx % LAYER_COLORS.length];
+                          if (!layer.enabled || !layer.template) return null;
+                          return (
+                            <div key={layer.id} className="overlay-box text-box"
+                              style={{ left: layer.pos.x, top: layer.pos.y, borderColor: color, background: `${color}11`, fontSize: layer.fontSize, fontFamily: layer.fontFamily, color: layer.color, fontWeight: layer.fontWeight ?? (layer.bold ? "bold" : "normal"), fontStyle: layer.italic ? "italic" : "normal", lineHeight: 1.4 }}>
+                              <div className="ov-pill" style={{ background: color }}>Text {idx + 1}</div>
+                              <span className="inner-text">{resolveTemplate(layer.template, previewPerson, previewCompany)}</span>
+                            </div>
+                          );
+                        })}
+                        {symbols.map(sym => (
+                          <div key={sym.id} className="overlay-box"
+                            style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
+                            <div className="ov-pill" style={{ background: "var(--yellow)", color: "#000" }}>Symbol</div>
+                            <span style={{ fontSize: sym.size * 0.7, color: sym.color, pointerEvents: "none" }}>{sym.char}</span>
                           </div>
-                        );
-                      })}
-                      {symbols.map(sym => (
-                        <div key={sym.id} className="overlay-box"
-                          style={{ left:sym.pos.x, top:sym.pos.y, width:sym.size, height:sym.size, borderColor:"#fbbf24", background:"rgba(251,191,36,0.07)", fontSize:sym.size*0.75, color:sym.color, fontWeight:"bold" }}>
-                          <div className="ov-pill" style={{background:"var(--yellow)",color:"#000"}}>Symbol</div>
-                          <span style={{fontSize:sym.size*0.7,color:sym.color,pointerEvents:"none"}}>{sym.char}</span>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
-            <div className="canvas-footer" style={{position:"relative"}}>
+            <div className="canvas-footer" style={{ position: "relative" }}>
               {cw > 0 ? t("canvas.hint") : t("canvas.empty")}
               {hasImage && (
                 <div className="zoom-controls">
-                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z-0.1).toFixed(2)))}>−</button>
-                  <span className="zoom-label">{Math.round(canvasZoom*100)}%</span>
-                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z+0.1).toFixed(2)))}>+</button>
-                  <button className="zoom-btn" style={{fontSize:9}} onClick={() => setCanvasZoom(1)}>↺</button>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z - 0.1).toFixed(2)))}>−</button>
+                  <span className="zoom-label">{Math.round(canvasZoom * 100)}%</span>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z + 0.1).toFixed(2)))}>+</button>
+                  <button className="zoom-btn" style={{ fontSize: 9 }} onClick={() => setCanvasZoom(1)}>↺</button>
                 </div>
               )}
             </div>
@@ -4082,30 +4070,30 @@ function App() {
 
         {previewUrl && (
           <div onClick={() => { setPreviewUrl(null); setAllPreviews([]); }}
-            style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
-            <div onClick={e => e.stopPropagation()} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14,maxWidth:"92vw",maxHeight:"96vh"}}>
-              <div style={{display:"flex",alignItems:"center",gap:16}}>
-                <span style={{fontSize:13,fontWeight:600,color:"#fff"}}>{allPreviews[previewIdx]?.name}</span>
-                {allPreviews.length > 1 && <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>{previewIdx+1} / {allPreviews.length}</span>}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <div onClick={e => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, maxWidth: "92vw", maxHeight: "96vh" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{allPreviews[previewIdx]?.name}</span>
+                {allPreviews.length > 1 && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{previewIdx + 1} / {allPreviews.length}</span>}
               </div>
-              <img src={allPreviews[previewIdx]?.url || previewUrl} style={{maxWidth:"88vw",maxHeight:"72vh",borderRadius:12,boxShadow:"0 24px 80px rgba(0,0,0,.7)",display:"block"}} alt="Preview" />
+              <img src={allPreviews[previewIdx]?.url || previewUrl} style={{ maxWidth: "88vw", maxHeight: "72vh", borderRadius: 12, boxShadow: "0 24px 80px rgba(0,0,0,.7)", display: "block" }} alt="Preview" />
               {allPreviews.length > 1 && (
-                <div style={{display:"flex",gap:8,overflowX:"auto",maxWidth:"88vw",padding:"4px 0"}}>
-                  {allPreviews.map((p,i) => (
+                <div style={{ display: "flex", gap: 8, overflowX: "auto", maxWidth: "88vw", padding: "4px 0" }}>
+                  {allPreviews.map((p, i) => (
                     <img key={i} src={p.url} alt={p.name} onClick={() => setPreviewIdx(i)}
-                      style={{width:72,height:46,objectFit:"cover",borderRadius:6,flexShrink:0,cursor:"pointer",border:i===previewIdx?"2px solid var(--blue)":"2px solid transparent",opacity:i===previewIdx?1:0.55,transition:"all .15s"}} />
+                      style={{ width: 72, height: 46, objectFit: "cover", borderRadius: 6, flexShrink: 0, cursor: "pointer", border: i === previewIdx ? "2px solid var(--blue)" : "2px solid transparent", opacity: i === previewIdx ? 1 : 0.55, transition: "all .15s" }} />
                   ))}
                 </div>
               )}
-              <div style={{display:"flex",gap:8}}>
+              <div style={{ display: "flex", gap: 8 }}>
                 {allPreviews.length > 1 && (
                   <>
-                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i-1,0))} disabled={previewIdx===0}>{t("modal.prev")}</button>
-                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i+1,allPreviews.length-1))} disabled={previewIdx===allPreviews.length-1}>{t("modal.next")}</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.max(i - 1, 0))} disabled={previewIdx === 0}>{t("modal.prev")}</button>
+                    <button className="btn-s" onClick={() => setPreviewIdx(i => Math.min(i + 1, allPreviews.length - 1))} disabled={previewIdx === allPreviews.length - 1}>{t("modal.next")}</button>
                   </>
                 )}
                 <button onClick={() => { setPreviewUrl(null); setAllPreviews([]); }} className="btn-s">Close</button>
-                <button onClick={() => { const a=document.createElement("a"); a.href=allPreviews[previewIdx]?.url||previewUrl; a.download=`${allPreviews[previewIdx]?.name||"preview"}.png`; a.click(); }} className="btn-p" style={{width:"auto",padding:"8px 16px"}}>Download</button>
+                <button onClick={() => { const a = document.createElement("a"); a.href = allPreviews[previewIdx]?.url || previewUrl; a.download = `${allPreviews[previewIdx]?.name || "preview"}.png`; a.click(); }} className="btn-p" style={{ width: "auto", padding: "8px 16px" }}>Download</button>
               </div>
             </div>
           </div>
@@ -4196,7 +4184,7 @@ function AdminPanel({ onBack }) {
                 setDenied(true);
                 resolve();
               }
-            } catch(e) { reject(e); }
+            } catch (e) { reject(e); }
           },
         }).requestAccessToken({ prompt: "select_account" });
       });
@@ -4246,10 +4234,10 @@ function AdminPanel({ onBack }) {
             let resetAt = existing.resetAt;
             // Recalculate resetAt if plan type changed (daily vs monthly)
             if (planName === "free" && !existing.resetAt?.includes("T")) {
-              const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
+              const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(0, 0, 0, 0);
               resetAt = tomorrow.toISOString();
             } else if (planName !== "free" && existing.plan !== editing.plan) {
-              const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth()+1); nextMonth.setDate(1); nextMonth.setHours(0,0,0,0);
+              const nextMonth = new Date(now); nextMonth.setMonth(nextMonth.getMonth() + 1); nextMonth.setDate(1); nextMonth.setHours(0, 0, 0, 0);
               resetAt = nextMonth.toISOString();
             }
             localStorage.setItem(credKey, JSON.stringify({ plan: editing.plan, balance: newBalance, resetAt }));
@@ -4259,7 +4247,7 @@ function AdminPanel({ onBack }) {
           }
         }
       }
-    } catch(e) { /* non-critical */ }
+    } catch (e) { /* non-critical */ }
 
     setSaved(editing.email); setTimeout(() => setSaved(""), 2000);
     setEditing(null);
@@ -4279,94 +4267,95 @@ function AdminPanel({ onBack }) {
 
   // ── Login screen ──────────────────────────────────────────────────────
   if (!adminUser) return (
-    <div style={{minHeight:"100vh",background:"#070b12",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
-      <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:24,padding:"44px 48px",width:360,display:"flex",flexDirection:"column",gap:20,alignItems:"center",textAlign:"center"}}>
-        <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1a82ff,#5b4fff)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 32px rgba(26,130,255,.35)"}}>
-          <Logo size={24}/>
+    <div style={{ minHeight: "100vh", background: "#070b12", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans','Helvetica Neue',sans-serif" }}>
+      <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: "44px 48px", width: 360, display: "flex", flexDirection: "column", gap: 20, alignItems: "center", textAlign: "center" }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#1a82ff,#5b4fff)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 32px rgba(26,130,255,.35)" }}>
+          <Logo size={24} />
         </div>
         <div>
-          <div style={{fontSize:22,fontWeight:800,color:"#fff",letterSpacing:"-1px",marginBottom:6}}>Admin</div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.3)",lineHeight:1.6}}>Sign in with your Google account.<br/>Access is restricted to admins.</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 6 }}>Admin</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,.3)", lineHeight: 1.6 }}>Sign in with your Google account.<br />Access is restricted to admins.</div>
         </div>
-        {denied && <div style={{fontSize:12,color:"#ef4444",padding:"8px 14px",background:"rgba(239,68,68,.1)",borderRadius:8,width:"100%"}}>Access denied — your account is not an admin.</div>}
+        {denied && <div style={{ fontSize: 12, color: "#ef4444", padding: "8px 14px", background: "rgba(239,68,68,.1)", borderRadius: 8, width: "100%" }}>Access denied — your account is not an admin.</div>}
         <button onClick={loginWithGoogle} disabled={loading}
-          style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"12px 20px",borderRadius:12,border:"none",background:loading?"rgba(255,255,255,.7)":"rgba(255,255,255,.93)",color:"#111827",fontSize:14,fontWeight:600,fontFamily:"inherit",cursor:loading?"default":"pointer",transition:"all .15s"}}>
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "12px 20px", borderRadius: 12, border: "none", background: loading ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.93)", color: "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: loading ? "default" : "pointer", transition: "all .15s" }}>
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
           {loading ? "Signing in…" : "Continue with Google"}
         </button>
-        <button onClick={onBack} style={{background:"none",border:"none",color:"rgba(255,255,255,.25)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{t("modal.back")}</button>
+        <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(255,255,255,.25)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.back")}</button>
       </div>
     </div>
   );
 
   // ── Admin dashboard ───────────────────────────────────────────────────
   return (
-    <div style={{minHeight:"100vh",background:"#070b12",color:"#fff",fontFamily:"'DM Sans','Helvetica Neue',sans-serif",padding:"40px 32px"}}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-      <div style={{maxWidth:900,margin:"0 auto"}}>
+    <div style={{ minHeight: "100vh", background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", padding: "40px 32px" }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32,flexWrap:"wrap",gap:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:14}}>
-            <img src={adminUser.picture} alt="" style={{width:36,height:36,borderRadius:"50%",border:"2px solid rgba(255,255,255,.1)"}}/>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src={adminUser.picture} alt="" style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid rgba(255,255,255,.1)" }} />
             <div>
-              <div style={{fontSize:20,fontWeight:800,letterSpacing:"-1px"}}>Admin Panel</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>{adminUser.email}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-1px" }}>Admin Panel</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>{adminUser.email}</div>
             </div>
           </div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={addUser} style={{padding:"8px 16px",background:"rgba(26,130,255,.15)",border:"1px solid rgba(26,130,255,.3)",color:"#5ba4ff",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>+ Add user</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={addUser} style={{ padding: "8px 16px", background: "rgba(26,130,255,.15)", border: "1px solid rgba(26,130,255,.3)", color: "#5ba4ff", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
             <button onClick={() => { sessionStorage.removeItem("lp_admin_user"); setAdminUser(null); }}
-              style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Sign out</button>
-            <button onClick={onBack} style={{padding:"8px 14px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.4)",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>← App</button>
+              style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
+            <button onClick={onBack} style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← App</button>
           </div>
         </div>
 
         {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10,marginBottom:24}}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: 10, marginBottom: 24 }}>
           {[["Total users", users.length],
-            ["Free", users.filter(u=>u.plan==="free"||!u.plan).length],
-            ["SDR", users.filter(u=>u.plan==="sdr").length],
-            ["Pro", users.filter(u=>u.plan==="pro").length],
-            ["Team", users.filter(u=>u.plan==="team").length],
+          ["Free", users.filter(u => u.plan === "free" || !u.plan).length],
+          ["SDR", users.filter(u => u.plan === "sdr").length],
+          ["Pro", users.filter(u => u.plan === "pro").length],
+          ["Team", users.filter(u => u.plan === "team").length],
           ].map(([label, val]) => (
-            <div key={label} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.06)",borderRadius:12,padding:"14px 16px"}}>
-              <div style={{fontSize:22,fontWeight:800,letterSpacing:"-1px"}}>{val}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2}}>{label}</div>
+            <div key={label} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px" }}>{val}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 2 }}>{label}</div>
             </div>
           ))}
         </div>
 
         {/* Search */}
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by email…"
-          style={{width:"100%",padding:"10px 16px",borderRadius:10,border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.04)",color:"#fff",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by email…"
+          style={{ width: "100%", padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,.08)", background: "rgba(255,255,255,.04)", color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
 
         {/* User rows */}
-        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {filtered.map(u => (
-            <div key={u.email} style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px 18px"}}>
+            <div key={u.email} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "14px 18px" }}>
               {editing?.email === u.email ? (
-                <div style={{display:"flex",flexWrap:"wrap",gap:10,alignItems:"center"}}>
-                  <div style={{fontWeight:600,fontSize:13,flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.email}</div>
-                  <select value={editing.plan} onChange={e=>setEditing({...editing,plan:e.target.value})}
-                    style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit",cursor:"pointer"}}>
-                    {PLANS.map(p=><option key={p} value={p}>{p} ({PLAN_LIMITS[p].toLocaleString()}/mo)</option>)}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, flex: "1 1 180px", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+                  <select value={editing.plan} onChange={e => setEditing({ ...editing, plan: e.target.value })}
+                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}>
+                    {PLANS.map(p => <option key={p} value={p}>{p} ({PLAN_LIMITS[p].toLocaleString()}/mo)</option>)}
                   </select>
-                  <input type="number" value={editing.balance} onChange={e=>setEditing({...editing,balance:e.target.value})}
-                    style={{width:88,padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:"#fff",fontSize:13,fontFamily:"inherit"}}
-                    placeholder="Credits"/>
-                  <input type="date" value={editing.trial_until||""} onChange={e=>setEditing({...editing,trial_until:e.target.value})}
-                    style={{padding:"6px 10px",borderRadius:8,border:"1px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.06)",color:editing.trial_until?"#fff":"rgba(255,255,255,.3)",fontSize:13,fontFamily:"inherit"}}
-                    title="Trial until (optional)"/>
-                  <button onClick={saveEdit} style={{padding:"6px 16px",background:"#1a82ff",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Save</button>
-                  <button onClick={()=>setEditing(null)} style={{padding:"6px 12px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>{t("modal.cancel")}</button>
+                  <input type="number" value={editing.balance} onChange={e => setEditing({ ...editing, balance: e.target.value })}
+                    style={{ width: 88, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit" }}
+                    placeholder="Credits" />
+                  <input type="date" value={editing.trial_until || ""} onChange={e => setEditing({ ...editing, trial_until: e.target.value })}
+                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: editing.trial_until ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, fontFamily: "inherit" }}
+                    title="Trial until (optional)" />
+                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "#1a82ff", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                  <button onClick={() => setEditing(null)} style={{ padding: "6px 12px", background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.5)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.cancel")}</button>
                 </div>
               ) : (
-                <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-                  <div style={{flex:"1 1 180px",minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:13,fontWeight:500}}>{u.email}</div>
-                  <span style={{fontSize:11,fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",padding:"3px 9px",borderRadius:6,
-                    background:u.plan==="free"||!u.plan?"rgba(255,255,255,.06)":u.plan==="sdr"?"rgba(26,130,255,.15)":u.plan==="pro"?"rgba(91,79,255,.2)":"rgba(16,185,129,.15)",
-                    color:u.plan==="free"||!u.plan?"rgba(255,255,255,.4)":u.plan==="sdr"?"#5ba4ff":u.plan==="pro"?"#a78bfa":"#34d399"
-                  }}>{u.plan||"free"}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 180px", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13, fontWeight: 500 }}>{u.email}</div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", padding: "3px 9px", borderRadius: 6,
+                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(26,130,255,.15)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
+                    color: u.plan === "free" || !u.plan ? "rgba(255,255,255,.4)" : u.plan === "sdr" ? "#5ba4ff" : u.plan === "pro" ? "#a78bfa" : "#34d399"
+                  }}>{u.plan || "free"}</span>
                   {/* Credits live bar */}
                   {(() => {
                     const plan = u.plan || "free";
@@ -4377,30 +4366,30 @@ function AdminPanel({ onBack }) {
                     const pct = Math.min(100, (used / total) * 100);
                     const barColor = pct > 90 ? "#ef4444" : pct > 60 ? "#f59e0b" : "#34d399";
                     return (
-                      <div style={{display:"flex",alignItems:"center",gap:8,flex:"0 0 auto"}}>
-                        <div style={{width:80,height:5,background:"rgba(255,255,255,.08)",borderRadius:3,overflow:"hidden"}}>
-                          <div style={{width:`${pct}%`,height:"100%",background:barColor,borderRadius:3,transition:"width .3s"}}/>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "0 0 auto" }}>
+                        <div style={{ width: 80, height: 5, background: "rgba(255,255,255,.08)", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: barColor, borderRadius: 3, transition: "width .3s" }} />
                         </div>
-                        <span style={{fontSize:12,color:"rgba(255,255,255,.5)",fontVariantNumeric:"tabular-nums",minWidth:70}}>
+                        <span style={{ fontSize: 12, color: "rgba(255,255,255,.5)", fontVariantNumeric: "tabular-nums", minWidth: 70 }}>
                           {bal.toLocaleString()} / {total.toLocaleString()}
                         </span>
                       </div>
                     );
                   })()}
-                  {u.trial_until && new Date(u.trial_until) > new Date() && <span style={{fontSize:11,fontWeight:700,padding:"2px 7px",borderRadius:5,background:"rgba(251,191,36,.1)",color:"#fbbf24"}}>trial until {u.trial_until}</span>}
-                  {saved===u.email && <span style={{fontSize:11,color:"#34d399",fontWeight:600}}>✓ Saved</span>}
-                  <button onClick={()=>setEditing({email:u.email,plan:u.plan||"free",balance:u.balance??0,trial_until:u.trial_until||""})}
-                    style={{padding:"5px 13px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.45)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",marginLeft:"auto"}}>
+                  {u.trial_until && new Date(u.trial_until) > new Date() && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "rgba(251,191,36,.1)", color: "#fbbf24" }}>trial until {u.trial_until}</span>}
+                  {saved === u.email && <span style={{ fontSize: 11, color: "#34d399", fontWeight: 600 }}>✓ Saved</span>}
+                  <button onClick={() => setEditing({ email: u.email, plan: u.plan || "free", balance: u.balance ?? 0, trial_until: u.trial_until || "" })}
+                    style={{ padding: "5px 13px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.45)", borderRadius: 8, fontSize: 12, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto" }}>
                     Edit
                   </button>
                 </div>
               )}
             </div>
           ))}
-          {filtered.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.2)",padding:"48px 0",fontSize:13}}>No users found</div>}
+          {filtered.length === 0 && <div style={{ textAlign: "center", color: "rgba(255,255,255,.2)", padding: "48px 0", fontSize: 13 }}>No users found</div>}
         </div>
 
-        <div style={{marginTop:28,padding:"14px 18px",background:"rgba(255,255,255,.02)",border:"1px solid rgba(255,255,255,.05)",borderRadius:10,fontSize:11,color:"rgba(255,255,255,.2)",lineHeight:1.7}}>
+        <div style={{ marginTop: 28, padding: "14px 18px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, fontSize: 11, color: "rgba(255,255,255,.2)", lineHeight: 1.7 }}>
           Credits synced from Supabase every 15s. Balance shown = remaining credits for this cycle. Bar turns red when &gt; 90% used.
         </div>
       </div>
@@ -4419,7 +4408,7 @@ function AppRouterInner() {
     return "landing";
   });
   useEffect(() => {
-    const APP_HASHES = ["#app","#blog","#admin","#privacy","#terms","","#"];
+    const APP_HASHES = ["#app", "#blog", "#admin", "#privacy", "#terms", "", "#"];
     const onHash = () => {
       const hash = window.location.hash;
       if (hash === "#app") setView("app");
@@ -4433,15 +4422,15 @@ function AppRouterInner() {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
-  const goToApp  = () => { window.location.hash = "app";  setView("app"); };
+  const goToApp = () => { window.location.hash = "app"; setView("app"); };
   const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
-  const goHome   = () => { window.location.hash = "";     setView("landing"); };
+  const goHome = () => { window.location.hash = ""; setView("landing"); };
 
-  if (view === "app")   return <App />;
-  if (view === "blog")  return <Blog onEnterApp={goToApp} onBack={goHome} />;
+  if (view === "app") return <App />;
+  if (view === "blog") return <Blog onEnterApp={goToApp} onBack={goHome} />;
   if (view === "admin") return <AdminPanel onBack={goHome} />;
   if (view === "privacy") return <Legal page="privacy" onBack={goHome} />;
-  if (view === "terms")   return <Legal page="terms" onBack={goHome} />;
+  if (view === "terms") return <Legal page="terms" onBack={goHome} />;
   return <Landing onEnterApp={goToApp} onOpenBlog={goToBlog} />;
 }
 
@@ -4451,20 +4440,20 @@ function CookieNotice() {
   if (hidden) return null;
   return (
     <div style={{
-      position:"fixed", bottom:20, left:"50%", transform:"translateX(-50%)",
-      zIndex:9999, background:"rgba(10,16,26,0.96)", backdropFilter:"blur(20px)",
-      border:"1px solid rgba(255,255,255,0.1)", borderRadius:14,
-      padding:"14px 20px", display:"flex", alignItems:"center", gap:16,
-      boxShadow:"0 8px 40px rgba(0,0,0,0.6)", maxWidth:520, width:"calc(100% - 40px)",
+      position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+      zIndex: 9999, background: "rgba(10,16,26,0.96)", backdropFilter: "blur(20px)",
+      border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14,
+      padding: "14px 20px", display: "flex", alignItems: "center", gap: 16,
+      boxShadow: "0 8px 40px rgba(0,0,0,0.6)", maxWidth: 520, width: "calc(100% - 40px)",
     }}>
-      <span style={{fontSize:12,color:"rgba(255,255,255,0.5)",lineHeight:1.5,flex:1}}>
+      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, flex: 1 }}>
         Vi använder localStorage för att spara din session och inställningar — inga spårningscookies.
-        {" "}<a href="#privacy" style={{color:"rgba(100,180,255,0.7)"}}>Integritetspolicy</a>
+        {" "}<a href="#privacy" style={{ color: "rgba(100,180,255,0.7)" }}>Integritetspolicy</a>
       </span>
-      <button onClick={()=>{localStorage.setItem("lp_cookie_ok","1");setHidden(true);}} style={{
-        background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",border:"none",
-        borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",
-        fontFamily:"inherit",flexShrink:0,
+      <button onClick={() => { localStorage.setItem("lp_cookie_ok", "1"); setHidden(true); }} style={{
+        background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
+        borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer",
+        fontFamily: "inherit", flexShrink: 0,
       }}>OK</button>
     </div>
   );
