@@ -502,7 +502,7 @@ function StepSlideshow() {
       </div>
 
       {/* Step tabs */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 32, justifyContent: "center", flexWrap: "wrap" }}>
+      <div className="step-tabs" style={{ display: "flex", gap: 6, marginBottom: 32, justifyContent: "center", flexWrap: "wrap" }}>
         {SLIDES.map((s, i) => (
           <button key={i} onClick={() => { clearInterval(timerRef.current); go(i); }}
             style={{
@@ -520,7 +520,7 @@ function StepSlideshow() {
       </div>
 
       {/* Main slide layout — HubSpot style: text left, glass visual right */}
-      <div style={{
+      <div className="step-slide-grid" style={{
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
         minHeight: 360,
       }}>
@@ -550,7 +550,7 @@ function StepSlideshow() {
         </div>
 
         {/* Glass visual */}
-        <div style={{
+        <div className="step-slide-visual" style={{
           height: 320,
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 24, overflow: "hidden",
@@ -1420,9 +1420,9 @@ function LiveDemo() {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 28, alignItems: "start" }}>
+      <div className="live-demo-grid" style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 28, alignItems: "start" }}>
         {/* Canvas */}
-        <div style={{
+        <div className="live-demo-canvas-wrap" style={{
           borderRadius: 16, overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.1)",
           boxShadow: "0 40px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(232,0,29,0.2)",
@@ -2497,7 +2497,10 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
               }}
                 onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
                 onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.55)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
-                {lang === "sv" ? "▶ Se hur det fungerar" : "▶ See how it works"}
+                {lang === "sv"
+                  ? <><span style={{ width: 22, height: 22, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,255,255,0.7)" xmlns="http://www.w3.org/2000/svg"><path d="M2 1.5 L8.5 5 L2 8.5 Z" /></svg></span> Se hur det fungerar</>
+                  : <><span style={{ width: 22, height: 22, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,255,255,0.7)" xmlns="http://www.w3.org/2000/svg"><path d="M2 1.5 L8.5 5 L2 8.5 Z" /></svg></span> See how it works</>
+                }
               </button>
             </div>
           </div>
@@ -2515,7 +2518,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
 
         {/* ── STATS ─────────────────────────────────── */}
         <section ref={statsRef} style={{ padding: "80px 48px", borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ maxWidth: 1040, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "stretch" }}>
+          <div className="stats-grid" style={{ maxWidth: 1040, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "stretch" }}>
             <HiDemoCard lang={lang} statsVis={statsVis} />
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {[
@@ -2539,9 +2542,9 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
           <div style={{ maxWidth: 1140, margin: "0 auto" }}>
             <div ref={featRef} style={{ textAlign: "center", marginBottom: 72, opacity: featVis ? 1 : 0, transform: featVis ? "translateY(0)" : "translateY(28px)", transition: "opacity .8s, transform .8s" }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Funktioner" : "Features"}</div>
-              <h2 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", margin: 0 }}>
-                <span style={{ color: "rgba(255,255,255,0.5)" }}>{lang === "sv" ? "Allt du behöver för att" : "Everything you need"}</span><br />
-                <span style={{ display: "inline-block", animation: "floatPulse 3s ease-in-out infinite" }}>
+              <h2 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", margin: 0, color: "#fff" }}>
+                {lang === "sv" ? "Allt du behöver för att" : "Everything you need"}<br />
+                <span style={{ display: "inline-block", animation: "floatPulse 3s ease-in-out infinite", color: "#fff" }}>
                   <CDShimmerText dark={darkMode}>{lang === "sv" ? "sticka ut i inkorgen." : "to stand out in the inbox."}</CDShimmerText>
                 </span>
               </h2>
@@ -2659,8 +2662,6 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
                 { q: lang === "sv" ? "Vilka bildformat stöds?" : "What image formats does it support?", a: lang === "sv" ? "PNG, JPG, WEBP och HEIC (iPhone-foton). HEIC-filer konverteras automatiskt i webbläsaren — inget externt verktyg behövs." : "PNG, JPG, WEBP and HEIC (iPhone photos). HEIC files are automatically converted in the browser — no external tool needed." },
                 { q: lang === "sv" ? "Hur fungerar automatisk logotypdetektering?" : "How does automatic logo detection work?", a: lang === "sv" ? "Skriv ett företagsnamn eller domän och Logoplacers söker i flera logotypdatabaser samtidigt. Det validerar varje resultat och faller tillbaka elegant om ingen logotyp hittas." : "Type a company name or domain and Logoplacers queries multiple logo databases simultaneously. It validates each result and falls back gracefully if a logo cannot be found." },
                 { q: lang === "sv" ? "Finns det en gratis provperiod?" : "Is there a free trial?", a: lang === "sv" ? "Ja — gratisplanen ger dig 4 krediter per dag utan kreditkort. Betalplaner börjar på $19/månad för 300 krediter." : "Yes — the Free plan gives you 4 credits per day with no credit card required. Paid plans start at $19/month for 300 credits." },
-                { q: lang === "sv" ? "Hur avbryter jag min prenumeration?" : "How do I cancel my subscription?", a: lang === "sv" ? "Du kan avbryta när som helst via kundportalen — klicka på din plan i appen för att hantera eller avbryta prenumerationen. Ingen bindningstid, inga avgifter efter avbokning." : "You can cancel anytime via the customer portal — click your plan in the app to manage or cancel your subscription. No lock-in, no charges after cancellation." },
-                { q: lang === "sv" ? "Kan jag radera mitt konto och all min data?" : "Can I delete my account and all my data?", a: lang === "sv" ? "Ja. Klicka på 'Radera konto' i appen eller skicka ett mejl till hello@logoplacers.com. Vi raderar alla dina kontouppgifter och projektdata inom 30 dagar, i enlighet med GDPR." : "Yes. Click 'Delete account' in the app or email hello@logoplacers.com. We will delete all your account data and project data within 30 days, in accordance with GDPR." },
               ].map((f, i) => <FAQ key={i} {...f} />)}
             </div>
           </div>
@@ -2688,14 +2689,42 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
         @keyframes featurePulse { 0%,100%{opacity:.7} 50%{opacity:1} }
         @keyframes floatPulse { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-6px)} }
 
+        /* ── Mobile responsive ── */
         @media (max-width: 768px) {
+          /* Stats cards: 2x2 */
           .dashboard-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+          /* Stats section: HiDemoCard + stat boxes stack vertically */
+          .stats-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+          /* Step slideshow: text on top, visual below */
+          .step-slide-grid { grid-template-columns: 1fr !important; gap: 20px !important; min-height: unset !important; }
+          .step-slide-visual { height: 240px !important; }
+
+          /* Step tabs: horizontally scrollable, no wrapping */
+          .step-tabs { flex-wrap: nowrap !important; overflow-x: auto !important; justify-content: flex-start !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+          .step-tabs::-webkit-scrollbar { display: none; }
+
+          /* Live demo: canvas scrollable, controls below */
+          .live-demo-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+          .live-demo-canvas-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+          .live-demo-canvas-wrap canvas { min-width: 480px; height: auto !important; }
+
+          /* Section padding */
           section { padding-left: 20px !important; padding-right: 20px !important; }
           nav { padding: 0 16px !important; }
+
+          /* Hide floating dock on mobile */
           .floating-dock { display: none !important; }
+
+          /* Hero padding */
+          .hero-section { padding: 80px 20px 60px !important; }
+          .hero-h1 { font-size: clamp(32px,8vw,52px) !important; }
         }
+
         @media (max-width: 480px) {
-          .dashboard-cards-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .dashboard-cards-grid { gap: 10px !important; }
+          .step-slide-visual { height: 200px !important; }
         }
 
         /* ── Light mode overrides ── */
