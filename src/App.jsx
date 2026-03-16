@@ -2575,6 +2575,15 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
   const sendAll = async () => {
     // Credit check: 1 credit per send
+    console.log("[Send] selectedContacts:", selectedContacts.length, "token:", !!token, "credits:", creditsBalance);
+    if (selectedContacts.length === 0) {
+      setSendErrMsg("No recipients selected — make sure contacts have email addresses.");
+      return;
+    }
+    if (!token) {
+      setSendErrMsg("Gmail not connected — go back and connect Gmail first.");
+      return;
+    }
     if (spendCredits && !spendCredits(selectedContacts.length)) {
       onUpgrade?.();
       return;
