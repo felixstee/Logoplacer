@@ -2361,7 +2361,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
               {MOCKUP_TEMPLATES.map(tmpl => (
                 <button key={tmpl.id} onClick={() => setTemplateId(tmpl.id)} style={{
-                  background: templateId === tmpl.id ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,.04)",
+                  background: templateId === tmpl.id ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,.04)",
                   border: `1px solid ${templateId === tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
                   borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600,
                   color: templateId === tmpl.id ? "#fff" : "var(--t3)", cursor: "pointer", fontFamily: "inherit",
@@ -2784,7 +2784,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {step === "approve" && (
             <>
               <button className="btn-s" onClick={() => setStep("compose")}>{t("modal.back")}</button>
-              <button className="btn-p" style={{ width: "auto", padding: "8px 20px", background: "var(--green)" }} onClick={sendAll}>
+              <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={sendAll}>
                 ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
               </button>
             </>
@@ -3280,7 +3280,7 @@ function CreditBadge({ credits, onUpgrade }) {
       </div>
       {low && (
         <button onClick={onUpgrade} style={{
-          background: "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))", color: "#fff", border: "none",
+          background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.2)",
           borderRadius: 7, padding: "4px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
         }}>Upgrade</button>
       )}
@@ -3338,9 +3338,9 @@ function UpgradeModal({ onClose, credits }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12 }}>
             {plans.map(p => (
               <div key={p.key} style={{
-                border: `1px solid ${p.highlight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.07)"}`,
+                border: `1px solid ${p.highlight ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.07)"}`,
                 borderRadius: 14, padding: "18px 16px",
-                background: p.highlight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.02)",
+                background: p.highlight ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.02)",
                 display: "flex", flexDirection: "column", gap: 10,
                 boxShadow: p.highlight ? "0 0 40px rgba(255,255,255,0.85)" : "none",
                 transition: "transform .15s, box-shadow .15s",
@@ -3361,7 +3361,7 @@ function UpgradeModal({ onClose, credits }) {
                   disabled={p.current || loading === p.key}
                   onClick={() => handleUpgrade(p)}
                   style={{
-                    background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))" : "rgba(255,255,255,0.06)",
+                    background: p.current ? "var(--bg4)" : p.highlight ? "#000" : "rgba(255,255,255,0.06)",
                     color: p.current ? "var(--t4)" : "#fff",
                     border: p.highlight ? "none" : "0.5px solid rgba(255,255,255,0.1)",
                     borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700,
@@ -3828,8 +3828,20 @@ function App() {
   const getImageBlob = async (company) => {
     if (!baseImageRef.current) throw new Error("no base image");
     const { w, h } = canvasSizeRef.current;
-    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, canvasBg);
-    return new Promise(res => off.toBlob(res, "image/png"));
+    const off = renderComposite(
+      baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize,
+      w, h, textLayers, symbols,
+      company.personName, company.companyName, company.logoEl,
+      { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
+    );
+    return new Promise((res, rej) => {
+      const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
+      off.toBlob(blob => {
+        clearTimeout(timeout);
+        if (!blob) rej(new Error("Failed to render image"));
+        else res(blob);
+      }, "image/png");
+    });
   };
 
   const showPreview = () => {
@@ -4126,7 +4138,7 @@ function App() {
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6,
                       border: `1.5px solid ${eyedropperActive ? "var(--blue)" : "var(--sep)"}`,
-                      background: eyedropperActive ? "rgba(255,255,255,0.85)" : "var(--bg4)",
+                      background: eyedropperActive ? "rgba(255,255,255,0.2)" : "var(--bg4)",
                       cursor: "pointer", flexShrink: 0, transition: "all .15s"
                     }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive ? "rgba(255,255,255,0.75)" : "var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -4560,7 +4572,7 @@ function AdminPanel({ onBack }) {
   if (!adminUser) return (
     <div style={{ minHeight: "100vh", background: "#070b12", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans','Helvetica Neue',sans-serif" }}>
       <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: "44px 48px", width: 360, display: "flex", flexDirection: "column", gap: 20, alignItems: "center", textAlign: "center" }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 32px rgba(255,255,255,0.85)" }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: "#000", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "none" }}>
           <Logo size={24} />
         </div>
         <div>
@@ -4593,7 +4605,7 @@ function AdminPanel({ onBack }) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={addUser} style={{ padding: "8px 16px", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.85)", color: "rgba(255,255,255,0.75)", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
+            <button onClick={addUser} style={{ padding: "8px 16px", background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
             <button onClick={() => { sessionStorage.removeItem("lp_admin_user"); setAdminUser(null); }}
               style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
             <button onClick={onBack} style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← App</button>
@@ -4636,7 +4648,7 @@ function AdminPanel({ onBack }) {
                   <input type="date" value={editing.trial_until || ""} onChange={e => setEditing({ ...editing, trial_until: e.target.value })}
                     style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: editing.trial_until ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, fontFamily: "inherit" }}
                     title="Trial until (optional)" />
-                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "rgba(255,255,255,0.85)", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
                   <button onClick={() => setEditing(null)} style={{ padding: "6px 12px", background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.5)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.cancel")}</button>
                 </div>
               ) : (
@@ -4644,7 +4656,7 @@ function AdminPanel({ onBack }) {
                   <div style={{ flex: "1 1 180px", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13, fontWeight: 500 }}>{u.email}</div>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", padding: "3px 9px", borderRadius: 6,
-                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(255,255,255,0.85)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
+                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(255,255,255,0.12)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
                     color: u.plan === "free" || !u.plan ? "rgba(255,255,255,.4)" : "rgba(255,255,255,0.75)"
                   }}>{u.plan || "free"}</span>
                   {/* Credits live bar */}
