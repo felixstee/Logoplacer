@@ -232,23 +232,22 @@ const style = `
   .email-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
 
   /* ── Buttons ─────────────────────────────────────────── */
-  /* Primary — solid brand gradient */
-  .btn-p { background: var(--brand-grad); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s, transform .1s; box-shadow: 0 4px 20px rgba(255,255,255,0.1); letter-spacing: -.1px; }
-  .btn-p:hover { opacity: .9; box-shadow: 0 6px 28px rgba(255,255,255,0.15); transform: translateY(-1px); }
+  /* Primary — solid black */
+  .btn-p { background: #000; color: #fff; border: 1px solid rgba(255,255,255,0.15); font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: all .15s; letter-spacing: -.1px; }
+  .btn-p:hover { background: #111; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 0 1px rgba(205,180,219,0.4), 0 0 12px rgba(205,180,219,0.2); }
   .btn-p:active { transform: translateY(0); }
-  .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; box-shadow: none; transform: none; }
+  .btn-p:disabled { background: var(--bg4); color: var(--t4); border-color: var(--sep); cursor: not-allowed; box-shadow: none; }
 
-  /* Secondary — black with gradient outline */
-  .btn-s { position: relative; background: var(--bg3); color: var(--t1); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid var(--sep); overflow: hidden; }
-  .btn-s::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--brand-grad); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .15s; }
-  .btn-s:hover { background: var(--bg4); color: #fff; border-color: transparent; }
-  .btn-s:hover::before { opacity: 1; }
+  /* Secondary — also black */
+  .btn-s { position: relative; background: #000; color: #fff; font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
+  .btn-s::before { display: none; }
+  .btn-s:hover { background: #111; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 0 1px rgba(205,180,219,0.35), 0 0 10px rgba(205,180,219,0.18); }
   .btn-s:disabled { opacity: .35; cursor: not-allowed; }
 
   /* Ghost — just the gradient border on black */
-  .btn-ghost { position: relative; background: #000; color: rgba(255,255,255,0.75); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid transparent; }
-  .btn-ghost::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--brand-grad); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-  .btn-ghost:hover { background: var(--brand-dim); color: #fff; }
+  .btn-ghost { position: relative; background: #000; color: rgba(255,255,255,0.75); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid rgba(255,255,255,0.15); }
+  .btn-ghost::before { display: none; }
+  .btn-ghost:hover { background: #111; border-color: rgba(255,255,255,0.3); color: #fff; }
 
   .btn-text { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 3px; transition: opacity .15s; }
   .btn-text:hover { opacity: .75; }
@@ -350,8 +349,8 @@ const style = `
   @keyframes slideIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
   /* Co-row hover — subtle slide-right reveal */
-  .co-row { transition: background .12s, padding-left .12s; }
-  .co-row:hover { background: rgba(255,255,255,0.85) !important; padding-left: 17px; }
+  .co-row { transition: background .12s, padding-left .12s, border-color .12s; }
+  .co-row:hover { background: rgba(255,255,255,0.05) !important; padding-left: 17px; border-color: rgba(255,255,255,0.2) !important; }
 
   /* Card hover lift */
   .card { transition: border-color .2s, box-shadow .2s; }
@@ -3663,17 +3662,8 @@ function App() {
     setSaving(true);
     try {
       // Upload base image if exists
-      let base_image_url = undefined; // undefined = don't overwrite existing
-      if (baseImageRef.current && canvasSizeRef.current.w > 0) {
-        const canvas = document.createElement("canvas");
-        const { w, h } = canvasSizeRef.current;
-        canvas.width = w; canvas.height = h;
-        canvas.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
-        const uploaded = await sbUploadBaseImage(email, canvas.toDataURL("image/png"));
-        if (uploaded) base_image_url = uploaded;
-      }
       const settings = { logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos };
-      const saveData = base_image_url !== undefined ? { base_image_url, settings } : { settings };
+      const saveData = { settings };
       const project = await sbSaveProject(email, saveData);
       const pid = (Array.isArray(project) ? project[0]?.id : project?.id) || projectId;
       if (pid) {
@@ -4004,14 +3994,14 @@ function App() {
                 { step: "6", tkey: "manual.step6" },
               ].map(s => (
                 <div key={s.step} style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--blue-dim)", border: "1px solid rgba(255,255,255,0.85)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--blue)", flexShrink: 0 }}>{s.step}</div>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "#000", border: "1px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{s.step}</div>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t1)", marginBottom: 4 }}>{t(`${s.tkey}.title`)}</div>
                     <div style={{ fontSize: 13, color: "var(--t3)", lineHeight: 1.6 }}>{t(`${s.tkey}.body`)}</div>
                   </div>
                 </div>
               ))}
-              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(26,130,255,.06)", border: "1px solid rgba(255,255,255,0.85)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
+              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
                 {t("app.credits_info")}
               </div>
             </div>
