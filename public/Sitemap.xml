@@ -1,103 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.logoplacers.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.logoplacers.com/#blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.logoplacers.com/#privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.logoplacers.com/#terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 
-
-https://logoplacers.com/
-1.0
-weekly
-
-
-https://logoplacers.com/#features
-0.8
-
-
-https://logoplacers.com/#how-it-works
-0.8
-
-
-https://logoplacers.com/#pricing
-0.9
-
-
-https://logoplacers.com/#blog
-0.9
-weekly
-
-
-https://logoplacers.com/#faq
-0.7
-
-
-https://logoplacers.com/blog/personalised-demos-reply-rate
-0.8
-monthly
-
-
-https://logoplacers.com/blog/cold-email-personalisation-sdrs
-0.8
-monthly
-
-
-https://logoplacers.com/blog/visual-demos-b2b-outreach
-0.8
-monthly
-
-
-https://logoplacers.com/blog/gmail-bulk-send-personalised
-0.8
-monthly
-
-
-https://logoplacers.com/blog/logo-personalisation-saas-sales
-0.7
-monthly
-
-
-https://logoplacers.com/blog/what-is-logoplacers
-0.9
-monthly
-
-
-https://logoplacers.com/blog/sales-outreach-personalisation-2025
-0.8
-monthly
-
-
-https://logoplacers.com/blog/figma-alternative-sales-demos
-0.8
-monthly
-
-
-https://logoplacers.com/blog/increase-cold-email-open-rates
-0.7
-monthly
-
-
-https://logoplacers.com/blog/sales-demo-before-first-call
-0.7
-monthly
-
-
-https://logoplacers.com/blog/ai-sales-tools-2025
-0.7
-monthly
-
-
-https://logoplacers.com/blog/loom-alternative-b2b-sales
-0.8
-monthly
-
-
-https://logoplacers.com/blog/personalise-outreach-without-hours
-0.7
-monthly
-
-
-https://logoplacers.com/blog/track-email-opens-gmail
-0.7
-monthly
-
-
-https://logoplacers.com/blog/personalised-images-email-body
-0.7
-monthly
-
-
+  <!-- Blog posts (EN) -->
+  <url><loc>https://www.logoplacers.com/#personalised-demos-reply-rate</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#cold-email-personalisation-sdrs</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#visual-demos-b2b-outreach</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#gmail-bulk-send-personalised</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#logo-personalisation-saas-sales</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#write-cold-email-that-gets-replies</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#sales-email-templates-b2b</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#best-sales-tool-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#how-to-use-logoplacers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.logoplacers.com/#increase-reply-rates-cold-outreach</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#what-is-logoplacers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.logoplacers.com/#figma-alternative-sales-demos</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#seo-for-saas-sales-tools</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#cold-email-personalisation-calculator</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#startup-outbound-first-100-customers</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#landing-page-conversion-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#how-to-write-for-sdr</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#outbound-sales-team-structure</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#digital-sales-room</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#price-objection-handling</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#email-open-rate-improvement</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#ab-testing-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#deliverability-cold-email-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#follow-up-email-sequence</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#saas-outbound-playbook</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#linkedin-outreach-vs-cold-email</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#best-time-to-send-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#personalisation-at-scale-tactics</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#cold-email-metrics-benchmarks</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#video-vs-image-cold-email</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#outbound-sales-mistakes</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#growth-hacking-b2b-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#account-based-selling-guide</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#revenue-intelligence-tools</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#champion-building-sales</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#cold-calling-vs-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#saas-pricing-strategy</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#referral-program-b2b-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#saas-go-to-market-guide</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#detailing-cold-email-anatomy</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#email-warming-guide</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.logoplacers.com/#account-executive-skills</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#saas-trial-conversion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#storytelling-b2b-sales</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#outbound-sales-mistakes</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#trust-signals-b2b</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#negotiation-tactics-b2b</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#sales-tech-stack-guide</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.logoplacers.com/#gdpr-sales-tools-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+</urlset>

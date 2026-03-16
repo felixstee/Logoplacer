@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { useLang, useT } from "./i18n.jsx";
 
-function Logo({ size = 28 }) {
+function Logo({ size = 32 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <defs><linearGradient id="llg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#1a82ff"/><stop offset="1" stopColor="#5b4fff"/></linearGradient></defs>
-      <rect width="32" height="32" rx="9" fill="url(#llg)"/>
-      <rect x="4" y="4" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="17" y="4" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="4" y="17" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="17" y="17" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".28"/>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="22" fill="#000"/>
+      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke="white" strokeWidth="9" fill="none" strokeLinecap="square"/>
+      <line x1="52" y1="28" x2="80" y2="58" stroke="white" strokeWidth="7" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -41,10 +37,28 @@ You may delete your account by contacting hello@logoplacers.com. Upon request, w
 6. GDPR
 If you are located in the European Economic Area, you have the right to access, correct, and delete your personal data. Contact hello@logoplacers.com to exercise these rights.
 
-7. COOKIES
-We use sessionStorage and localStorage in your browser to maintain your session and save preferences. We do not use tracking cookies.
+7. LOCAL STORAGE & COOKIES
+We use your browser's localStorage and sessionStorage to store the following — no tracking cookies are used:
 
-8. CONTACT
+- lp_gdpr_consent — records that you have accepted this policy
+- lp_cookie_ok / lp_cookie_no — records your cookie banner choice
+- lp_lang — your language preference (en/sv)
+- lp_credits — your current credit balance and plan, synced from our servers
+- lp_verified_plan — your verified subscription plan for the current session
+
+None of these values are shared with third parties or used for advertising.
+
+8. YOUR RIGHTS (GDPR)
+If you are located in the European Economic Area, you have the following rights:
+- Right of access: request a copy of your personal data
+- Right to rectification: correct inaccurate data
+- Right to erasure: delete your account and all associated data
+- Right to data portability: receive your data in a machine-readable format
+- Right to object: object to processing of your data
+
+To exercise any of these rights, contact hello@logoplacers.com. You may also delete your account directly in the app. We will fulfil all requests within 30 days.
+
+9. CONTACT
 hello@logoplacers.com`;
 
 const TERMS = `Last updated: March 2025
@@ -118,10 +132,28 @@ Du kan ta bort ditt konto genom att kontakta hello@logoplacers.com. Vi raderar d
 6. GDPR
 Om du befinner dig inom EES har du ratt att komma at, korrigera och ta bort dina personuppgifter. Kontakta hello@logoplacers.com for att utova dessa rattigheter.
 
-7. COOKIES
-Vi anvander sessionStorage och localStorage i din webblesare. Vi anvander inte spar-cookies.
+7. LOKAL LAGRING & COOKIES
+Vi använder din webbläsares localStorage och sessionStorage för att lagra följande — inga spårningscookies används:
 
-8. KONTAKT
+- lp_gdpr_consent — registrerar att du har accepterat denna policy
+- lp_cookie_ok / lp_cookie_no — registrerar ditt val i cookie-bannern
+- lp_lang — din språkinställning (en/sv)
+- lp_credits — din nuvarande kreditbalans och plan, synkroniserad från våra servrar
+- lp_verified_plan — din verifierade prenumerationsplan för den aktuella sessionen
+
+Inget av dessa värden delas med tredje part eller används för reklam.
+
+8. DINA RÄTTIGHETER (GDPR)
+Om du befinner dig inom EES har du följande rättigheter:
+- Rätt till tillgång: begär en kopia av dina personuppgifter
+- Rätt till rättelse: korrigera felaktiga uppgifter
+- Rätt till radering: radera ditt konto och all tillhörande data
+- Rätt till dataportabilitet: ta emot dina uppgifter i maskinläsbart format
+- Rätt att invända: invända mot behandling av dina uppgifter
+
+För att utöva någon av dessa rättigheter, kontakta hello@logoplacers.com. Du kan även radera ditt konto direkt i appen. Vi uppfyller alla förfrågningar inom 30 dagar.
+
+9. KONTAKT
 hello@logoplacers.com`;
 
 const TERMS_SV = `Senast uppdaterad: Mars 2025
@@ -178,7 +210,7 @@ export default function Legal({ page = "privacy", onBack }) {
       <div style={{maxWidth:720,margin:"0 auto",padding:"60px 24px 100px"}}>
         <div style={{display:"flex",gap:8,marginBottom:40}}>
           {["privacy","terms"].map(t2=>(
-            <button key={t2} onClick={()=>setTab(t2)} style={{background:tab===t2?"rgba(26,130,255,.12)":"rgba(255,255,255,.04)",border:`1px solid ${tab===t2?"rgba(26,130,255,.3)":"rgba(255,255,255,.08)"}`,color:tab===t2?"#60a5fa":"rgba(255,255,255,.4)",borderRadius:10,padding:"8px 18px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+            <button key={t2} onClick={()=>setTab(t2)} style={{background:tab===t2?"rgba(255,107,0,.12)":"rgba(255,255,255,.04)",border:`1px solid ${tab===t2?"rgba(255,107,0,.3)":"rgba(255,255,255,.08)"}`,color:tab===t2?"#ff8533":"rgba(255,255,255,.4)",borderRadius:10,padding:"8px 18px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
               {t2==="privacy"?t("legal.privacy_title"):t("legal.terms_title")}
             </button>
           ))}

@@ -1,19 +1,35 @@
 import { useState, useEffect } from "react";
 import { useLang, useT } from "./i18n.jsx";
 
-function Logo({ size = 32 }) {
+function Logo({ size = 32, invert = false }) {
+  const bg = invert ? "#fff" : "#000";
+  const stroke = invert ? "#000" : "white";
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <defs><linearGradient id="blg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stopColor="#1a82ff"/><stop offset="1" stopColor="#5b4fff"/></linearGradient></defs>
-      <rect width="32" height="32" rx="9" fill="url(#blg)"/>
-      <rect x="4" y="4" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="17" y="4" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="4" y="17" width="11" height="11" rx="3" fill="white" opacity=".6"/>
-      <rect x="17" y="17" width="11" height="11" rx="3" fill="white" opacity=".95"/>
-      <rect x="13" y="13" width="6" height="6" rx="1.5" fill="white" opacity=".28"/>
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" rx="22" fill={bg}/>
+      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke={stroke} strokeWidth="9" fill="none" strokeLinecap="square"/>
+      <line x1="52" y1="28" x2="80" y2="58" stroke={stroke} strokeWidth="9" strokeLinecap="round"/>
     </svg>
   );
 }
+
+function CDShimmerText({ children, style = {}, dark = true }) {
+  const lightGrad = "linear-gradient(105deg, #000 0%, #3a1a5e 18%, #1a3a5e 30%, #3a1a3a 42%, #1a2a3a 54%, #2a1a3a 66%, #1a1a00 78%, #000 88%, #3a1a5e 100%)";
+  const darkGrad  = "linear-gradient(105deg, #fff 0%, #e8c8ff 18%, #b8e8ff 30%, #ffe8f8 42%, #c8f8ff 54%, #f8c8ff 66%, #fff8e8 78%, #fff 88%, #e8c8ff 100%)";
+  return (
+    <span style={{
+      background: dark ? darkGrad : lightGrad,
+      backgroundSize: "200% auto",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      animation: "cdShimmer 4s linear infinite",
+      display: "inline",
+      ...style,
+    }}>{children}</span>
+  );
+}
+
 
 const POSTS = [
   // ENGLISH
@@ -121,16 +137,16 @@ const POSTS = [
   {slug:"saljpsykologi-sv",lang:"sv",title:"Säljpsykologi: Varför prospekter säger ja (och nej)",excerpt:"Att första de psykologiska drivkrafterna bakom kopbeslut ger dig ett avgörande övertag i säljprocessen.",cat:"Strategi",rt:"6 min",date:"Sep 2024",tags:["psykologi","kopbeslut","salj"],body:"Varje kopbeslut drivs av en kombination av rationella och emotionella faktorer. Första dessa faktorer och du kan designa ett säljprocessen som kanner sig naturlig snarare än tvingande.\n\nReciprocitetsprincipen: När någon ger oss nagonting, kanner vi oss socialt forpliktade att ge tillbaka. I säljkontext: ge forst. En personaliserad demobild, en relevant insikt, ett introduktion — dessa handlingår aktiverar reciprocitetsreflexen och skapar en mer mottaglig kopare.\n\nSocialt bevis: Vi tolkar andras beteende som signal om rätt handling. 'Team på [Företag] använder det har' är mer overtalande än vad du sjalf säger om verktyget. Det är därfor kundlogotyper på hemsidan och specifika case studies i säljprocessen är så kraftfulla.\n\nFörlustorsak (Loss Aversion): Vi är tvingade att undvika forluster starkare än att uppna vinster. 'Ditt team förlorar 3 timmar per dag på manuell personalisering' registreras starkare än 'Ditt team kan spara 3 timmar per dag'. Raminen ditt värdeerbjudande kring forlust, inte bara vinst.\n\nFörankring: Det första priset en person ser ankrar alla efterfoljande bedomningår. Visa alltid din högsta plan forst. När prospekten ser $59/manad-planen forst, kanner $29/manad-planen sig som ett fynd.\n\nBeslutsarstning: För många val leder till paralys. En enkel pricing-sida med tre tydliga alternativ konverterar bättre än sju alternativ med hundratals funktionsjamforelser. Forenkla beslutet till dess minsta element."},
 ];
 
-const CAT_COLORS = {Strategy:"#1a82ff",Playbook:"#8b5cf6",Tutorial:"#10b981",Industry:"#f59e0b",Comparison:"#ec4899",Product:"#06b6d4",Strategi:"#1a82ff",Spelbok:"#8b5cf6",Guide:"#10b981",Bransch:"#f59e0b"};
+const CAT_COLORS = {Strategy:"rgba(255,255,255,0.7)",Playbook:"rgba(220,190,255,0.8)",Tutorial:"rgba(180,240,220,0.8)",Industry:"rgba(255,220,140,0.7)",Comparison:"rgba(220,190,255,0.85)",Product:"rgba(160,230,255,0.8)",Strategi:"rgba(255,255,255,0.7)",Spelbok:"rgba(220,190,255,0.8)",Guide:"rgba(180,240,220,0.8)",Bransch:"rgba(255,220,140,0.7)"};
 
 function BlogCard({ p, onClick }) {
   const [hov, setHov] = useState(false);
   const t = useT();
-  const c = CAT_COLORS[p.cat] || "#1a82ff";
+  const c = CAT_COLORS[p.cat] || "rgba(220,190,255,0.85)";
   return (
     <article onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} onClick={()=>onClick(p)}
       itemScope itemType="https://schema.org/BlogPosting"
-      style={{background:hov?"rgba(255,255,255,.045)":"rgba(255,255,255,.018)",border:`1px solid ${hov?`${c}44`:"rgba(255,255,255,.06)"}`,borderRadius:20,padding:"26px 24px",cursor:"pointer",transition:"border-color .2s,background .2s,box-shadow .2s,transform .2s",boxShadow:hov?`0 14px 44px rgba(0,0,0,.3),0 0 0 0.5px ${c}18`:"none",transform:hov?"translateY(-2px)":"translateY(0)",display:"flex",flexDirection:"column",gap:13}}>
+      style={{background:hov?"rgba(255,255,255,.07)":"rgba(255,255,255,.03)",border:`1px solid ${hov?"rgba(220,190,255,0.4)":"rgba(255,255,255,.07)"}`,boxShadow:hov?"0 0 30px rgba(220,190,255,0.08), 0 14px 44px rgba(0,0,0,.35)":"none",borderRadius:20,padding:"26px 24px",cursor:"pointer",transition:"border-color .2s,background .2s,box-shadow .2s,transform .2s",boxShadow:hov?`0 14px 44px rgba(0,0,0,.3),0 0 0 0.5px ${c}18`:"none",transform:hov?"translateY(-2px)":"translateY(0)",display:"flex",flexDirection:"column",gap:13}}>
       <meta itemProp="headline" content={p.title}/>
       <meta itemProp="datePublished" content={p.date}/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
@@ -151,7 +167,7 @@ function BlogCard({ p, onClick }) {
 }
 
 function BlogPost({ p, onBack }) {
-  const c = CAT_COLORS[p.cat] || "#1a82ff";
+  const c = CAT_COLORS[p.cat] || "rgba(220,190,255,0.85)";
   const t = useT();
   useEffect(() => {
     window.scrollTo(0,0);
@@ -166,7 +182,7 @@ function BlogPost({ p, onBack }) {
         {t("blog.all_posts")}
       </button>
       <span style={{fontSize:10,fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:c,background:`${c}14`,border:`1px solid ${c}30`,borderRadius:6,padding:"4px 10px",display:"inline-block",marginBottom:20}}>{p.cat}</span>
-      <h1 style={{fontSize:"clamp(24px,4vw,40px)",fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 16px",lineHeight:1.15,color:"#fff"}}>{p.title}</h1>
+      <h1 style={{fontSize:"clamp(24px,4vw,40px)",fontWeight:800,letterSpacing:"-1.5px",margin:"0 0 16px",lineHeight:1.15,color:"#fff"}}><CDShimmerText dark={true}>{p.title}</CDShimmerText></h1>
       <div style={{display:"flex",gap:14,marginBottom:48,fontSize:12,color:"rgba(255,255,255,.28)"}}>
         <span>{p.date}</span><span>·</span><span>{p.rt} read</span>
         {p.lang==="sv" && <span style={{background:"rgba(255,255,255,.06)",padding:"1px 7px",borderRadius:5}}>Svenska</span>}
@@ -190,10 +206,10 @@ function BlogPost({ p, onBack }) {
       <div style={{display:"flex",flexWrap:"wrap",gap:7,marginTop:40,paddingTop:32,borderTop:"1px solid rgba(255,255,255,.06)"}}>
         {p.tags.map(tag=><span key={tag} style={{fontSize:11,color:"rgba(255,255,255,.32)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:6,padding:"3px 9px"}}>#{tag}</span>)}
       </div>
-      <div style={{marginTop:56,background:"rgba(26,130,255,.07)",border:"1px solid rgba(26,130,255,.2)",borderRadius:20,padding:"32px 28px",textAlign:"center"}}>
+      <div style={{marginTop:56,background:"rgba(220,190,255,.07)",border:"1px solid rgba(220,190,255,.2)",borderRadius:20,padding:"32px 28px",textAlign:"center"}}>
         <p style={{fontSize:14,color:"rgba(255,255,255,.5)",margin:"0 0 8px"}}>{t("blog.cta_sub")}</p>
         <h3 style={{fontSize:20,fontWeight:800,letterSpacing:"-1px",margin:"0 0 20px",color:"#fff"}}>{t("blog.cta_title")}</h3>
-        <a href="#app" style={{display:"inline-block",background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",textDecoration:"none",borderRadius:12,padding:"12px 28px",fontSize:14,fontWeight:700,boxShadow:"0 8px 24px rgba(26,130,255,.35)"}}>
+        <a href="#app" style={{display:"inline-block",background:"linear-gradient(105deg,#fff 0%,#e8c8ff 30%,#f8c8ff 60%,#fff 100%)",backgroundSize:"200% auto",animation:"cdShimmer 4s linear infinite",color:"#000",textDecoration:"none",borderRadius:12,padding:"12px 28px",fontSize:14,fontWeight:700,boxShadow:"0 8px 28px rgba(220,190,255,0.3)"}}>
           {t("blog.cta_btn")} →
         </a>
       </div>
@@ -212,9 +228,9 @@ function BlogIndex({ onPost }) {
   return (
     <div style={{maxWidth:1100,margin:"0 auto",padding:"60px 24px 80px"}}>
       <div style={{textAlign:"center",marginBottom:56}}>
-        <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"#1a82ff",textTransform:"uppercase",marginBottom:14}}>Blog</div>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:"2px",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",marginBottom:14}}>Blog</div>
         <h1 style={{fontSize:"clamp(32px,5vw,56px)",fontWeight:800,letterSpacing:"-2.5px",margin:"0 0 14px",lineHeight:1.04}}>
-          {t("blog.title")}
+          <CDShimmerText dark={true}>{t("blog.title")}</CDShimmerText>
         </h1>
         <p style={{fontSize:16,color:"rgba(255,255,255,.36)",maxWidth:420,margin:"0 auto 28px"}}>
           {t("blog.sub")}
@@ -222,12 +238,12 @@ function BlogIndex({ onPost }) {
         {/* Language toggle */}
         <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:20}}>
           {[{code:"en",label:t("blog.lang_en")},{code:"sv",label:t("blog.lang_sv")}].map(l=>(
-            <button key={l.code} onClick={()=>{setLang(l.code);setFilter("All");}} style={{background:lang===l.code?"rgba(26,130,255,.15)":"rgba(255,255,255,.04)",border:`1px solid ${lang===l.code?"rgba(26,130,255,.38)":"rgba(255,255,255,.08)"}`,color:lang===l.code?"#60a5fa":"rgba(255,255,255,.42)",borderRadius:100,padding:"5px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}>{l.label}</button>
+            <button key={l.code} onClick={()=>{setLang(l.code);setFilter("All");}} style={{background:lang===l.code?"rgba(220,190,255,.15)":"rgba(255,255,255,.04)",border:`1px solid ${lang===l.code?"rgba(220,190,255,.38)":"rgba(255,255,255,.08)"}`,color:lang===l.code?"rgba(240,220,255,0.7)":"rgba(255,255,255,.42)",borderRadius:100,padding:"5px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}>{l.label}</button>
           ))}
         </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:7,justifyContent:"center"}}>
           {cats.map(cat=>(
-            <button key={cat} onClick={()=>setFilter(cat)} style={{background:filter===cat?"rgba(26,130,255,.15)":"rgba(255,255,255,.04)",border:`1px solid ${filter===cat?"rgba(26,130,255,.38)":"rgba(255,255,255,.08)"}`,color:filter===cat?"#60a5fa":"rgba(255,255,255,.42)",borderRadius:100,padding:"6px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}>{cat}</button>
+            <button key={cat} onClick={()=>setFilter(cat)} style={{background:filter===cat?"rgba(220,190,255,.15)":"rgba(255,255,255,.04)",border:`1px solid ${filter===cat?"rgba(220,190,255,.38)":"rgba(255,255,255,.08)"}`,color:filter===cat?"rgba(240,220,255,0.7)":"rgba(255,255,255,.42)",borderRadius:100,padding:"6px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}>{cat}</button>
           ))}
         </div>
       </div>
@@ -241,6 +257,7 @@ function BlogIndex({ onPost }) {
 export default function Blog() {
   const { lang } = useLang();
   const t = useT();
+  const darkMode = true;
   const [activePost, setActivePost] = useState(null);
   useEffect(() => {
     const hash = window.location.hash.replace("#","");
@@ -249,26 +266,29 @@ export default function Blog() {
   const handlePost = (p) => { setActivePost(p); window.location.hash = p.slug; window.scrollTo(0,0); };
   const handleBack = () => { setActivePost(null); window.location.hash = ""; window.scrollTo(0,0); };
   return (
-    <div style={{background:"#070b12",color:"#fff",minHeight:"100vh",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
+    <div data-theme="dark" style={{background:"#000",color:"#fff",minHeight:"100vh",fontFamily:"'DM Sans','Helvetica Neue',sans-serif"}}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-      <nav style={{position:"sticky",top:0,zIndex:100,height:60,padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(7,11,18,.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,.06)"}}>
+      <nav style={{position:"sticky",top:0,zIndex:100,height:60,padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(0,0,0,.92)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,.06)"}}>
         <a href="#" onClick={e=>{e.preventDefault();window.location.hash="";}} style={{display:"flex",alignItems:"center",gap:9,textDecoration:"none"}}>
-          <Logo size={28}/>
+          <Logo size={28} invert={false}/>
           <span style={{fontSize:15,fontWeight:700,color:"#fff",letterSpacing:"-.3px"}}>Logoplacers</span>
           <span style={{fontSize:12,color:"rgba(255,255,255,.25)",margin:"0 2px"}}>/</span>
           <span style={{fontSize:13,color:"rgba(255,255,255,.45)",fontWeight:500}}>{t("nav.blog")}</span>
         </a>
-        <a href="#app" style={{background:"linear-gradient(135deg,#1a82ff,#5b4fff)",color:"#fff",textDecoration:"none",borderRadius:10,padding:"8px 18px",fontSize:13,fontWeight:700,boxShadow:"0 4px 16px rgba(26,130,255,.3)"}}>
-          {t("blog.cta_btn")} →
-        </a>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+
+          <a href="#app" style={{background:"linear-gradient(105deg,#fff 0%,#e8c8ff 30%,#f8c8ff 60%,#fff 100%)",backgroundSize:"200% auto",animation:"cdShimmer 4s linear infinite",color:"#000",textDecoration:"none",borderRadius:10,padding:"8px 18px",fontSize:13,fontWeight:700,boxShadow:"0 4px 20px rgba(220,190,255,0.25)"}}>
+            {t("blog.cta_btn")} →
+          </a>
+        </div>
       </nav>
       {activePost ? <BlogPost p={activePost} onBack={handleBack}/> : <BlogIndex onPost={handlePost}/>}
       <footer style={{borderTop:"1px solid rgba(255,255,255,.05)",padding:"24px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><Logo size={22}/><span style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,.4)"}}>Logoplacers</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><Logo size={22} invert={false}/><span style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,.4)"}}>Logoplacers</span></div>
         <span style={{fontSize:12,color:"rgba(255,255,255,.2)"}}>{t("blog.footer_tagline")}</span>
         <a href="#" onClick={e=>{e.preventDefault();window.location.hash="";}} style={{fontSize:12,color:"rgba(255,255,255,.3)",textDecoration:"none"}}>{t("blog.back_home")}</a>
       </footer>
-      <style>{`*{box-sizing:border-box}html{scroll-behavior:smooth}`}</style>
+      <style>{`*{box-sizing:border-box}html{scroll-behavior:smooth}@keyframes cdShimmer{0%{background-position:0% center}100%{background-position:200% center}}`}</style>
     </div>
   );
 }
