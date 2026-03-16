@@ -35,13 +35,13 @@ const style = `
     --brand-border: rgba(255,255,255,0.15);
 
     /* ── Utility ── */
-    --green:        #fff;
+    --green:        #34d399;
     --red:          rgba(255,80,80,0.9);
-    --orange:       rgba(255,255,255,0.85);
-    --blue:         rgba(255,255,255,0.85);
-    --blue-dim:     rgba(255,255,255,0.85);
-    --purple:       rgba(255,255,255,0.6);
-    --yellow:       rgba(255,255,255,0.6);
+    --orange:       #f97316;
+    --blue:         #1a82ff;
+    --blue-dim:     rgba(26,130,255,0.15);
+    --purple:       #5b4fff;
+    --yellow:       #fbbf24;
 
     --r-sm:         8px;
     --r-md:         12px;
@@ -3967,7 +3967,7 @@ function App() {
             <button className="btn-s" onClick={() => setShowSendModal(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2L15 22 11 13 2 9l20-7z" /></svg>
               {t("app.send")}
-              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "var(--blue)", color: "#fff", borderRadius: "100px", padding: "1px 5px" }}>{companies.filter(c => c.email).length}</span>}
+              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "#000", color: "#fff", borderRadius: "100px", padding: "1px 5px", border: "1px solid rgba(255,255,255,0.2)" }}>{companies.filter(c => c.email).length}</span>}
             </button>
             <button className="btn-p" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? t("app.packing") : `${t("app.download")} (${readyCount})`}
