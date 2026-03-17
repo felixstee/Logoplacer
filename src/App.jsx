@@ -2572,11 +2572,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.jpg`;
         console.log("[Send] Building raw email...");
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
-        console.log("[Send] Sending to Gmail API...");
-        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+        console.log("[Send] Sending via proxy...");
+        const res = await fetch("/api/send-email", {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ raw }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ raw, token }),
         });
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
