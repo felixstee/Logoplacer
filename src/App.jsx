@@ -1361,7 +1361,7 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
         `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
         ...chunk76(bodyB64), "",
-        `--${boundary}`, `Content-Type: image/png; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
+        `--${boundary}`, `Content-Type: image/jpeg; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
         `Content-Disposition: attachment; filename="${safeFilename}"`, "", ...chunk76(attB64), "",
         `--${boundary}--`,
       ].join("\r\n");
@@ -2612,7 +2612,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
         const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
+        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.jpg`;
         console.log("[Send] Building raw email...");
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
         console.log("[Send] Sending to Gmail API...");
@@ -3850,11 +3850,12 @@ function App() {
     );
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
+      // Use JPEG with 0.85 quality to keep file size under Gmail's limit
       off.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
-      }, "image/png");
+      }, "image/jpeg", 0.85);
     });
   };
 
