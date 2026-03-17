@@ -2489,8 +2489,8 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
   const t = useT();
-  const [step, setStep] = useState(sharedToken ? "compose" : "auth");
-  const [token, setToken] = useState(sharedToken);
+  const [step, setStep] = useState("compose");
+  const [token, setToken] = useState(sharedToken || sessionStorage.getItem("lp_gtoken"));
   const [sendErrMsg, setSendErrMsg] = useState("");
   const [subject, setSubject] = useState("A personal demo for ((company))");
   const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
@@ -2505,49 +2505,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   const withEmail = companies.filter(c => c.email);
 
   useEffect(() => { setSelected(new Set(withEmail.map(c => c.id))); }, []);
-  useEffect(() => { loadGIS(); }, []);
-
-  const login = async () => {
-    await loadGIS();
-    if (!window.google?.accounts?.oauth2) {
-      alert("Google Sign-In failed to load. Check popup blockers or try refreshing.");
-      return;
-    }
-    // Warn on localhost — OAuth popup may be blocked or fail unless localhost is in Google Cloud Console
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    try {
-      window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
-        callback: (r) => {
-          if (r.access_token) {
-            onTokenAcquired(r.access_token);
-            setToken(r.access_token);
-            setStep("compose");
-          } else {
-            const msg = r.error === "popup_blocked_by_browser"
-              ? "Popup was blocked. Allow popups for this site and try again."
-              : r.error === "access_denied"
-                ? "Access denied. Make sure you allow Gmail send permission."
-                : isLocalhost
-                  ? `Login failed on localhost: ${r.error || "unknown"}. Make sure http://localhost is added as an Authorized JavaScript Origin in Google Cloud Console.`
-                  : `Login failed: ${r.error || "unknown"}`;
-            alert(msg);
-          }
-        },
-        error_callback: (err) => {
-          const msg = err.type === "popup_failed_to_open"
-            ? (isLocalhost
-              ? "Popup failed. On localhost: check Google Cloud Console has http://localhost as an Authorized JS Origin."
-              : "Popup failed to open. Allow popups for this site.")
-            : `OAuth error: ${err.type}`;
-          alert(msg);
-        },
-      }).requestAccessToken({ prompt: "" });
-    } catch (e) {
-      alert("Failed to start login: " + e.message);
-    }
-  };
 
   const selectedContacts = withEmail.filter(c => selected?.has(c.id));
   const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
@@ -2655,7 +2612,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-head">
           <div>
             <div className="modal-title">
-              {step === "auth" && t("send.title")}{step === "compose" && t("send.compose")}
+              {step === "compose" && t("send.compose")}
               {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
               {step === "sending" && t("send.sending")}{step === "done" && t("send.done")}
             </div>
@@ -2667,29 +2624,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         </div>
 
         <div className="modal-body">
-          {step === "auth" && (
-            <div className="auth-center">
-              <div className="auth-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 7 10-7" /></svg></div>
-              <div style={{ fontSize: 17, fontWeight: 600, color: "var(--t1)" }}>Connect Gmail</div>
-              <div style={{ fontSize: 13, color: "var(--t3)", maxWidth: 340, lineHeight: 1.55 }}>
-                Logoplacers skickar mejl via ditt Gmail-konto. Vi begär <strong>enbart</strong> sändningsbehörighet (gmail.send) — vi läser aldrig din inkorg, dina kontakter eller din historik.
-              </div>
-              {withEmail.length === 0 ? (
-                <div style={{ fontSize: 13, color: "var(--orange)", padding: "10px 16px", background: "hsla(31,92%,58%,.1)", borderRadius: 8 }}>
-                  No contacts have email addresses. Add them first.
-                </div>
-              ) : (
-                <>
-                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{withEmail.length} contacts with email ready</div>
-                  <button className="google-btn" onClick={login}>
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z" /><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z" /><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z" /></svg>
-                    Continue with Google
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
           {step === "compose" && (
             <>
               <div style={{ fontSize: 13, color: "var(--green)", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
@@ -2816,7 +2750,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               }}>Reconnect Gmail →</button>
             </>
           )}
-          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step === "sending"} onClick={onClose}>{t("modal.cancel")}</button>}
+          {step === "sending" && <button className="btn-s" disabled onClick={onClose}>{t("modal.cancel")}</button>}
         </div>
       </div>
     </div>
