@@ -2593,6 +2593,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
+      console.log("[Send] Processing contact", si, c.email, "hasLogoEl:", !!c.logoEl);
       if (si > 0) {
         const delay = Math.floor(Math.random() * 31) + 15;
         for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
@@ -2600,17 +2601,21 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
+        console.log("[Send] Building image blob...");
+        const blob = await getImageBlob(c);
+        console.log("[Send] Got blob, size:", blob?.size);
         const subj = resolveStr(subject, c);
         const videoBtn = videoLink.trim()
-          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:rgba(255,255,255,0.85);color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
           : "";
         const viralFooter = isFreePlan
-          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600">Logoplacers</a></div>`
+          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
         const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        const blob = await getImageBlob(c);
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
+        console.log("[Send] Building raw email...");
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
+        console.log("[Send] Sending to Gmail API...");
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
