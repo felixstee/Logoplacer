@@ -2518,7 +2518,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     try {
       window.google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
-        scope: "https://www.googleapis.com/auth/gmail.send",
+        scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
         callback: (r) => {
           if (r.access_token) {
             onTokenAcquired(r.access_token);
@@ -2810,7 +2810,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={() => {
                 window.google?.accounts?.oauth2?.initTokenClient({
                   client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
-                  scope: "https://www.googleapis.com/auth/gmail.send",
+                  scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
                   callback: (r) => { if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("approve"); setSendErrMsg(""); setResults({}); } },
                 }).requestAccessToken({ prompt: "" });
               }}>Reconnect Gmail →</button>
@@ -3524,7 +3524,7 @@ function App() {
               .catch(reject);
           },
         });
-        client.requestAccessToken({ prompt: "select_account" });
+        client.requestAccessToken({ prompt: sessionStorage.getItem("lp_gtoken") ? "" : "consent" });
       });
     } catch { /* cancelled */ }
     setAuthLoading(false);
