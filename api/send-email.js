@@ -1,13 +1,27 @@
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb",
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const { raw, token } = req.body;
+  let body = req.body;
+  // If body is a string (unparsed), parse it
+  if (typeof body === "string") {
+    try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "Invalid JSON" }); }
+  }
+
+  const { raw, token } = body || {};
 
   console.log("Token received (first 20):", token?.substring(0, 20));
   console.log("Raw length:", raw?.length);
 
   if (!raw || !token) {
-    return res.status(400).json({ error: "Missing raw or token" });
+    return res.status(400).json({ error: "Missing raw or token", hasRaw: !!raw, hasToken: !!token });
   }
 
   try {
