@@ -2954,9 +2954,9 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
 function Logo({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" rx="22" fill="#000"/>
-      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke="white" strokeWidth="9" fill="none" strokeLinecap="square"/>
-      <line x1="52" y1="28" x2="80" y2="58" stroke="white" strokeWidth="9" strokeLinecap="round"/>
+      <rect width="100" height="100" rx="22" fill="#000" />
+      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke="white" strokeWidth="9" fill="none" strokeLinecap="square" />
+      <line x1="52" y1="28" x2="80" y2="58" stroke="white" strokeWidth="9" strokeLinecap="round" />
     </svg>
   );
 }
@@ -3524,7 +3524,7 @@ function App() {
               .catch(reject);
           },
         });
-        client.requestAccessToken({ prompt: sessionStorage.getItem("lp_gtoken") ? "" : "consent" });
+        client.requestAccessToken({ prompt: "consent" });
       });
     } catch { /* cancelled */ }
     setAuthLoading(false);
