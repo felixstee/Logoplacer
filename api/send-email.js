@@ -3,6 +3,9 @@ export default async function handler(req, res) {
 
   const { raw, token } = req.body;
 
+  console.log("Token received (first 20):", token?.substring(0, 20));
+  console.log("Raw length:", raw?.length);
+
   if (!raw || !token) {
     return res.status(400).json({ error: "Missing raw or token" });
   }
