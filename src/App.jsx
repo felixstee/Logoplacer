@@ -4789,3 +4789,4 @@ function CookieNotice() {
 export default function AppRouter() {
   return <LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider>;
 }
+// Tue Mar 17 14:33:47 CET 2026
