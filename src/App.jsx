@@ -618,6 +618,105 @@ function looksLikeCompany(line) {
   return true;
 }
 
+
+function extractContactsFromCSV(text) {
+  const results = []; const seen = new Set();
+  const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return results;
+
+  // Detect delimiter
+  const delim = lines[0].includes("\t") ? "\t" : ",";
+  const headers = lines[0].split(delim).map(h => h.replace(/^["']|["']$/g, "").toLowerCase().trim());
+
+  const findCol = (...keys) => {
+    for (const k of keys) {
+      const i = headers.findIndex(h => h.includes(k));
+      if (i !== -1) return i;
+    }
+    return -1;
+  };
+
+  const nameCol = findCol("name", "namn", "person", "contact", "first");
+  const companyCol = findCol("company", "bolag", "företag", "org", "account", "domain");
+  const emailCol = findCol("email", "mail", "e-mail");
+  const addressCol = findCol("address", "adress");
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(delim).map(c => c.replace(/^["']|["']$/g, "").trim());
+    const email = emailCol >= 0 ? (cols[emailCol] || "").toLowerCase() : (cols.find(c => EMAIL_RE.test(c)) || "").toLowerCase();
+    const companyName = companyCol >= 0 ? cols[companyCol] : "";
+    const personName = nameCol >= 0 ? cols[nameCol] : "";
+    if (!companyName && !email) continue;
+    const key = (companyName || email).toLowerCase();
+    if (!seen.has(key)) { seen.add(key); results.push({ personName, companyName, email, address: addressCol >= 0 ? cols[addressCol] : "" }); }
+  }
+  return results;
+}
+
+function extractContactsFromNumbers(allText) {
+  // allText = printable strings extracted from all .iwa files
+  // Pattern: company name line, person name line(s), email fragment(s) nearby
+  const EMAIL_FRAG = /^[a-z0-9._%+\-]+@[a-z0-9.\-]*$/i;
+  const DOMAIN_FRAG = /^[a-z0-9\-]+\.(se|com|io|ai|net|org|tech|app|co|life|cc|de|dk|no|fi|eu)$/i;
+  const UUID = /^[0-9A-F]{8}-[0-9A-F]{4}-/i;
+  const results = []; const seen = new Set();
+
+  const lines = allText.split("\n")
+    .map(l => l.trim())
+    .filter(l => l.length >= 2 && !UUID.test(l) && !l.startsWith("http") && !l.startsWith("mailto"));
+
+  // Build list of (company, person, emailFrag, domainFrag) tuples
+  // Strategy: scan for domain/email fragments, look backwards for name/company
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (!DOMAIN_FRAG.test(l) && !EMAIL_FRAG.test(l)) continue;
+
+    // Collect email parts nearby
+    let emailParts = [l];
+    if (i + 1 < lines.length && (EMAIL_FRAG.test(lines[i + 1]) || lines[i + 1].startsWith("@"))) {
+      emailParts.push(lines[i + 1]);
+    }
+
+    // Reconstruct email: join fragment before @ with domain
+    let email = "";
+    const atPart = emailParts.find(p => p.includes("@"));
+    const domainPart = emailParts.find(p => DOMAIN_FRAG.test(p));
+    if (atPart && domainPart && !atPart.includes(".")) {
+      email = atPart.replace(/@.*/, "") + "@" + domainPart;
+    } else if (atPart && atPart.match(/@[a-z0-9.\-]+\.[a-z]{2,}/i)) {
+      email = atPart;
+    } else if (domainPart) {
+      email = "";  // domain only, no email
+    }
+
+    // Look back for company and person name
+    let companyName = ""; let personName = "";
+    for (let b = 1; b <= 6 && i - b >= 0; b++) {
+      const prev = lines[i - b];
+      if (!prev || UUID.test(prev) || prev.length < 2) continue;
+      if (DOMAIN_FRAG.test(prev) || EMAIL_FRAG.test(prev)) break;
+      if (!companyName && looksLikeCompany(prev)) { companyName = prev; continue; }
+      if (!personName && looksLikeName(prev)) { personName = prev; }
+      if (personName && companyName) break;
+    }
+
+    // Use domain as company fallback
+    if (!companyName && domainPart) {
+      companyName = domainPart.split(".")[0];
+      companyName = companyName.charAt(0).toUpperCase() + companyName.slice(1);
+    }
+
+    if (!companyName) continue;
+    const key = companyName.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      results.push({ personName, companyName, email });
+    }
+  }
+  return results;
+}
+
 function extractContacts(raw) {
   const results = []; const seen = new Set();
   const lines = raw.split("\n").map(l => l.trim());
@@ -3780,6 +3879,51 @@ function App() {
     setPasteText("");
   };
 
+
+  const spreadsheetRef = useRef(null);
+  const handleSpreadsheetFile = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const name = file.name.toLowerCase();
+    e.target.value = "";
+    try {
+      if (name.endsWith(".csv")) {
+        const text = await file.text();
+        const contacts = extractContactsFromCSV(text);
+        if (!contacts.length) { showToast("No contacts found in CSV"); return; }
+        contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        showToast(`${contacts.length} contacts imported from CSV`);
+        return;
+      }
+      if (name.endsWith(".numbers")) {
+        showToast("Reading Numbers file...");
+        const zip = new JSZip();
+        const zipData = await zip.loadAsync(file);
+        let allText = "";
+        const iwaFiles = Object.keys(zipData.files).filter(f => f.includes("DataList") && f.endsWith(".iwa"));
+        for (const iwaPath of iwaFiles) {
+          const buf = await zipData.files[iwaPath].async("arraybuffer");
+          const bytes = new Uint8Array(buf);
+          let cur = "";
+          for (let i = 0; i < bytes.length; i++) {
+            const b = bytes[i];
+            if (b >= 32 && b < 127) { cur += String.fromCharCode(b); }
+            else { if (cur.length >= 3) allText += cur + "\n"; cur = ""; }
+          }
+          if (cur.length >= 3) allText += cur + "\n";
+        }
+        const contacts = extractContactsFromNumbers(allText);
+        if (!contacts.length) { showToast("No contacts found — try File > Export > CSV from Numbers"); return; }
+        contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        showToast(`${contacts.length} contacts imported`);
+        return;
+      }
+      showToast("Supported: .csv or .numbers");
+    } catch (err) {
+      console.error("Import error:", err);
+      showToast("Could not read file");
+    }
+  };
+
   const downloadZip = async () => {
     const ready = companies.filter(c => c.status === "ok");
     if (!ready.length || !baseImageRef.current) return;
@@ -4213,6 +4357,15 @@ function App() {
             <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Acme Corp"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
               <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>{t("app.extract_contacts")}</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button className="btn-s" style={{ fontSize: 12, padding: "7px 12px" }}
+                  onClick={() => spreadsheetRef.current?.click()}>
+                  📂 Import .csv / .numbers
+                </button>
+                <span style={{ fontSize: 11, color: "var(--t3)" }}>from Numbers, Excel or CSV</span>
+                <input ref={spreadsheetRef} type="file" accept=".csv,.numbers,.xlsx"
+                  style={{ display: "none" }} onChange={handleSpreadsheetFile} />
+              </div>
               <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
                 <p style={{ fontSize: 12, color: "var(--t3)" }}>{t("app.add_manually")}</p>
                 <input className="inp sm shimmer-focus" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
