@@ -655,78 +655,139 @@ function extractContactsFromCSV(text) {
 }
 
 function extractContactsFromNumbers(allText) {
-  const DOMAIN_FRAG = /^[a-z0-9][a-z0-9\-]+\.(se|com|io|ai|net|org|tech|app|co|life|cc|de|dk|no|fi|eu|nu)$/i;
-  const EMAIL_FRAG = /^[a-z0-9._%+\-]+@[a-z0-9.\-]*$/i;
-  const FULL_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
   const UUID = /^[0-9A-F]{8}-[0-9A-F]{4}-/i;
-  const results = []; const seen = new Set();
+  const DOMAIN_RE = /^([a-z0-9][a-z0-9\-]{2,}\.[a-z]{2,})\*?$/i;
+  const FULL_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
+  const USER_FRAG = /^([a-z0-9._%+\-]+)@([a-z0-9.\-]*)$/i;
+  const PERSON_RE = /^[A-ZÅÄÖ][a-zåäö\-]+(?:\s[A-ZÅÄÖ][a-zåäö\-]+)+$/;
+  const COMPANY_SUFFIX = /\b(AB|AS|Inc|Ltd|GmbH|Technologies|Tech|Group|Holding|Solutions|Digital|Media|Agency|Studios)\b/i;
+  const SKIP_SET = new Set(['Record', 'Parent R', 'D > Domains', 'HTeam > Name', 'Email addresses', 'Str']);
+  const JUNK = /^[\[\]#\$@\+\*\^,;]|^\d+$|^[a-z]{1,2}[A-Z]/;
 
-  const lines = allText.split("\n")
-    .map(l => l.trim())
-    .filter(l => l.length >= 2 && !UUID.test(l) && !l.startsWith("http") && !l.startsWith("mailto") && !/^\d+$/.test(l));
+  function isJunk(s) {
+    if (JUNK.test(s)) return true;
+    const alpha = s.split('').filter(c => /[a-zA-Z]/.test(c)).length;
+    return alpha < Math.max(1, s.length * 0.4);
+  }
 
-  for (let i = 0; i < lines.length; i++) {
-    const l = lines[i];
-    const isDomain = DOMAIN_FRAG.test(l);
-    const isEmailFrag = EMAIL_FRAG.test(l);
-    const isFullEmail = FULL_EMAIL.test(l);
-    if (!isDomain && !isEmailFrag && !isFullEmail) continue;
+  function looksLikePerson(s) {
+    if (!PERSON_RE.test(s)) return false;
+    if (COMPANY_SUFFIX.test(s)) return false;
+    if (s.includes(',')) return false;
+    return true;
+  }
 
-    // Try to reconstruct full email from adjacent lines
-    let email = "";
-    if (isFullEmail) {
-      email = l.toLowerCase();
-    } else if (isEmailFrag && l.includes("@")) {
-      // Has @ but incomplete domain — look forward for domain
-      const user = l.split("@")[0];
-      const nextDomain = lines.slice(i + 1, i + 4).find(x => DOMAIN_FRAG.test(x));
-      email = nextDomain ? `${user}@${nextDomain}`.toLowerCase() : "";
-    } else if (isDomain) {
-      // Domain line — look back for user@ fragment
-      const prevFrag = lines.slice(Math.max(0, i - 3), i).reverse().find(x => EMAIL_FRAG.test(x) && x.includes("@"));
-      if (prevFrag) {
-        const user = prevFrag.split("@")[0];
-        email = `${user}@${l}`.toLowerCase();
-      }
+  // Split allText into two sections by finding the boundary
+  // DataList-905026 lines come first (names), DataList-905033 lines come after
+  // We split at the natural boundary where domain patterns start appearing
+  const allLines = allText.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // Separate name lines from email lines
+  const nameLines = [];
+  const emailLines = [];
+  let inEmailSection = false;
+
+  for (const line of allLines) {
+    if (UUID.test(line)) continue;
+    if (line.startsWith('http') || line.startsWith('mailto')) continue;
+    if (SKIP_SET.has(line)) continue;
+    if (isJunk(line)) continue;
+    if (line.length < 2) continue;
+
+    const isDomain = DOMAIN_RE.test(line);
+    const isEmail = FULL_EMAIL.test(line);
+    const hasAt = line.includes('@');
+
+    if (isDomain || isEmail || (hasAt && USER_FRAG.test(line))) {
+      inEmailSection = true;
     }
 
-    // Look backwards up to 8 lines for company + person
-    let companyName = ""; let personName = "";
-    for (let b = 1; b <= 8 && i - b >= 0; b++) {
-      const prev = lines[i - b];
-      if (!prev || UUID.test(prev) || prev.length < 2) continue;
-      if (DOMAIN_FRAG.test(prev) || FULL_EMAIL.test(prev)) break;
-      if (EMAIL_FRAG.test(prev) && prev.includes("@")) continue;
-      if (!companyName && looksLikeCompany(prev)) { companyName = prev; continue; }
-      if (!personName && looksLikeName(prev)) { personName = prev; }
-      if (personName && companyName) break;
-    }
-
-    // Fallback: use domain as company name
-    if (!companyName) {
-      const domainBase = isDomain ? l.split(".")[0] : (email.split("@")[1] || "").split(".")[0];
-      if (domainBase && domainBase.length > 1) {
-        companyName = domainBase.charAt(0).toUpperCase() + domainBase.slice(1);
-      }
-    }
-
-    // Also look forward for company if still missing
-    if (!companyName) {
-      for (let f = 1; f <= 4 && i + f < lines.length; f++) {
-        const next = lines[i + f];
-        if (!next || UUID.test(next) || DOMAIN_FRAG.test(next) || FULL_EMAIL.test(next)) break;
-        if (looksLikeCompany(next)) { companyName = next; break; }
-      }
-    }
-
-    if (!companyName || companyName.length < 2) continue;
-
-    const key = companyName.toLowerCase().trim();
-    if (!seen.has(key)) {
-      seen.add(key);
-      results.push({ personName: personName || "", companyName: companyName.trim(), email: email || "" });
+    if (inEmailSection) {
+      emailLines.push(line);
+    } else {
+      nameLines.push(line);
     }
   }
+
+  // Build email map: domain -> full email
+  const emailMap = {};
+  for (let i = 0; i < emailLines.length; i++) {
+    const line = emailLines[i];
+    const dm = line.match(DOMAIN_RE);
+    const fm = line.match(FULL_EMAIL);
+    const um = line.match(USER_FRAG);
+
+    if (fm) {
+      const domain = line.split('@')[1].toLowerCase();
+      if (!emailMap[domain]) emailMap[domain] = line.toLowerCase();
+    } else if (dm) {
+      const domain = dm[1].toLowerCase();
+      // Look forward for user@ fragment
+      for (let j = i + 1; j < Math.min(i + 6, emailLines.length); j++) {
+        const um2 = emailLines[j].match(USER_FRAG);
+        if (um2) {
+          emailMap[domain] = `${um2[1]}@${domain}`.toLowerCase();
+          break;
+        }
+      }
+    } else if (um && um[1]) {
+      // user@ with partial/no domain — skip, wait for domain line
+    }
+  }
+
+  // Parse company/person pairs from nameLines (alternating pattern)
+  const contacts = [];
+  let i = 0;
+  while (i < nameLines.length) {
+    const line = nameLines[i];
+    const nextLine = i + 1 < nameLines.length ? nameLines[i + 1] : '';
+
+    // Handle comma-separated multi-person: take first name only
+    const company = line.split(',')[0].trim();
+    if (!company || company.length < 2) { i++; continue; }
+
+    let person = '';
+    if (looksLikePerson(nextLine)) {
+      // Take first person if comma-separated
+      person = nextLine.split(',')[0].trim();
+      i += 2;
+    } else {
+      i += 1;
+    }
+
+    contacts.push({ company, person });
+  }
+
+  // Match emails to contacts by normalizing domain vs company name
+  const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const results = [];
+  const seen = new Set();
+
+  for (const c of contacts) {
+    const cn = normalize(c.company);
+    if (!cn || cn.length < 2) continue;
+
+    // Skip if company looks like a person name
+    if (looksLikePerson(c.company) && !COMPANY_SUFFIX.test(c.company)) continue;
+
+    let email = '';
+    let bestLen = 0;
+    for (const [domain, mail] of Object.entries(emailMap)) {
+      const dn = normalize(domain.split('.')[0]);
+      if (dn.length < 3) continue; // skip too-short domain bases
+      // Match if domain base is contained in company or vice versa
+      if ((dn.length >= 4 && cn.includes(dn)) || (cn.length >= 4 && dn.includes(cn))) {
+        if (dn.length > bestLen) { bestLen = dn.length; email = mail; }
+      }
+    }
+
+    const key = cn;
+    if (!seen.has(key)) {
+      seen.add(key);
+      results.push({ personName: c.person || '', companyName: c.company, email });
+    }
+  }
+
   return results;
 }
 
