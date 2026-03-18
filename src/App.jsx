@@ -2528,6 +2528,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   };
 
   const sendAll = async () => {
+    const currentToken = token || sessionStorage.getItem("lp_gtoken");
+    if (!currentToken) {
+      setSendErrMsg("Gmail not connected — please log out and log in again.");
+      return;
+    }
     // Credit check: 1 credit per send
     if (selectedContacts.length === 0) {
       setSendErrMsg("No recipients selected — make sure contacts have email addresses.");
@@ -2566,7 +2571,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${currentToken}`, "Content-Type": "application/json" },
           body: JSON.stringify({ raw }),
         });
         if (!res.ok) {
