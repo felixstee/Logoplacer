@@ -232,22 +232,23 @@ const style = `
   .email-dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
 
   /* ── Buttons ─────────────────────────────────────────── */
-  /* Primary — solid black */
-  .btn-p { background: #000; color: #fff; border: 1px solid rgba(255,255,255,0.15); font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: all .15s; letter-spacing: -.1px; }
-  .btn-p:hover { background: #111; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 0 1px rgba(205,180,219,0.4), 0 0 12px rgba(205,180,219,0.2); }
+  /* Primary — solid brand gradient */
+  .btn-p { background: var(--brand-grad); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s, transform .1s; box-shadow: 0 4px 20px rgba(255,255,255,0.1); letter-spacing: -.1px; }
+  .btn-p:hover { opacity: .9; box-shadow: 0 6px 28px rgba(255,255,255,0.15); transform: translateY(-1px); }
   .btn-p:active { transform: translateY(0); }
-  .btn-p:disabled { background: var(--bg4); color: var(--t4); border-color: var(--sep); cursor: not-allowed; box-shadow: none; }
+  .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; box-shadow: none; transform: none; }
 
-  /* Secondary — also black */
-  .btn-s { position: relative; background: #000; color: #fff; font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
-  .btn-s::before { display: none; }
-  .btn-s:hover { background: #111; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 0 1px rgba(205,180,219,0.35), 0 0 10px rgba(205,180,219,0.18); }
+  /* Secondary — black with gradient outline */
+  .btn-s { position: relative; background: var(--bg3); color: var(--t1); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid var(--sep); overflow: hidden; }
+  .btn-s::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--brand-grad); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0; transition: opacity .15s; }
+  .btn-s:hover { background: var(--bg4); color: #fff; border-color: transparent; }
+  .btn-s:hover::before { opacity: 1; }
   .btn-s:disabled { opacity: .35; cursor: not-allowed; }
 
   /* Ghost — just the gradient border on black */
-  .btn-ghost { position: relative; background: #000; color: rgba(255,255,255,0.75); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid rgba(255,255,255,0.15); }
-  .btn-ghost::before { display: none; }
-  .btn-ghost:hover { background: #111; border-color: rgba(255,255,255,0.3); color: #fff; }
+  .btn-ghost { position: relative; background: #000; color: rgba(255,255,255,0.75); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; border: 1px solid transparent; }
+  .btn-ghost::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--brand-grad); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+  .btn-ghost:hover { background: var(--brand-dim); color: #fff; }
 
   .btn-text { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 3px; transition: opacity .15s; }
   .btn-text:hover { opacity: .75; }
@@ -349,7 +350,7 @@ const style = `
   @keyframes slideIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
   /* Co-row hover — subtle slide-right reveal */
-  .co-row { transition: background .12s, padding-left .12s, border-color .12s; }
+  .co-row { transition: background .12s, padding-left .12s; }
   .co-row:hover { background: rgba(255,255,255,0.05) !important; padding-left: 17px; border-color: rgba(255,255,255,0.2) !important; }
 
   /* Card hover lift */
@@ -1361,7 +1362,7 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
         `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
         ...chunk76(bodyB64), "",
-        `--${boundary}`, `Content-Type: image/jpeg; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
+        `--${boundary}`, `Content-Type: image/png; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
         `Content-Disposition: attachment; filename="${safeFilename}"`, "", ...chunk76(attB64), "",
         `--${boundary}--`,
       ].join("\r\n");
@@ -2361,7 +2362,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
               {MOCKUP_TEMPLATES.map(tmpl => (
                 <button key={tmpl.id} onClick={() => setTemplateId(tmpl.id)} style={{
-                  background: templateId === tmpl.id ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,.04)",
+                  background: templateId === tmpl.id ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,.04)",
                   border: `1px solid ${templateId === tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
                   borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600,
                   color: templateId === tmpl.id ? "#fff" : "var(--t3)", cursor: "pointer", fontFamily: "inherit",
@@ -2489,8 +2490,8 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
   const t = useT();
-  const [step, setStep] = useState("compose");
-  const [token, setToken] = useState(sharedToken || sessionStorage.getItem("lp_gtoken"));
+  const [step, setStep] = useState(sharedToken ? "compose" : "auth");
+  const [token, setToken] = useState(sharedToken);
   const [sendErrMsg, setSendErrMsg] = useState("");
   const [subject, setSubject] = useState("A personal demo for ((company))");
   const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
@@ -2505,6 +2506,49 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   const withEmail = companies.filter(c => c.email);
 
   useEffect(() => { setSelected(new Set(withEmail.map(c => c.id))); }, []);
+  useEffect(() => { loadGIS(); }, []);
+
+  const login = async () => {
+    await loadGIS();
+    if (!window.google?.accounts?.oauth2) {
+      alert("Google Sign-In failed to load. Check popup blockers or try refreshing.");
+      return;
+    }
+    // Warn on localhost — OAuth popup may be blocked or fail unless localhost is in Google Cloud Console
+    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    try {
+      window.google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: "https://www.googleapis.com/auth/gmail.send",
+        callback: (r) => {
+          if (r.access_token) {
+            onTokenAcquired(r.access_token);
+            setToken(r.access_token);
+            setStep("compose");
+          } else {
+            const msg = r.error === "popup_blocked_by_browser"
+              ? "Popup was blocked. Allow popups for this site and try again."
+              : r.error === "access_denied"
+                ? "Access denied. Make sure you allow Gmail send permission."
+                : isLocalhost
+                  ? `Login failed on localhost: ${r.error || "unknown"}. Make sure http://localhost is added as an Authorized JavaScript Origin in Google Cloud Console.`
+                  : `Login failed: ${r.error || "unknown"}`;
+            alert(msg);
+          }
+        },
+        error_callback: (err) => {
+          const msg = err.type === "popup_failed_to_open"
+            ? (isLocalhost
+              ? "Popup failed. On localhost: check Google Cloud Console has http://localhost as an Authorized JS Origin."
+              : "Popup failed to open. Allow popups for this site.")
+            : `OAuth error: ${err.type}`;
+          alert(msg);
+        },
+      }).requestAccessToken({ prompt: "select_account" });
+    } catch (e) {
+      alert("Failed to start login: " + e.message);
+    }
+  };
 
   const selectedContacts = withEmail.filter(c => selected?.has(c.id));
   const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
@@ -2532,15 +2576,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
   const sendAll = async () => {
     // Credit check: 1 credit per send
-    console.log("[Send] selectedContacts:", selectedContacts.length, "token:", !!token, "credits:", creditsBalance);
-    if (selectedContacts.length === 0) {
-      setSendErrMsg("No recipients selected — make sure contacts have email addresses.");
-      return;
-    }
-    if (!token) {
-      setSendErrMsg("Gmail not connected — go back and connect Gmail first.");
-      return;
-    }
     if (spendCredits && !spendCredits(selectedContacts.length)) {
       onUpgrade?.();
       return;
@@ -2550,7 +2585,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
-      console.log("[Send] Processing contact", si, c.email, "hasLogoEl:", !!c.logoEl);
       if (si > 0) {
         const delay = Math.floor(Math.random() * 31) + 15;
         for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
@@ -2558,25 +2592,21 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
-        console.log("[Send] Building image blob...");
-        const blob = await getImageBlob(c);
-        console.log("[Send] Got blob, size:", blob?.size);
         const subj = resolveStr(subject, c);
         const videoBtn = videoLink.trim()
-          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:rgba(255,255,255,0.85);color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
           : "";
         const viralFooter = isFreePlan
-          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
+          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
         const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.jpg`;
-        console.log("[Send] Building raw email...");
+        const blob = await getImageBlob(c);
+        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
-        console.log("[Send] Sending via proxy, token length:", token?.length, "token start:", token?.substring(0, 15));
-        const res = await fetch("/api/send-email", {
+        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ raw, token }),
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ raw }),
         });
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
@@ -2612,7 +2642,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         <div className="modal-head">
           <div>
             <div className="modal-title">
-              {step === "compose" && t("send.compose")}
+              {step === "auth" && t("send.title")}{step === "compose" && t("send.compose")}
               {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
               {step === "sending" && t("send.sending")}{step === "done" && t("send.done")}
             </div>
@@ -2624,6 +2654,29 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         </div>
 
         <div className="modal-body">
+          {step === "auth" && (
+            <div className="auth-center">
+              <div className="auth-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 7l10 7 10-7" /></svg></div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: "var(--t1)" }}>Connect Gmail</div>
+              <div style={{ fontSize: 13, color: "var(--t3)", maxWidth: 340, lineHeight: 1.55 }}>
+                Logoplacers skickar mejl via ditt Gmail-konto. Vi begär <strong>enbart</strong> sändningsbehörighet (gmail.send) — vi läser aldrig din inkorg, dina kontakter eller din historik.
+              </div>
+              {withEmail.length === 0 ? (
+                <div style={{ fontSize: 13, color: "var(--orange)", padding: "10px 16px", background: "hsla(31,92%,58%,.1)", borderRadius: 8 }}>
+                  No contacts have email addresses. Add them first.
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{withEmail.length} contacts with email ready</div>
+                  <button className="google-btn" onClick={login}>
+                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z" /><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z" /><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z" /></svg>
+                    Continue with Google
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {step === "compose" && (
             <>
               <div style={{ fontSize: 13, color: "var(--green)", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
@@ -2732,7 +2785,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           {step === "approve" && (
             <>
               <button className="btn-s" onClick={() => setStep("compose")}>{t("modal.back")}</button>
-              <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={sendAll}>
+              <button className="btn-p" style={{ width: "auto", padding: "8px 20px", background: "var(--green)" }} onClick={sendAll}>
                 ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
               </button>
             </>
@@ -2744,13 +2797,13 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={() => {
                 window.google?.accounts?.oauth2?.initTokenClient({
                   client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
-                  scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
+                  scope: "https://www.googleapis.com/auth/gmail.send",
                   callback: (r) => { if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("approve"); setSendErrMsg(""); setResults({}); } },
                 }).requestAccessToken({ prompt: "" });
               }}>Reconnect Gmail →</button>
             </>
           )}
-          {step === "sending" && <button className="btn-s" disabled onClick={onClose}>{t("modal.cancel")}</button>}
+          {(step === "auth" || step === "sending") && <button className="btn-s" disabled={step === "sending"} onClick={onClose}>{t("modal.cancel")}</button>}
         </div>
       </div>
     </div>
@@ -2794,15 +2847,15 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
     const particles = Array.from({ length: COUNT }, () => ({
       x: Math.random() * W, y: Math.random() * H, z: Math.random() * 3 + 0.2,
       vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
-      r: Math.random() * 1.0 + 0.2, alpha: Math.random() * 0.4 + 0.1,
+      r: Math.random() * 1.0 + 0.2, alpha: Math.random() * 0.6 + 0.15,
       pulse: Math.random() * Math.PI * 2, pulseSpeed: 0.008 + Math.random() * 0.022,
       color: Math.random() > 0.6 ? "rgba(255,255,255," : Math.random() > 0.3 ? "rgba(200,200,200," : "rgba(160,160,160,",
     }));
 
-    const orbs = Array.from({ length: 3 }, () => ({
-      x: Math.random() * W, y: Math.random() * H, r: 60 + Math.random() * 100,
+    const orbs = Array.from({ length: 5 }, () => ({
+      x: Math.random() * W, y: Math.random() * H, r: 60 + Math.random() * 120,
       vx: (Math.random() - 0.5) * 0.09, vy: (Math.random() - 0.5) * 0.09,
-      color: "180,180,180", alpha: 0.006 + Math.random() * 0.008,
+      color: Math.random() > 0.5 ? "255,255,255" : "180,180,180", alpha: 0.015 + Math.random() * 0.02,
     }));
 
     const draw = () => {
@@ -2842,7 +2895,7 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
   }, []);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#000", overflow: "hidden" }}>
+    <div style={{ position: "fixed", inset: 0, background: "#070b12", overflow: "hidden" }}>
       <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
       <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 52 }}>
@@ -2854,7 +2907,7 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 3, letterSpacing: "1px", textTransform: "uppercase" }}>Personalised demos</div>
           </div>
         </div>
-        <div style={{ background: "rgba(0,0,0,0.97)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 24, padding: "40px 44px", width: "100%", maxWidth: 390, display: "flex", flexDirection: "column", alignItems: "center", gap: 26, boxShadow: "0 48px 96px rgba(0,0,0,0.9)" }}>
+        <div style={{ background: "rgba(0,0,0,0.97)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 24, padding: "40px 44px", width: "100%", maxWidth: 390, display: "flex", flexDirection: "column", alignItems: "center", gap: 26, boxShadow: "0 48px 96px rgba(0,0,0,0.7)" }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 8 }}>Sign in</div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>Use your Google account to<br />access the app.</div>
@@ -2888,9 +2941,9 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
 function Logo({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" rx="22" fill="#000" />
-      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke="white" strokeWidth="9" fill="none" strokeLinecap="square" />
-      <line x1="52" y1="28" x2="80" y2="58" stroke="white" strokeWidth="9" strokeLinecap="round" />
+      <rect width="100" height="100" rx="22" fill="#000"/>
+      <path d="M72 18 L28 18 Q14 18 14 32 L14 68 Q14 82 28 82 L72 82" stroke="white" strokeWidth="9" fill="none" strokeLinecap="square"/>
+      <line x1="52" y1="28" x2="80" y2="58" stroke="white" strokeWidth="9" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -3228,7 +3281,7 @@ function CreditBadge({ credits, onUpgrade }) {
       </div>
       {low && (
         <button onClick={onUpgrade} style={{
-          background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.2)",
+          background: "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))", color: "#fff", border: "none",
           borderRadius: 7, padding: "4px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
         }}>Upgrade</button>
       )}
@@ -3286,9 +3339,9 @@ function UpgradeModal({ onClose, credits }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12 }}>
             {plans.map(p => (
               <div key={p.key} style={{
-                border: `1px solid ${p.highlight ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.07)"}`,
+                border: `1px solid ${p.highlight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.07)"}`,
                 borderRadius: 14, padding: "18px 16px",
-                background: p.highlight ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.02)",
+                background: p.highlight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.02)",
                 display: "flex", flexDirection: "column", gap: 10,
                 boxShadow: p.highlight ? "0 0 40px rgba(255,255,255,0.85)" : "none",
                 transition: "transform .15s, box-shadow .15s",
@@ -3309,7 +3362,7 @@ function UpgradeModal({ onClose, credits }) {
                   disabled={p.current || loading === p.key}
                   onClick={() => handleUpgrade(p)}
                   style={{
-                    background: p.current ? "var(--bg4)" : p.highlight ? "#000" : "rgba(255,255,255,0.06)",
+                    background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))" : "rgba(255,255,255,0.06)",
                     color: p.current ? "var(--t4)" : "#fff",
                     border: p.highlight ? "none" : "0.5px solid rgba(255,255,255,0.1)",
                     borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700,
@@ -3335,60 +3388,6 @@ function UpgradeModal({ onClose, credits }) {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-// ─── User menu: profile pic + gear → dropdown with sign out & delete ───────
-function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-  return (
-    <div ref={ref} style={{ position: "relative", display: "flex", alignItems: "center", gap: 6 }}>
-      {/* Profile picture */}
-      <img src={sessionUser.picture} alt="" style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid var(--sep)", flexShrink: 0 }} />
-      {/* Gear button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{ background: open ? "var(--bg4)" : "rgba(255,255,255,.06)", border: `0.5px solid ${open ? "rgba(255,255,255,0.2)" : "var(--sep)"}`, borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", flexShrink: 0, transition: "all .15s" }}
-        title="Account settings"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-      </button>
-      {/* Dropdown */}
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 9999, background: "var(--bg2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "6px", minWidth: 200, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", animation: "expandDown .15s ease" }}>
-          {/* User info header */}
-          <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 6 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)" }}>{sessionUser.name}</div>
-            <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>{sessionUser.email}</div>
-          </div>
-          {/* Sign out */}
-          <button onClick={() => { setOpen(false); onSignOut(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
-            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-            {t("app.sign_out")}
-          </button>
-          {/* Divider */}
-          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0" }} />
-          {/* Delete account — red, separated */}
-          <button onClick={() => { setOpen(false); onDeleteAccount(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "rgba(239,68,68,0.7)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
-            onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.08)"}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
-            {t("app.delete_account")}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -3429,8 +3428,10 @@ function App() {
                       effectivePlan = "pro";
                     }
                     sessionStorage.setItem("lp_verified_plan", effectivePlan);
-                    // Always reinit from Supabase on login — fixes mobile/cross-device sync
-                    initCredits(effectivePlan);
+                    const existing = loadCredits();
+                    if (!existing || existing.plan !== effectivePlan) {
+                      initCredits(effectivePlan);
+                    }
                   } else {
                     // New user → create with free plan
                     sessionStorage.setItem("lp_verified_plan", "free");
@@ -3458,7 +3459,7 @@ function App() {
               .catch(reject);
           },
         });
-        client.requestAccessToken({ prompt: "consent" });
+        client.requestAccessToken({ prompt: "select_account" });
       });
     } catch { /* cancelled */ }
     setAuthLoading(false);
@@ -3610,8 +3611,17 @@ function App() {
     setSaving(true);
     try {
       // Upload base image if exists
+      let base_image_url = undefined; // undefined = don't overwrite existing
+      if (baseImageRef.current && canvasSizeRef.current.w > 0) {
+        const canvas = document.createElement("canvas");
+        const { w, h } = canvasSizeRef.current;
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(baseImageRef.current, 0, 0, w, h);
+        const uploaded = await sbUploadBaseImage(email, canvas.toDataURL("image/png"));
+        if (uploaded) base_image_url = uploaded;
+      }
       const settings = { logoInstances, textLayers, symbols, canvasBg, personalisedColors, colorToReplace, myLogoSize, myLogoPos };
-      const saveData = { settings };
+      const saveData = base_image_url !== undefined ? { base_image_url, settings } : { settings };
       const project = await sbSaveProject(email, saveData);
       const pid = (Array.isArray(project) ? project[0]?.id : project?.id) || projectId;
       if (pid) {
@@ -3776,31 +3786,8 @@ function App() {
   const getImageBlob = async (company) => {
     if (!baseImageRef.current) throw new Error("no base image");
     const { w, h } = canvasSizeRef.current;
-    const off = renderComposite(
-      baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize,
-      w, h, textLayers, symbols,
-      company.personName, company.companyName, company.logoEl,
-      { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
-    );
-    // Scale down to max 1200px wide to keep email size small
-    const MAX_W = 1200;
-    let finalCanvas = off;
-    if (off.width > MAX_W) {
-      const scale = MAX_W / off.width;
-      const scaled = document.createElement("canvas");
-      scaled.width = MAX_W;
-      scaled.height = Math.round(off.height * scale);
-      scaled.getContext("2d").drawImage(off, 0, 0, scaled.width, scaled.height);
-      finalCanvas = scaled;
-    }
-    return new Promise((res, rej) => {
-      const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
-      finalCanvas.toBlob(blob => {
-        clearTimeout(timeout);
-        if (!blob) rej(new Error("Failed to render image"));
-        else res(blob);
-      }, "image/jpeg", 0.75);
-    });
+    const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, canvasBg);
+    return new Promise(res => off.toBlob(res, "image/png"));
   };
 
   const showPreview = () => {
@@ -3898,12 +3885,21 @@ function App() {
             <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0, 22)}…</div></div>
           </div>
           <div className="header-btns">
+            <button onClick={() => setAppDark(d => !d)} title={appDark ? "Light mode" : "Dark mode"} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", flexShrink: 0, transition: "all .2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.85)"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--sep)"; e.currentTarget.style.color = "var(--t2)"; }}>
+              {appDark
+                ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+              }
+            </button>
             <LangToggle />
             {sessionUser?.picture && (
-              <UserMenu
-                sessionUser={sessionUser}
-                onSignOut={() => { sessionStorage.clear(); setAuthed(false); }}
-                onDeleteAccount={() => {
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 4 }}>
+                <img src={sessionUser.picture} alt="" style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid var(--sep)" }} />
+                <span style={{ fontSize: 12, color: "var(--t3)" }}>{sessionUser.name?.split(" ")[0]}</span>
+                <button className="btn-s" onClick={() => { sessionStorage.clear(); setAuthed(false); }} style={{ fontSize: 11, padding: "3px 8px" }}>{t("app.sign_out")}</button>
+                <button className="btn-s" onClick={() => {
                   if (window.confirm(t("app.delete_account_confirm"))) {
                     fetch(`${SB_URL}/rest/v1/users?email=eq.${encodeURIComponent(sessionUser.email)}`, {
                       method: "DELETE",
@@ -3917,9 +3913,8 @@ function App() {
                       window.alert("Kontakta hello@logoplacers.com för att radera ditt konto.");
                     });
                   }
-                }}
-                t={t}
-              />
+                }} style={{ fontSize: 11, padding: "3px 8px", color: "rgba(239,68,68,0.7)", borderColor: "rgba(239,68,68,0.2)" }}>{t("app.delete_account")}</button>
+              </div>
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
             {saving && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>{t("app.saving")}</span>}
@@ -3929,16 +3924,16 @@ function App() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               {t("app.feedback")}
             </button>
-            <button className="btn-s" disabled={!hasImage} onClick={showPreview} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+            <button className="btn-s" disabled={!hasImage} onClick={showPreview}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" onClick={() => setShowSendModal(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+            <button className="btn-s" onClick={() => setShowSendModal(true)} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2L15 22 11 13 2 9l20-7z" /></svg>
               {t("app.send")}
-              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "#000", color: "#fff", borderRadius: "100px", padding: "1px 5px", border: "1px solid rgba(255,255,255,0.2)" }}>{companies.filter(c => c.email).length}</span>}
+              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "var(--blue)", color: "#fff", borderRadius: "100px", padding: "1px 5px" }}>{companies.filter(c => c.email).length}</span>}
             </button>
             <button className="btn-p" style={{ width: "auto", padding: "8px 16px", fontSize: 13 }} disabled={!hasImage || readyCount === 0 || zipping} onClick={downloadZip}>
               {zipping ? t("app.packing") : `${t("app.download")} (${readyCount})`}
@@ -3965,14 +3960,14 @@ function App() {
                 { step: "6", tkey: "manual.step6" },
               ].map(s => (
                 <div key={s.step} style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "#000", border: "1px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{s.step}</div>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--blue-dim)", border: "1px solid rgba(255,255,255,0.85)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--blue)", flexShrink: 0 }}>{s.step}</div>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t1)", marginBottom: 4 }}>{t(`${s.tkey}.title`)}</div>
                     <div style={{ fontSize: 13, color: "var(--t3)", lineHeight: 1.6 }}>{t(`${s.tkey}.body`)}</div>
                   </div>
                 </div>
               ))}
-              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
+              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(26,130,255,.06)", border: "1px solid rgba(255,255,255,0.85)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
                 {t("app.credits_info")}
               </div>
             </div>
@@ -4097,7 +4092,7 @@ function App() {
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 6,
                       border: `1.5px solid ${eyedropperActive ? "var(--blue)" : "var(--sep)"}`,
-                      background: eyedropperActive ? "rgba(255,255,255,0.2)" : "var(--bg4)",
+                      background: eyedropperActive ? "rgba(255,255,255,0.85)" : "var(--bg4)",
                       cursor: "pointer", flexShrink: 0, transition: "all .15s"
                     }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive ? "rgba(255,255,255,0.75)" : "var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -4531,7 +4526,7 @@ function AdminPanel({ onBack }) {
   if (!adminUser) return (
     <div style={{ minHeight: "100vh", background: "#070b12", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans','Helvetica Neue',sans-serif" }}>
       <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: "44px 48px", width: 360, display: "flex", flexDirection: "column", gap: 20, alignItems: "center", textAlign: "center" }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: "#000", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "none" }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.8))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 32px rgba(255,255,255,0.85)" }}>
           <Logo size={24} />
         </div>
         <div>
@@ -4564,7 +4559,7 @@ function AdminPanel({ onBack }) {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={addUser} style={{ padding: "8px 16px", background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
+            <button onClick={addUser} style={{ padding: "8px 16px", background: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.85)", color: "rgba(255,255,255,0.75)", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
             <button onClick={() => { sessionStorage.removeItem("lp_admin_user"); setAdminUser(null); }}
               style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
             <button onClick={onBack} style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← App</button>
@@ -4607,7 +4602,7 @@ function AdminPanel({ onBack }) {
                   <input type="date" value={editing.trial_until || ""} onChange={e => setEditing({ ...editing, trial_until: e.target.value })}
                     style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: editing.trial_until ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, fontFamily: "inherit" }}
                     title="Trial until (optional)" />
-                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "rgba(255,255,255,0.85)", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
                   <button onClick={() => setEditing(null)} style={{ padding: "6px 12px", background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.5)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.cancel")}</button>
                 </div>
               ) : (
@@ -4615,7 +4610,7 @@ function AdminPanel({ onBack }) {
                   <div style={{ flex: "1 1 180px", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 13, fontWeight: 500 }}>{u.email}</div>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", padding: "3px 9px", borderRadius: 6,
-                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(255,255,255,0.12)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
+                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(255,255,255,0.85)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
                     color: u.plan === "free" || !u.plan ? "rgba(255,255,255,.4)" : "rgba(255,255,255,0.75)"
                   }}>{u.plan || "free"}</span>
                   {/* Credits live bar */}
@@ -4733,4 +4728,3 @@ function CookieNotice() {
 export default function AppRouter() {
   return <LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider>;
 }
-// Tue Mar 17 14:33:47 CET 2026
