@@ -291,7 +291,9 @@ const style = `
   /* ── Canvas area ─────────────────────────────────────── */
   .canvas-area { display: flex; flex-direction: column; overflow: hidden; }
   .canvas-toolbar { padding: 10px 18px; border-bottom: 1px solid var(--sep); background: var(--bg2); display: flex; align-items: center; gap: 10px; }
-  .canvas-wrapper { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 40px; background: #050505; background-image: radial-gradient(circle at 1px 1px, #161616 1px, transparent 0); background-size: 24px 24px; position: relative; }
+  .canvas-wrapper { flex: 1; overflow: auto; padding: 40px; background: #050505; background-image: radial-gradient(circle at 1px 1px, #161616 1px, transparent 0); background-size: 24px 24px; position: relative; }
+  .canvas-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+  .canvas-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
   .zoom-controls { position: absolute; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 6px; background: var(--bg2); border: 1px solid var(--sep); border-radius: 10px; padding: 5px 8px; z-index: 10; }
   .zoom-btn { background: none; border: none; color: var(--t2); font-size: 16px; cursor: pointer; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: 600; transition: color .1s, background .1s; }
   .zoom-btn:hover { background: var(--bg4); color: var(--t1); }
@@ -4882,7 +4884,12 @@ function App() {
           </div>
 
           <div className="canvas-area">
-            <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); const delta = e.ctrlKey ? e.deltaY * 0.01 : e.deltaY * 0.001; setCanvasZoom(z => Math.min(4, Math.max(0.1, +(z - delta).toFixed(3)))); }}>
+            <div className="canvas-wrapper" onWheel={e => {
+              if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                setCanvasZoom(z => Math.min(4, Math.max(0.2, +(z - e.deltaY * 0.005).toFixed(3))));
+              }
+            }}>
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
@@ -4890,9 +4897,9 @@ function App() {
                   <p className="empty-sub">Upload a base image on the left</p>
                 </div>
               ) : (
-                <div style={{ width: (cw || 0) * canvasZoom, height: (ch || 0) * canvasZoom, flexShrink: 0 }}>
+                <div style={{ width: Math.round((cw || 0) * canvasZoom), height: Math.round((ch || 0) * canvasZoom), position: "relative", flexShrink: 0 }}>
                   <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                    style={{ width: cw || "auto", height: ch || "auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "top left" }}>
+                    style={{ width: cw || "auto", height: ch || "auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "top left", position: "absolute", top: 0, left: 0 }}>
                     <canvas ref={canvasRef} />
                     {cw > 0 && (
                       <>
@@ -4937,13 +4944,13 @@ function App() {
               )}
             </div>
             <div className="canvas-footer" style={{ position: "relative" }}>
-              {cw > 0 ? t("canvas.hint") : t("canvas.empty")}
+              {cw > 0 ? <span>Ctrl + scroll för att zooma · dra för att flytta element</span> : t("canvas.empty")}
               {hasImage && (
                 <div className="zoom-controls">
-                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.1, +(z - 0.1).toFixed(2)))}>−</button>
-                  <span className="zoom-label">{Math.round(canvasZoom * 100)}%</span>
+                  <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.2, +(z - 0.1).toFixed(2)))}>−</button>
+                  <span className="zoom-label" style={{ cursor: "pointer" }} onClick={() => setCanvasZoom(1)}>{Math.round(canvasZoom * 100)}%</span>
                   <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.min(4, +(z + 0.1).toFixed(2)))}>+</button>
-                  <button className="zoom-btn" style={{ fontSize: 9 }} onClick={() => setCanvasZoom(1)}>↺</button>
+                  <button className="zoom-btn" title="Återställ zoom" style={{ fontSize: 11, letterSpacing: "-0.5px" }} onClick={() => setCanvasZoom(1)}>1:1</button>
                 </div>
               )}
             </div>
