@@ -739,8 +739,18 @@ function extractContactsFromNumbers(namesText, emailsText) {
       i += 1;
     }
 
-    // Skip if company looks like a person name and has no company suffix
+    // Skip person names masquerading as companies
     if (looksLikePerson(company) && !COMPANY_SUFFIX.test(company)) continue;
+    // Skip entries with special chars that indicate garbled data
+    if (/[!%$()=<>|&\[\]"'@#]/.test(company)) continue;
+    // Skip entries starting with digit, symbol, or lowercase single char
+    if (/^[^A-Za-zÅÄÖåäö]/.test(company)) continue;
+    // Skip very short (1-2 chars) or likely partial words
+    if (company.length <= 2) continue;
+    // Skip entries that look like partial last names (no uppercase start or all lowercase)
+    if (/^[a-z]/.test(company) && company.length < 5) continue;
+    // Skip domain-like entries (e.g. "karma.life", ".app")
+    if (/^\.[a-z]/.test(company)) continue;
 
     contacts.push({ company, person });
   }
