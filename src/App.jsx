@@ -1381,17 +1381,18 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         `--${boundary}--`,
       ];
       const raw = rawParts.join("\r\n");
-      // Use TextEncoder → Uint8Array → base64 (handles all sizes safely)
-      const encoder = new TextEncoder();
-      const bytes = encoder.encode(raw);
-      // Convert to base64 in chunks to avoid stack overflow
-      let b64 = "";
-      const CHUNK = 8192;
-      for (let i = 0; i < bytes.length; i += CHUNK) {
-        b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
-      }
-      // URL-safe base64
-      resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+      // Use Blob + FileReader for reliable base64url — avoids = in middle of string
+      const bytes = new TextEncoder().encode(raw);
+      const b64url = await new Promise((res2, rej2) => {
+        const fr = new FileReader();
+        fr.onload = () => {
+          const b64 = fr.result.split(",")[1];
+          res2(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, ""));
+        };
+        fr.onerror = rej2;
+        fr.readAsDataURL(new Blob([bytes]));
+      });
+      resolve(b64url);
     } catch (err) { reject(err); }
   });
 }
