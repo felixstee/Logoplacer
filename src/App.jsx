@@ -655,63 +655,76 @@ function extractContactsFromCSV(text) {
 }
 
 function extractContactsFromNumbers(allText) {
-  // allText = printable strings extracted from all .iwa files
-  // Pattern: company name line, person name line(s), email fragment(s) nearby
+  const DOMAIN_FRAG = /^[a-z0-9][a-z0-9\-]+\.(se|com|io|ai|net|org|tech|app|co|life|cc|de|dk|no|fi|eu|nu)$/i;
   const EMAIL_FRAG = /^[a-z0-9._%+\-]+@[a-z0-9.\-]*$/i;
-  const DOMAIN_FRAG = /^[a-z0-9\-]+\.(se|com|io|ai|net|org|tech|app|co|life|cc|de|dk|no|fi|eu)$/i;
+  const FULL_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
   const UUID = /^[0-9A-F]{8}-[0-9A-F]{4}-/i;
   const results = []; const seen = new Set();
 
   const lines = allText.split("\n")
     .map(l => l.trim())
-    .filter(l => l.length >= 2 && !UUID.test(l) && !l.startsWith("http") && !l.startsWith("mailto"));
+    .filter(l => l.length >= 2 && !UUID.test(l) && !l.startsWith("http") && !l.startsWith("mailto") && !/^\d+$/.test(l));
 
-  // Build list of (company, person, emailFrag, domainFrag) tuples
-  // Strategy: scan for domain/email fragments, look backwards for name/company
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i];
-    if (!DOMAIN_FRAG.test(l) && !EMAIL_FRAG.test(l)) continue;
+    const isDomain = DOMAIN_FRAG.test(l);
+    const isEmailFrag = EMAIL_FRAG.test(l);
+    const isFullEmail = FULL_EMAIL.test(l);
+    if (!isDomain && !isEmailFrag && !isFullEmail) continue;
 
-    // Collect email parts nearby
-    let emailParts = [l];
-    if (i + 1 < lines.length && (EMAIL_FRAG.test(lines[i + 1]) || lines[i + 1].startsWith("@"))) {
-      emailParts.push(lines[i + 1]);
-    }
-
-    // Reconstruct email: join fragment before @ with domain
+    // Try to reconstruct full email from adjacent lines
     let email = "";
-    const atPart = emailParts.find(p => p.includes("@"));
-    const domainPart = emailParts.find(p => DOMAIN_FRAG.test(p));
-    if (atPart && domainPart && !atPart.includes(".")) {
-      email = atPart.replace(/@.*/, "") + "@" + domainPart;
-    } else if (atPart && atPart.match(/@[a-z0-9.\-]+\.[a-z]{2,}/i)) {
-      email = atPart;
-    } else if (domainPart) {
-      email = "";  // domain only, no email
+    if (isFullEmail) {
+      email = l.toLowerCase();
+    } else if (isEmailFrag && l.includes("@")) {
+      // Has @ but incomplete domain — look forward for domain
+      const user = l.split("@")[0];
+      const nextDomain = lines.slice(i + 1, i + 4).find(x => DOMAIN_FRAG.test(x));
+      email = nextDomain ? `${user}@${nextDomain}`.toLowerCase() : "";
+    } else if (isDomain) {
+      // Domain line — look back for user@ fragment
+      const prevFrag = lines.slice(Math.max(0, i - 3), i).reverse().find(x => EMAIL_FRAG.test(x) && x.includes("@"));
+      if (prevFrag) {
+        const user = prevFrag.split("@")[0];
+        email = `${user}@${l}`.toLowerCase();
+      }
     }
 
-    // Look back for company and person name
+    // Look backwards up to 8 lines for company + person
     let companyName = ""; let personName = "";
-    for (let b = 1; b <= 6 && i - b >= 0; b++) {
+    for (let b = 1; b <= 8 && i - b >= 0; b++) {
       const prev = lines[i - b];
       if (!prev || UUID.test(prev) || prev.length < 2) continue;
-      if (DOMAIN_FRAG.test(prev) || EMAIL_FRAG.test(prev)) break;
+      if (DOMAIN_FRAG.test(prev) || FULL_EMAIL.test(prev)) break;
+      if (EMAIL_FRAG.test(prev) && prev.includes("@")) continue;
       if (!companyName && looksLikeCompany(prev)) { companyName = prev; continue; }
       if (!personName && looksLikeName(prev)) { personName = prev; }
       if (personName && companyName) break;
     }
 
-    // Use domain as company fallback
-    if (!companyName && domainPart) {
-      companyName = domainPart.split(".")[0];
-      companyName = companyName.charAt(0).toUpperCase() + companyName.slice(1);
+    // Fallback: use domain as company name
+    if (!companyName) {
+      const domainBase = isDomain ? l.split(".")[0] : (email.split("@")[1] || "").split(".")[0];
+      if (domainBase && domainBase.length > 1) {
+        companyName = domainBase.charAt(0).toUpperCase() + domainBase.slice(1);
+      }
     }
 
-    if (!companyName) continue;
-    const key = companyName.toLowerCase();
+    // Also look forward for company if still missing
+    if (!companyName) {
+      for (let f = 1; f <= 4 && i + f < lines.length; f++) {
+        const next = lines[i + f];
+        if (!next || UUID.test(next) || DOMAIN_FRAG.test(next) || FULL_EMAIL.test(next)) break;
+        if (looksLikeCompany(next)) { companyName = next; break; }
+      }
+    }
+
+    if (!companyName || companyName.length < 2) continue;
+
+    const key = companyName.toLowerCase().trim();
     if (!seen.has(key)) {
       seen.add(key);
-      results.push({ personName, companyName, email });
+      results.push({ personName: personName || "", companyName: companyName.trim(), email: email || "" });
     }
   }
   return results;
@@ -3844,6 +3857,7 @@ function App() {
   };
 
   const addContact = (personName, companyRaw, email = null) => {
+    if (!companyRaw || typeof companyRaw !== "string") return;
     const trimmed = companyRaw.trim(); if (!trimmed) return;
     const domain = guessDomain(trimmed, email);
     const companyName = trimmed.includes(".") ? domainToCompanyName(domain) : cleanCompanyName(trimmed);
@@ -4360,7 +4374,7 @@ function App() {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <button className="btn-s" style={{ fontSize: 12, padding: "7px 12px" }}
                   onClick={() => spreadsheetRef.current?.click()}>
-                  📂 Import .csv / .numbers
+                  Import .csv / .numbers
                 </button>
                 <span style={{ fontSize: 11, color: "var(--t3)" }}>from Numbers, Excel or CSV</span>
                 <input ref={spreadsheetRef} type="file" accept=".csv,.numbers,.xlsx"
