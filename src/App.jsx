@@ -1381,17 +1381,24 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         `--${boundary}--`,
       ];
       const raw = rawParts.join("\r\n");
-      // Use TextEncoder → Uint8Array → base64 (handles all sizes safely)
+      // Use TextEncoder → Uint8Array → base64url (handles all sizes safely)
+      // Gmail API requires base64url: no +//, no = padding anywhere
       const encoder = new TextEncoder();
       const bytes = encoder.encode(raw);
-      // Convert to base64 in chunks to avoid stack overflow
-      let b64 = "";
-      const CHUNK = 8192;
-      for (let i = 0; i < bytes.length; i += CHUNK) {
-        b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
-      }
-      // URL-safe base64
-      resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
+      // Build one continuous Uint8Array base64 without chunked = padding issues
+      // by converting the entire byte array at once via a Blob + FileReader
+      const b64url = await new Promise((res2, rej2) => {
+        const blob2 = new Blob([bytes]);
+        const fr = new FileReader();
+        fr.onload = () => {
+          // result is "data:application/octet-stream;base64,<data>"
+          const b64 = fr.result.split(",")[1];
+          res2(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, ""));
+        };
+        fr.onerror = rej2;
+        fr.readAsDataURL(blob2);
+      });
+      resolve(b64url);
     } catch (err) { reject(err); }
   });
 }
