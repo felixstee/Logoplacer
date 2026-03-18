@@ -3960,34 +3960,23 @@ function App() {
           return extractStringsFromBuffer(new Uint8Array(buf)).join("\n");
         };
 
-        // DataList-905026 = company names + person names
-        // DataList-905033 = email fragments + domains
-        // Also check the second sheet files (905614+) for additional data
-        const nameFiles = Object.keys(zipData.files).filter(f =>
-          f.endsWith(".iwa") && /DataList-9050(2[6-9]|[3-9]\d)/.test(f) === false &&
-          /DataList-905026/.test(f)
-        );
-        const emailFiles = Object.keys(zipData.files).filter(f =>
-          f.endsWith(".iwa") && /DataList-905033/.test(f)
-        );
+        // Read all DataList .iwa files, classify by content
+        const allIwa = Object.keys(zipData.files)
+          .filter(f => f.includes("DataList") && f.endsWith(".iwa"))
+          .sort();
 
-        // Fallback: if specific files not found, use all DataList files split in half
         let namesText = "";
         let emailsText = "";
 
-        if (nameFiles.length && emailFiles.length) {
-          namesText = await getTextFromIwa(nameFiles[0]);
-          emailsText = await getTextFromIwa(emailFiles[0]);
-        } else {
-          // Try to find the right files by content
-          const allIwa = Object.keys(zipData.files).filter(f => f.includes("DataList") && f.endsWith(".iwa"));
-          for (const iwaPath of allIwa) {
-            const text = await getTextFromIwa(iwaPath);
-            if (/@/.test(text) || /\.(se|com|io|ai|net|org)/.test(text)) {
-              emailsText += text + "\n";
-            } else {
-              namesText += text + "\n";
-            }
+        for (const iwaPath of allIwa) {
+          const text = await getTextFromIwa(iwaPath);
+          if (!text.trim()) continue;
+          const atCount = (text.match(/@/g) || []).length;
+          const domainCount = (text.match(/\.(?:se|com|io|ai|net|org|tech|app|cc|life|nu)(?:\*|\n|$)/gm) || []).length;
+          if (atCount > 2 || domainCount > 3) {
+            emailsText += text + "\n";
+          } else {
+            namesText += text + "\n";
           }
         }
 
