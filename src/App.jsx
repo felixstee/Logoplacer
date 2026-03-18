@@ -665,14 +665,14 @@ function extractStringsFromBuffer(bytes, minLen = 3) {
   return results;
 }
 
-function extractContactsFromNumbers(namesText, emailsText) {
+function extractContactsFromNumbers(namesText, emailsText, addressText = "") {
   const UUID = /^[0-9A-F]{8}-[0-9A-F]{4}-/i;
   const DOMAIN_RE = /^([a-z0-9][a-z0-9\-]{2,}\.[a-z]{2,})\*?$/i;
   const FULL_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
   const USER_FRAG = /^([a-z0-9._%+\-]+)@([a-z0-9.\-]*)$/i;
   const PERSON_RE = /^[A-ZÅÄÖ][a-zåäö\-]+(?:\s[A-ZÅÄÖ][a-zåäö\-]+)+$/;
   const COMPANY_SUFFIX = /\b(AB|AS|Inc|Ltd|GmbH|Technologies|Tech|Group|Holding|Solutions|Digital|Media|Agency|Studios)\b/i;
-  const SKIP = new Set(['Record', 'Parent R', 'D > Domains', 'HTeam > Name', 'Email addresses', 'Str']);
+  const SKIP = new Set(['Record', 'Parent R', 'D > Domains', 'HTeam > Name', 'Email addresses', 'Str', 'Address', 'Adress']);
 
   function isJunk(s) {
     if (/^[\[\]#\$@\+\*\^,;=<>!]/.test(s)) return true;
@@ -755,6 +755,26 @@ function extractContactsFromNumbers(namesText, emailsText) {
     contacts.push({ company, person });
   }
 
+  // Build address map from addressText if provided
+  const addressMap = {};
+  if (addressText && addressText.trim()) {
+    const addressLines = addressText.split('\n').map(l => l.trim()).filter(l => l.length > 3 && !UUID.test(l));
+    // Try to map addresses to companies by proximity in the list
+    let addrIdx = 0;
+    for (const c of contacts) {
+      const cn = normalize(c.company);
+      // Look for an address near this position
+      if (addrIdx < addressLines.length) {
+        const candidate = addressLines[addrIdx];
+        // Looks like a street address: has digits and letters
+        if (/\d/.test(candidate) && /[a-zA-ZÅÄÖåäö]/.test(candidate)) {
+          addressMap[cn] = candidate;
+          addrIdx++;
+        }
+      }
+    }
+  }
+
   // Match emails to contacts by domain similarity
   const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
   const results = []; const seen = new Set();
@@ -774,7 +794,7 @@ function extractContactsFromNumbers(namesText, emailsText) {
 
     if (!seen.has(cn)) {
       seen.add(cn);
-      results.push({ personName: c.person || '', companyName: c.company, email });
+      results.push({ personName: c.person || '', companyName: c.company, email, address: addressMap[cn] || '' });
     }
   }
   return results;
@@ -912,14 +932,15 @@ async function fetchLogoDataURL(domain) {
   throw new Error("no logo found for " + domain);
 }
 
-function resolveTemplate(template, personName, companyName) {
+function resolveTemplate(template, personName, companyName, address) {
   const firstName = (personName || "").split(" ")[0];
   const possessive = /[sxzSXZ]$/.test(firstName) ? firstName : firstName + "s";
   return template
     .replace(/\(\(name\)\)s/gi, possessive)
     .replace(/\(\(name\)\)/gi, firstName)
     .replace(/\(\(fullname\)\)/gi, personName || "")
-    .replace(/\(\(company\)\)/gi, companyName || "");
+    .replace(/\(\(company\)\)/gi, companyName || "")
+    .replace(/\(\(address\)\)/gi, address || "");
 }
 
 function PxInput({ value, onChange, color, suffix = "px", min = 1, max = 2000 }) {
@@ -945,7 +966,7 @@ function PxInput({ value, onChange, color, suffix = "px", min = 1, max = 2000 })
   );
 }
 
-function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, displayW, displayH, textLayers, symbols, personName, companyName, companyLogoEl, canvasBg, addWatermark = false) {
+function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, displayW, displayH, textLayers, symbols, personName, companyName, companyLogoEl, canvasBg, addWatermark = false, address = "") {
   const off = document.createElement("canvas");
   off.width = baseImg.width; off.height = baseImg.height;
   const ctx = off.getContext("2d");
@@ -991,7 +1012,7 @@ function renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize
 
   textLayers.forEach(cfg => {
     if (!cfg.enabled || !cfg.template.trim()) return;
-    const resolved = resolveTemplate(cfg.template, personName, companyName);
+    const resolved = resolveTemplate(cfg.template, personName, companyName, address);
     const fontSize = cfg.fontSize * scale;
     const fw = cfg.fontWeight ?? (cfg.bold ? "bold" : "normal");
     ctx.font = `${cfg.italic ? "italic " : ""}${fw} ${fontSize}px "${cfg.fontFamily}"`;
@@ -1098,6 +1119,7 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
             <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
             <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
             <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
+            <button className="tag-btn" onClick={() => insertTag("((address))")}>+ address</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
@@ -2690,7 +2712,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
   useEffect(() => { setSelected(new Set(withEmail.map(c => c.id))); }, []);
 
   const selectedContacts = withEmail.filter(c => selected?.has(c.id));
-  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName);
+  const resolveStr = (tpl, c) => resolveTemplate(tpl, c.personName, c.companyName, c.address || "");
 
   useEffect(() => {
     if (step !== "approve" && step !== "sending" && step !== "done") return;
@@ -2827,6 +2849,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((name))")}>+ name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
+                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((address))")}>+ address</button>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--t3)" }}>📎 Personalised image attached automatically as .png per recipient.</p>
               </div>
@@ -3907,13 +3930,13 @@ function App() {
     const img = new Image(); img.onload = () => drawImageToCanvas(img); img.src = URL.createObjectURL(file);
   };
 
-  const addContact = (personName, companyRaw, email = null) => {
+  const addContact = (personName, companyRaw, email = null, address = "") => {
     if (!companyRaw || typeof companyRaw !== "string") return;
     const trimmed = companyRaw.trim(); if (!trimmed) return;
     const domain = guessDomain(trimmed, email);
     const companyName = trimmed.includes(".") ? domainToCompanyName(domain) : cleanCompanyName(trimmed);
     if (companies.find(c => c.companyName.toLowerCase() === companyName.toLowerCase())) return;
-    const entry = { id: Date.now() + Math.random(), personName: personName.trim(), companyName, domain, email: email || null, status: "loading", logoDataUrl: null, logoEl: null };
+    const entry = { id: Date.now() + Math.random(), personName: personName.trim(), companyName, domain, email: email || null, address: address || "", status: "loading", logoDataUrl: null, logoEl: null };
     setCompanies(cs => [...cs, entry]);
     fetchLogoDataURL(domain)
       .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
@@ -3955,7 +3978,7 @@ function App() {
         const text = await file.text();
         const contacts = extractContactsFromCSV(text);
         if (!contacts.length) { showToast("No contacts found in CSV"); return; }
-        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email, address }) => addContact(personName, companyName, email, address || ""));
         showToast(`${contacts.length} contacts imported from CSV`);
         return;
       }
@@ -3991,16 +4014,36 @@ function App() {
         let emailsText = "";
 
         if (iwaContents.length >= 2) {
-          // Most @ = emails, least @ = names
+          // Most @ = emails file
           emailsText = iwaContents[0].text;
-          namesText = iwaContents.slice(1).map(x => x.text).join("\n");
+          const nonEmail = iwaContents.slice(1);
+          // Detect address column: highest density of "digits + letters" street patterns
+          const ADDR_RE = /\b\d{1,5}\s+[A-Za-zÅÄÖåäö]/;
+          let bestAddrScore = 0; let addrIdx = -1;
+          nonEmail.forEach((item, idx) => {
+            const lines = item.text.split('\n').filter(l => l.trim().length > 3);
+            const score = lines.filter(l => ADDR_RE.test(l)).length;
+            if (score > bestAddrScore) { bestAddrScore = score; addrIdx = idx; }
+          });
+          let addressText = "";
+          if (addrIdx >= 0 && bestAddrScore > 0) {
+            addressText = nonEmail[addrIdx].text;
+            namesText = nonEmail.filter((_, idx) => idx !== addrIdx).map(x => x.text).join("\n");
+          } else {
+            namesText = nonEmail.map(x => x.text).join("\n");
+          }
+          const contacts = extractContactsFromNumbers(namesText, emailsText, addressText);
+          if (!contacts.length) { showToast("No contacts found — try File > Export > CSV from Numbers"); return; }
+          contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email, address }) => addContact(personName, companyName, email, address || ""));
+          showToast(`${contacts.length} contacts imported`);
+          return;
         } else if (iwaContents.length === 1) {
           namesText = iwaContents[0].text;
         }
 
         const contacts = extractContactsFromNumbers(namesText, emailsText);
         if (!contacts.length) { showToast("No contacts found — try File > Export > CSV from Numbers"); return; }
-        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email, address }) => addContact(personName, companyName, email, address || ""));
         showToast(`${contacts.length} contacts imported`);
         return;
       }
@@ -4026,7 +4069,7 @@ function App() {
     const zip = new JSZip(); const folder = zip.folder("images");
     const { w, h } = canvasSizeRef.current;
     for (const c of ready) {
-      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl, canvasBg);
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, c.personName, c.companyName, c.logoEl, canvasBg, false, c.address || "");
       const blob = await new Promise(res => off.toBlob(res, "image/png"));
       folder.file(`${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`, blob);
     }
@@ -4042,7 +4085,8 @@ function App() {
       baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize,
       w, h, textLayers, symbols,
       company.personName, company.companyName, company.logoEl,
-      { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
+      { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null },
+      false, company.address || ""
     );
     // Use PNG for lossless quality — no compression artifacts
     return new Promise((res, rej) => {
@@ -4062,7 +4106,7 @@ function App() {
     const targets = ready.length > 0 ? ready : [{ personName: "Alex", companyName: "Acme Corp", logoEl: null }];
     const previews = []; let done = 0;
     targets.forEach((comp, i) => {
-      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null }, true /* watermark */);
+      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null }, true /* watermark */, comp.address || "");
       off.toBlob(blob => {
         previews[i] = { name: comp.companyName || "Preview", url: URL.createObjectURL(blob) };
         done++;
@@ -4498,12 +4542,13 @@ function App() {
                             <button className="ico-edit" onClick={() => setEditingDomain(ed => ({ ...ed, [c.id]: c.domain }))}>✎</button>
                           </div>
                         )}
+                        {c.address && <div style={{ fontSize: 10, color: "var(--t4)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>📍 {c.address}</div>}
                       </div>
                       {c.email && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
                       {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>}
                       {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
                       <button className="ico-edit" style={{ fontSize: 11, padding: "2px 5px" }}
-                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, name: c.personName || "", email: c.email || "" })}>
+                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, name: c.personName || "", email: c.email || "", address: c.address || "" })}>
                         {editingContact?.id === c.id ? "▲" : "▼"}
                       </button>
                       <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
@@ -4520,10 +4565,14 @@ function App() {
                             <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
                           </div>
                         </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsadress</div>
+                          <input className="domain-inp" style={{ width: "100%" }} value={editingContact.address || ""} placeholder="Storgatan 1, Stockholm" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
+                        </div>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                           <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
                           <button className="btn-p" style={{ width: "auto", padding: "4px 12px", fontSize: 11 }} onClick={() => {
-                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, personName: editingContact.name, email: editingContact.email || null } : x));
+                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, personName: editingContact.name, email: editingContact.email || null, address: editingContact.address || "" } : x));
                             setEditingContact(null);
                           }}>Save</button>
                         </div>
