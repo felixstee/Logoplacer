@@ -1381,24 +1381,17 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         `--${boundary}--`,
       ];
       const raw = rawParts.join("\r\n");
-      // Use TextEncoder → Uint8Array → base64url (handles all sizes safely)
-      // Gmail API requires base64url: no +//, no = padding anywhere
+      // Use TextEncoder → Uint8Array → base64 (handles all sizes safely)
       const encoder = new TextEncoder();
       const bytes = encoder.encode(raw);
-      // Build one continuous Uint8Array base64 without chunked = padding issues
-      // by converting the entire byte array at once via a Blob + FileReader
-      const b64url = await new Promise((res2, rej2) => {
-        const blob2 = new Blob([bytes]);
-        const fr = new FileReader();
-        fr.onload = () => {
-          // result is "data:application/octet-stream;base64,<data>"
-          const b64 = fr.result.split(",")[1];
-          res2(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, ""));
-        };
-        fr.onerror = rej2;
-        fr.readAsDataURL(blob2);
-      });
-      resolve(b64url);
+      // Convert to base64 in chunks to avoid stack overflow
+      let b64 = "";
+      const CHUNK = 8192;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+      }
+      // URL-safe base64
+      resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
     } catch (err) { reject(err); }
   });
 }
@@ -3364,7 +3357,7 @@ function UpgradeModal({ onClose, credits }) {
 }
 
 // ─── User menu: profile pic + gear → dropdown with sign out & delete ───────
-function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t }) {
+function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -3379,17 +3372,30 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t }) {
       {/* Gear button */}
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ background: open ? "var(--bg4)" : "rgba(255,255,255,.06)", border: `0.5px solid ${open ? "rgba(255,255,255,0.2)" : "var(--sep)"}`, borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", flexShrink: 0, transition: "all .15s" }}
-        title="Account settings"
+        style={{ background: open ? "var(--bg4)" : "rgba(255,255,255,.06)", border: `0.5px solid ${open ? "rgba(255,255,255,0.2)" : tokenExpired ? "rgba(251,146,60,0.5)" : "var(--sep)"}`, borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: tokenExpired ? "rgba(251,146,60,0.9)" : "var(--t2)", flexShrink: 0, transition: "all .15s", position: "relative" }}
+        title={tokenExpired ? "Gmail session expired — sign out and back in" : "Account settings"}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
+        {tokenExpired && (
+          <span style={{ position: "absolute", top: -4, right: -4, width: 9, height: 9, borderRadius: "50%", background: "rgb(251,146,60)", border: "1.5px solid var(--bg1)", display: "block" }} />
+        )}
       </button>
       {/* Dropdown */}
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 9999, background: "var(--bg2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "6px", minWidth: 200, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", animation: "expandDown .15s ease" }}>
+          {/* Token expired warning */}
+          {tokenExpired && (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 6 }}>
+              <span style={{ fontSize: 13, marginTop: 1 }}>⚠️</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgb(251,146,60)", lineHeight: 1.3 }}>Gmail session expired</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2, lineHeight: 1.4 }}>Sign out and back in to restore email sending.</div>
+              </div>
+            </div>
+          )}
           {/* User info header */}
           <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 6 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)" }}>{sessionUser.name}</div>
@@ -3806,20 +3812,13 @@ function App() {
       company.personName, company.companyName, company.logoEl,
       { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
     );
-    // Always scale down to max 600px wide for email
-    const MAX_W = 600;
-    const scale = Math.min(1, MAX_W / off.width);
-    const scaled = document.createElement("canvas");
-    scaled.width = Math.round(off.width * scale);
-    scaled.height = Math.round(off.height * scale);
-    scaled.getContext("2d").drawImage(off, 0, 0, scaled.width, scaled.height);
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
-      scaled.toBlob(blob => {
+      off.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
-      }, "image/jpeg", 0.5);
+      }, "image/jpeg", 0.95);
     });
   };
 
@@ -3939,6 +3938,7 @@ function App() {
                   }
                 }}
                 t={t}
+                tokenExpired={!gmailToken}
               />
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
