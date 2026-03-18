@@ -2789,7 +2789,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                         onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(c.id) : n.delete(c.id); return n; })}
                         style={{ accentColor: "rgba(255,255,255,0.85)", width: 14, height: 14, flexShrink: 0 }} />
                       <div style={{ width: 26, height: 26, background: "#fff", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
-                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} /> : <span style={{ fontSize: 11, color: "#888" }}>{c.companyName[0]}</span>}
+                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} /> : <span style={{ fontSize: 11, color: "#888" }}>{(c.companyName || "?")[0]}</span>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 500, color: "var(--t1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.personName || c.companyName}</div>
@@ -3888,7 +3888,7 @@ function App() {
   const handlePaste = () => {
     const contacts = extractContacts(pasteText);
     if (contacts.length === 0) { showToast("No contacts found — try manual"); return; }
-    contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+    contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
     showToast(`${contacts.length} contacts added${contacts.filter(c => c.email).length ? ` · ${contacts.filter(c => c.email).length} with email` : ""}`);
     setPasteText("");
   };
@@ -3904,7 +3904,7 @@ function App() {
         const text = await file.text();
         const contacts = extractContactsFromCSV(text);
         if (!contacts.length) { showToast("No contacts found in CSV"); return; }
-        contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
         showToast(`${contacts.length} contacts imported from CSV`);
         return;
       }
@@ -3927,7 +3927,7 @@ function App() {
         }
         const contacts = extractContactsFromNumbers(allText);
         if (!contacts.length) { showToast("No contacts found — try File > Export > CSV from Numbers"); return; }
-        contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
         showToast(`${contacts.length} contacts imported`);
         return;
       }
@@ -4406,7 +4406,7 @@ function App() {
                       <div className="co-logo" style={{ cursor: c.status === "error" ? "pointer" : "default" }} onClick={() => c.status === "error" && retryCompany(c)}>
                         {c.status === "loading" && <div className="spinner" />}
                         {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
-                        {c.status === "error" && <span className="ph">{c.companyName[0].toUpperCase()}</span>}
+                        {c.status === "error" && <span className="ph">{(c.companyName || "?")[0].toUpperCase()}</span>}
                       </div>
                       <div className="co-info" style={{ flex: 1, minWidth: 0 }}>
                         <div className="co-name">{c.companyName}
