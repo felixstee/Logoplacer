@@ -3812,20 +3812,23 @@ function App() {
       company.personName, company.companyName, company.logoEl,
       { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
     );
-    // Scale to max 2000px wide — keeps sharpness, stays under Gmail limit
-    const MAX_W = 2000;
+    // Scale to max 800px wide — stays under Gmail limit while keeping reasonable quality
+    const MAX_W = 800;
     const scale = Math.min(1, MAX_W / off.width);
     const scaled = document.createElement("canvas");
     scaled.width = Math.round(off.width * scale);
     scaled.height = Math.round(off.height * scale);
-    scaled.getContext("2d").drawImage(off, 0, 0, scaled.width, scaled.height);
+    const sCtx = scaled.getContext("2d");
+    sCtx.imageSmoothingEnabled = true;
+    sCtx.imageSmoothingQuality = "high";
+    sCtx.drawImage(off, 0, 0, scaled.width, scaled.height);
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
       scaled.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
-      }, "image/jpeg", 0.92);
+      }, "image/jpeg", 0.88);
     });
   };
 
