@@ -4314,6 +4314,30 @@ function App() {
     }
   };
 
+  // Keep a ref to dragging so global listeners always see latest value
+  const draggingRef = useRef(null);
+  useEffect(() => { draggingRef.current = dragging; }, [dragging]);
+
+  // Global mouse listeners — fix freeze when mouse leaves canvas
+  useEffect(() => {
+    const onGlobalMove = (e) => {
+      const d = draggingRef.current;
+      if (!d || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) / canvasZoom, my = (e.clientY - rect.top) / canvasZoom;
+      const { w, h } = canvasSizeRef.current;
+      const clamp = (v, max) => Math.max(0, Math.min(v, max));
+      if (d.target === "logo") updateLogoInst(d.id, { pos: { x: clamp(mx - d.ox, w - 20), y: clamp(my - d.oy, h - 20) } });
+      else if (d.target === "mylogo") setMyLogoPos({ x: clamp(mx - d.ox, w - myLogoSize), y: clamp(my - d.oy, h - myLogoSize) });
+      else if (d.target === "text") updateTextLayer(d.id, { pos: { x: clamp(mx - d.ox, w - 20), y: clamp(my - d.oy, h - 20) } });
+      else if (d.target === "symbol") updateSymbol(d.id, { pos: { x: clamp(mx - d.ox, w - 20), y: clamp(my - d.oy, h - 20) } });
+    };
+    const onGlobalUp = () => setDragging(null);
+    window.addEventListener("mousemove", onGlobalMove);
+    window.addEventListener("mouseup", onGlobalUp);
+    return () => { window.removeEventListener("mousemove", onGlobalMove); window.removeEventListener("mouseup", onGlobalUp); };
+  }, [canvasZoom, myLogoSize]);
+
   const onMouseMove = (e) => {
     if (!dragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -4757,12 +4781,27 @@ function App() {
             {companies.length > 0 && (<>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 6px" }}>
                 <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} companies · {readyCount} ready</span>
-                <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button className="btn-text" style={{ fontSize: 11, color: "var(--t3)" }} title="Hämta om alla loggor" onClick={() => {
+                    companies.forEach(c => {
+                      setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "loading", logoDataUrl: null, logoEl: null } : x));
+                      fetchLogoDataURL(c.domain)
+                        .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "ok", logoDataUrl: dataUrl, logoEl: img } : x)); img.src = dataUrl; })
+                        .catch(() => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "error" } : x)));
+                    });
+                    showToast("Hämtar om alla loggor…");
+                  }}>↺ Reload all</button>
+                  <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
+                </div>
               </div>
               <div className="co-list-wrap">
-                {companies.map(c => (
+                {companies.map(c => {
+                  const multiName = /[,;]/.test(c.personName || "");
+                  const multiEmail = /[,;]/.test(c.email || "");
+                  const needsReview = multiName || multiEmail;
+                  return (
                   <div key={c.id}>
-                    <div className="co-row">
+                    <div className="co-row" style={needsReview ? { borderLeft: "2px solid rgba(251,191,36,.7)", background: "rgba(251,191,36,.03)" } : {}}>
                       <div className="co-logo" style={{ cursor: c.status === "error" ? "pointer" : "default" }} onClick={() => c.status === "error" && retryCompany(c)}>
                         {c.status === "loading" && <div className="spinner" />}
                         {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
@@ -4787,48 +4826,63 @@ function App() {
                         )}
                         {c.address && <div style={{ fontSize: 10, color: "var(--t4)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>📍 {c.address}</div>}
                       </div>
-                      {c.email && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
+                      {needsReview && (
+                        <div style={{ fontSize: 10, color: "rgba(251,191,36,.9)", padding: "3px 8px", background: "rgba(251,191,36,.08)", borderRadius: 5, flexShrink: 0 }} title="Flera värden i ett fält — klicka ▼ för att redigera">⚠ Flera</div>
+                      )}
+                      {c.email && !multiEmail && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
                       {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>}
                       {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
                       <button className="ico-edit" style={{ fontSize: 11, padding: "2px 5px" }}
-                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, name: c.personName || "", email: c.email || "", address: c.address || "" })}>
+                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, companyName: c.companyName || "", name: c.personName || "", email: c.email || "", address: c.address || "" })}>
                         {editingContact?.id === c.id ? "▲" : "▼"}
                       </button>
                       <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                     </div>
                     {editingContact?.id === c.id && (
-                      <div style={{ padding: "8px 12px 10px 54px", background: "var(--bg)", borderBottom: "0.5px solid var(--sep)", display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ padding: "8px 12px 10px 12px", background: "var(--bg)", borderBottom: "0.5px solid var(--sep)", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {(multiName || multiEmail) && (
+                          <div style={{ fontSize: 11, color: "rgba(251,191,36,.9)", padding: "6px 10px", background: "rgba(251,191,36,.07)", borderRadius: 7, border: "1px solid rgba(251,191,36,.2)" }}>
+                            ⚠ Det finns flera värden separerade med komma — redigera manuellt nedan
+                          </div>
+                        )}
                         <div style={{ display: "flex", gap: 6 }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsnamn</div>
+                            <input className="domain-inp" value={editingContact.companyName} placeholder="Acme Corp" onChange={e => setEditingContact(ec => ({ ...ec, companyName: e.target.value }))} />
+                          </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.name_label")}</div>
                             <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
                           </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.email_label")}</div>
                             <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
                           </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsadress</div>
-                          <input className="domain-inp" style={{ width: "100%" }} value={editingContact.address || ""} placeholder="Storgatan 1, Stockholm" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsadress</div>
+                            <input className="domain-inp" value={editingContact.address || ""} placeholder="Storgatan 1" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
+                          </div>
                         </div>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                           <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
                           <button className="btn-p" style={{ width: "auto", padding: "4px 12px", fontSize: 11 }} onClick={() => {
-                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, personName: editingContact.name, email: editingContact.email || null, address: editingContact.address || "" } : x));
+                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, companyName: editingContact.companyName || x.companyName, personName: editingContact.name, email: editingContact.email || null, address: editingContact.address || "" } : x));
                             setEditingContact(null);
-                          }}>Save</button>
+                          }}>Spara</button>
                         </div>
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </>)}
           </div>
 
           <div className="canvas-area">
-            <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); setCanvasZoom(z => Math.min(4, Math.max(0.1, z - e.deltaY * 0.001))); }}>
+            <div className="canvas-wrapper" onWheel={e => { e.preventDefault(); const delta = e.ctrlKey ? e.deltaY * 0.01 : e.deltaY * 0.001; setCanvasZoom(z => Math.min(4, Math.max(0.1, +(z - delta).toFixed(3)))); }}>
               {!hasImage ? (
                 <div className="empty-state">
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
