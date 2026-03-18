@@ -1374,7 +1374,6 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
   });
 }
 
-
 // ─────────────────────────────────────────────
 // GOOGLE DRIVE UPLOAD
 // ─────────────────────────────────────────────
@@ -1540,7 +1539,6 @@ function DriveUploadField({ token, videoLink, setVideoLink }) {
     </div>
   );
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────
 // MACBOOK VIDEO MODAL
@@ -1894,7 +1892,6 @@ function MacBookVideoModal({ getImageBlob, companies, onClose }) {
     </div>
   );
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────
 // PRODUCT MOCKUP MODAL — perspective mesh warp + exposure controls
@@ -2532,7 +2529,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
   const sendAll = async () => {
     // Credit check: 1 credit per send
-    console.log("[Send] selectedContacts:", selectedContacts.length, "token:", !!token, "credits:", creditsBalance);
     if (selectedContacts.length === 0) {
       setSendErrMsg("No recipients selected — make sure contacts have email addresses.");
       return;
@@ -2550,7 +2546,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
       const c = selectedContacts[si];
-      console.log("[Send] Processing contact", si, c.email, "hasLogoEl:", !!c.logoEl);
       if (si > 0) {
         const delay = Math.floor(Math.random() * 31) + 15;
         for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
@@ -2558,9 +2553,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
-        console.log("[Send] Building image blob...");
         const blob = await getImageBlob(c);
-        console.log("[Send] Got blob, size:", blob?.size);
         const subj = resolveStr(subject, c);
         const videoBtn = videoLink.trim()
           ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
@@ -2570,13 +2563,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           : "";
         const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.jpg`;
-        console.log("[Send] Building raw email...");
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
-        console.log("[Send] Sending via proxy, token length:", token?.length, "token start:", token?.substring(0, 15));
-        const res = await fetch("/api/send-email", {
+        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ raw, token }),
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ raw }),
         });
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
@@ -2756,7 +2747,6 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     </div>
   );
 }
-
 
 // ── Language Toggle ───────────────────────────────────────────────────────────
 function LangToggle() {
@@ -4728,7 +4718,6 @@ function CookieNotice() {
     </div>
   );
 }
-
 
 export default function AppRouter() {
   return <LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider>;
