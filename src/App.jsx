@@ -3615,31 +3615,55 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) 
 // ── Import Table Modal ────────────────────────────────────────────────────────
 function ImportTableModal({ rows, onConfirm, onClose }) {
   const [data, setData] = useState(rows.map(r => ({ ...r })));
+  const [expanded, setExpanded] = useState({}); // rowId -> true
 
   const update = (id, field, val) =>
     setData(d => d.map(r => r.id === id ? { ...r, [field]: val } : r));
   const removeRow = (id) => setData(d => d.filter(r => r.id !== id));
   const addRow = () => setData(d => [...d, { id: Date.now() + Math.random(), personName: "", companyName: "", domain: "", email: "" }]);
 
-  const needsReview = (r) => !r.companyName.trim() || !r.domain.trim() || !r.email.trim();
+  const splitVal = (v) => (v || "").split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+
+  const hasMulti = (r) => splitVal(r.personName).length > 1 || splitVal(r.email).length > 1;
+  const isEmpty = (r) => !r.companyName.trim() || !r.domain.trim();
+  const needsReview = (r) => isEmpty(r) || hasMulti(r);
   const reviewCount = data.filter(needsReview).length;
   const allOk = reviewCount === 0;
+
+  // Build name+email pair suggestions for a row
+  const getPairs = (r) => {
+    const names = splitVal(r.personName);
+    const emails = splitVal(r.email);
+    const pairs = [];
+    const maxLen = Math.max(names.length, emails.length, 1);
+    for (let i = 0; i < maxLen; i++) {
+      const name = names[i] || names[0] || "";
+      const email = emails[i] || "";
+      // Smart guess: try to match email to name by first name
+      const firstName = name.split(" ")[0].toLowerCase();
+      const matchedEmail = emails.find(e => e.toLowerCase().startsWith(firstName)) || email;
+      pairs.push({ name, email: matchedEmail });
+    }
+    return pairs;
+  };
 
   const COL = { personName: "Förnamn", companyName: "Bolagsnamn", domain: "Domän", email: "E-post" };
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.82)", zIndex: 1200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(6px)" }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: "var(--bg2)", border: "1px solid var(--sep)", borderRadius: 18, width: "100%", maxWidth: 900, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 40px 100px rgba(0,0,0,.8)" }}>
+      <div style={{ background: "var(--bg2)", border: "1px solid var(--sep)", borderRadius: 18, width: "100%", maxWidth: 960, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 40px 100px rgba(0,0,0,.8)" }}>
 
         {/* Header */}
         <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--sep)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--t1)" }}>Granska kontakter</div>
             <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 2 }}>
-              {data.length} rader · {reviewCount > 0
-                ? <span style={{ color: "rgba(251,191,36,.9)" }}>⚠ {reviewCount} saknar uppgifter</span>
+              {data.length} rader ·{" "}
+              {reviewCount > 0
+                ? <span style={{ color: "rgba(251,191,36,.9)" }}>⚠ {reviewCount} behöver granskas</span>
                 : <span style={{ color: "var(--green)" }}>✓ Alla rader är kompletta</span>}
+              {data.filter(hasMulti).length > 0 && <span style={{ color: "rgba(251,191,36,.7)", marginLeft: 8 }}>· {data.filter(hasMulti).length} har flera namn/mejl</span>}
             </div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
@@ -3650,7 +3674,7 @@ function ImportTableModal({ rows, onConfirm, onClose }) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ position: "sticky", top: 0, background: "var(--bg3)", zIndex: 2 }}>
-                <th style={{ width: 32, padding: "8px 10px", borderBottom: "1px solid var(--sep)", color: "var(--t4)", fontSize: 10, fontWeight: 700, textAlign: "center" }}>#</th>
+                <th style={{ width: 28, padding: "8px 8px", borderBottom: "1px solid var(--sep)", color: "var(--t4)", fontSize: 10, fontWeight: 700, textAlign: "center" }}>#</th>
                 {Object.entries(COL).map(([k, label]) => (
                   <th key={k} style={{ padding: "8px 10px", borderBottom: "1px solid var(--sep)", color: "var(--t3)", fontSize: 10, fontWeight: 700, textAlign: "left", letterSpacing: "0.8px", textTransform: "uppercase" }}>{label}</th>
                 ))}
@@ -3659,36 +3683,110 @@ function ImportTableModal({ rows, onConfirm, onClose }) {
             </thead>
             <tbody>
               {data.map((row, i) => {
-                const bad = needsReview(row);
+                const multi = hasMulti(row);
+                const bad = isEmpty(row);
+                const isOpen = expanded[row.id];
+                const pairs = getPairs(row);
+
                 return (
-                  <tr key={row.id} style={{ background: bad ? "rgba(251,191,36,.04)" : "transparent", borderBottom: "1px solid var(--sep)" }}>
-                    <td style={{ padding: "6px 10px", color: "var(--t4)", fontSize: 11, textAlign: "center", verticalAlign: "middle" }}>
-                      {bad
-                        ? <span title="Saknar uppgifter" style={{ color: "rgba(251,191,36,.85)", fontSize: 13 }}>⚠</span>
-                        : <span style={{ color: "var(--green)", fontSize: 13 }}>✓</span>}
-                    </td>
-                    {Object.keys(COL).map(field => (
-                      <td key={field} style={{ padding: "4px 6px", verticalAlign: "middle" }}>
-                        <input
-                          value={row[field]}
-                          onChange={e => update(row.id, field, e.target.value)}
-                          style={{
-                            width: "100%", background: !row[field].trim() && field !== "personName" ? "rgba(251,191,36,.08)" : "var(--bg3)",
-                            border: `1px solid ${!row[field].trim() && field !== "personName" ? "rgba(251,191,36,.3)" : "var(--sep)"}`,
-                            borderRadius: 6, padding: "5px 8px", color: "var(--t1)", fontSize: 12,
-                            fontFamily: field === "domain" || field === "email" ? "monospace" : "inherit",
-                            outline: "none", boxSizing: "border-box"
-                          }}
-                          placeholder={field === "personName" ? "valfri" : field === "domain" ? "company.se" : field === "email" ? "name@company.se" : "bolagsnamn"}
-                        />
+                  <React.Fragment key={row.id}>
+                    {/* Main row */}
+                    <tr style={{
+                      background: bad ? "rgba(251,191,36,.05)" : multi ? "rgba(96,165,250,.04)" : "transparent",
+                      borderBottom: isOpen ? "none" : "1px solid var(--sep)"
+                    }}>
+                      <td style={{ padding: "6px 8px", textAlign: "center", verticalAlign: "middle" }}>
+                        {bad
+                          ? <span title="Saknar uppgifter" style={{ color: "rgba(251,191,36,.85)", fontSize: 13 }}>⚠</span>
+                          : multi
+                            ? <button onClick={() => setExpanded(ex => ({ ...ex, [row.id]: !ex[row.id] }))}
+                                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(96,165,250,.9)", fontSize: 13, padding: 0, lineHeight: 1 }}
+                                title="Flera namn/mejl — klicka för att välja">
+                                {isOpen ? "▲" : "▼"}
+                              </button>
+                            : <span style={{ color: "var(--green)", fontSize: 13 }}>✓</span>}
                       </td>
-                    ))}
-                    <td style={{ padding: "4px 6px", textAlign: "center", verticalAlign: "middle" }}>
-                      <button onClick={() => removeRow(row.id)} style={{ background: "none", border: "none", color: "var(--t4)", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "2px 4px", borderRadius: 4 }}
-                        onMouseEnter={e => e.currentTarget.style.color = "var(--red)"}
-                        onMouseLeave={e => e.currentTarget.style.color = "var(--t4)"}>×</button>
-                    </td>
-                  </tr>
+                      {Object.keys(COL).map(field => {
+                        const vals = splitVal(row[field]);
+                        const isMultiField = vals.length > 1;
+                        return (
+                          <td key={field} style={{ padding: "4px 6px", verticalAlign: "middle" }}>
+                            <input
+                              value={row[field]}
+                              onChange={e => update(row.id, field, e.target.value)}
+                              style={{
+                                width: "100%",
+                                background: !row[field].trim() && field !== "personName"
+                                  ? "rgba(251,191,36,.08)"
+                                  : isMultiField
+                                    ? "rgba(96,165,250,.08)"
+                                    : "var(--bg3)",
+                                border: `1px solid ${!row[field].trim() && field !== "personName"
+                                  ? "rgba(251,191,36,.35)"
+                                  : isMultiField
+                                    ? "rgba(96,165,250,.35)"
+                                    : "var(--sep)"}`,
+                                borderRadius: 6, padding: "5px 8px", color: "var(--t1)", fontSize: 12,
+                                fontFamily: field === "domain" || field === "email" ? "monospace" : "inherit",
+                                outline: "none", boxSizing: "border-box"
+                              }}
+                              placeholder={field === "personName" ? "valfri" : field === "domain" ? "company.se" : field === "email" ? "name@company.se" : "bolagsnamn"}
+                            />
+                            {isMultiField && (
+                              <div style={{ fontSize: 10, color: "rgba(96,165,250,.7)", marginTop: 2 }}>
+                                {vals.length} värden — klicka ▼ för att välja
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td style={{ padding: "4px 6px", textAlign: "center", verticalAlign: "middle" }}>
+                        <button onClick={() => removeRow(row.id)} style={{ background: "none", border: "none", color: "var(--t4)", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "2px 4px", borderRadius: 4 }}
+                          onMouseEnter={e => e.currentTarget.style.color = "var(--red)"}
+                          onMouseLeave={e => e.currentTarget.style.color = "var(--t4)"}>×</button>
+                      </td>
+                    </tr>
+
+                    {/* Expanded pair picker */}
+                    {isOpen && multi && (
+                      <tr style={{ borderBottom: "1px solid var(--sep)" }}>
+                        <td />
+                        <td colSpan={4} style={{ padding: "0 6px 10px 6px" }}>
+                          <div style={{ background: "rgba(96,165,250,.06)", border: "1px solid rgba(96,165,250,.2)", borderRadius: 10, padding: "10px 14px" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(96,165,250,.8)", marginBottom: 8, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                              Välj namn + mejladress
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              {pairs.map((pair, pi) => (
+                                <div key={pi} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", background: "var(--bg3)", border: "1px solid var(--sep)", borderRadius: 8, cursor: "pointer", transition: "border-color .1s" }}
+                                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(96,165,250,.5)"}
+                                  onMouseLeave={e => e.currentTarget.style.borderColor = "var(--sep)"}
+                                  onClick={() => {
+                                    update(row.id, "personName", pair.name);
+                                    update(row.id, "email", pair.email);
+                                    setExpanded(ex => ({ ...ex, [row.id]: false }));
+                                  }}>
+                                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(96,165,250,.15)", border: "1px solid rgba(96,165,250,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "rgba(96,165,250,.9)", flexShrink: 0 }}>
+                                    {(pair.name || "?")[0].toUpperCase()}
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)" }}>{pair.name || <span style={{ color: "var(--t4)" }}>Inget namn</span>}</div>
+                                    <div style={{ fontSize: 11, color: "var(--t3)", fontFamily: "monospace", marginTop: 1 }}>{pair.email || <span style={{ color: "rgba(251,191,36,.6)" }}>Ingen mejladress</span>}</div>
+                                  </div>
+                                  <div style={{ fontSize: 11, color: "rgba(96,165,250,.6)", fontWeight: 600, flexShrink: 0 }}>Välj →</div>
+                                </div>
+                              ))}
+                              {/* Also let them keep all as-is */}
+                              <div style={{ fontSize: 11, color: "var(--t4)", marginTop: 2 }}>
+                                Eller redigera fälten ovan manuellt
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td />
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
@@ -3706,7 +3804,7 @@ function ImportTableModal({ rows, onConfirm, onClose }) {
             </button>
           )}
           <button onClick={() => onConfirm(data.filter(r => r.companyName.trim() || r.domain.trim()))}
-            style={{ background: allOk ? "#000" : "var(--blue)", border: "none", borderRadius: 9, padding: "9px 22px", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            style={{ background: allOk ? "#000" : "rgba(96,165,250,.9)", border: "none", borderRadius: 9, padding: "9px 22px", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
             {allOk ? `✓ Importera alla ${data.length}` : `Importera kompletta (${data.filter(r => !needsReview(r)).length})`}
           </button>
         </div>
