@@ -1349,26 +1349,48 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
       const boundary = "MP_" + Math.random().toString(36).slice(2);
       const subjB64 = btoa(unescape(encodeURIComponent(subject)));
       const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
+      // Read attachment as base64
       const attB64 = await new Promise((res, rej) => {
-        const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej;
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(",")[1]);
+        r.onerror = rej;
         r.readAsDataURL(attachBlob);
       });
-      // Sanitise filename — btoa() crashes on non-Latin1 chars (åäö etc)
+      // Sanitise filename
       const safeFilename = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "_");
       const chunk76 = s => { const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r; };
-      const raw = [
-        `To: ${to}`, `Subject: =?UTF-8?B?${subjB64}?=`,
-        "MIME-Version: 1.0", `Content-Type: multipart/mixed; boundary="${boundary}"`, "",
-        `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "",
-        ...chunk76(bodyB64), "",
-        `--${boundary}`, `Content-Type: image/jpeg; name="${safeFilename}"`, "Content-Transfer-Encoding: base64",
-        `Content-Disposition: attachment; filename="${safeFilename}"`, "", ...chunk76(attB64), "",
+      const rawParts = [
+        `To: ${to}`,
+        `Subject: =?UTF-8?B?${subjB64}?=`,
+        "MIME-Version: 1.0",
+        `Content-Type: multipart/mixed; boundary="${boundary}"`,
+        "",
+        `--${boundary}`,
+        "Content-Type: text/html; charset=UTF-8",
+        "Content-Transfer-Encoding: base64",
+        "",
+        ...chunk76(bodyB64),
+        "",
+        `--${boundary}`,
+        `Content-Type: image/jpeg; name="${safeFilename}"`,
+        "Content-Transfer-Encoding: base64",
+        `Content-Disposition: attachment; filename="${safeFilename}"`,
+        "",
+        ...chunk76(attB64),
+        "",
         `--${boundary}--`,
-      ].join("\r\n");
-      // Use Uint8Array encode so non-ASCII chars never reach btoa()
-      const bytes = new Uint8Array(raw.split("").map(c => c.charCodeAt(0)));
-      let b64 = ""; const chunk = 8192;
-      for (let i = 0; i < bytes.length; i += chunk) b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + chunk)));
+      ];
+      const raw = rawParts.join("\r\n");
+      // Use TextEncoder → Uint8Array → base64 (handles all sizes safely)
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(raw);
+      // Convert to base64 in chunks to avoid stack overflow
+      let b64 = "";
+      const CHUNK = 8192;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+      }
+      // URL-safe base64
       resolve(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
     } catch (err) { reject(err); }
   });
