@@ -654,18 +654,32 @@ function extractContactsFromCSV(text) {
   return results;
 }
 
-function extractContactsFromNumbers(allText) {
+function extractStringsFromBuffer(bytes, minLen = 3) {
+  let cur = ""; let results = [];
+  for (let i = 0; i < bytes.length; i++) {
+    const b = bytes[i];
+    if (b >= 32 && b < 127) { cur += String.fromCharCode(b); }
+    else { if (cur.length >= minLen) results.push(cur); cur = ""; }
+  }
+  if (cur.length >= minLen) results.push(cur);
+  return results;
+}
+
+function extractContactsFromNumbers(namesText, emailsText) {
   const UUID = /^[0-9A-F]{8}-[0-9A-F]{4}-/i;
   const DOMAIN_RE = /^([a-z0-9][a-z0-9\-]{2,}\.[a-z]{2,})\*?$/i;
   const FULL_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
   const USER_FRAG = /^([a-z0-9._%+\-]+)@([a-z0-9.\-]*)$/i;
   const PERSON_RE = /^[A-ZÅÄÖ][a-zåäö\-]+(?:\s[A-ZÅÄÖ][a-zåäö\-]+)+$/;
   const COMPANY_SUFFIX = /\b(AB|AS|Inc|Ltd|GmbH|Technologies|Tech|Group|Holding|Solutions|Digital|Media|Agency|Studios)\b/i;
-  const SKIP_SET = new Set(['Record', 'Parent R', 'D > Domains', 'HTeam > Name', 'Email addresses', 'Str']);
-  const JUNK = /^[\[\]#\$@\+\*\^,;]|^\d+$|^[a-z]{1,2}[A-Z]/;
+  const SKIP = new Set(['Record', 'Parent R', 'D > Domains', 'HTeam > Name', 'Email addresses', 'Str']);
 
   function isJunk(s) {
-    if (JUNK.test(s)) return true;
+    if (/^[\[\]#\$@\+\*\^,;=<>!]/.test(s)) return true;
+    if (/^\d+$/.test(s)) return true;
+    if (UUID.test(s)) return true;
+    if (s.startsWith('http') || s.startsWith('mailto')) return true;
+    if (SKIP.has(s)) return true;
     const alpha = s.split('').filter(c => /[a-zA-Z]/.test(c)).length;
     return alpha < Math.max(1, s.length * 0.4);
   }
@@ -677,119 +691,85 @@ function extractContactsFromNumbers(allText) {
     return true;
   }
 
-  // Split allText into two sections by finding the boundary
-  // DataList-905026 lines come first (names), DataList-905033 lines come after
-  // We split at the natural boundary where domain patterns start appearing
-  const allLines = allText.split('\n').map(l => l.trim()).filter(Boolean);
+  // Parse name lines (DataList-905026)
+  const nameLines = namesText.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length >= 2 && !isJunk(l));
 
-  // Separate name lines from email lines
-  const nameLines = [];
-  const emailLines = [];
-  let inEmailSection = false;
+  // Build email map from email lines (DataList-905033)
+  const emailLines = emailsText.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length >= 2 && !UUID.test(l) && !l.startsWith('http') && !l.startsWith('mailto'));
 
-  for (const line of allLines) {
-    if (UUID.test(line)) continue;
-    if (line.startsWith('http') || line.startsWith('mailto')) continue;
-    if (SKIP_SET.has(line)) continue;
-    if (isJunk(line)) continue;
-    if (line.length < 2) continue;
-
-    const isDomain = DOMAIN_RE.test(line);
-    const isEmail = FULL_EMAIL.test(line);
-    const hasAt = line.includes('@');
-
-    if (isDomain || isEmail || (hasAt && USER_FRAG.test(line))) {
-      inEmailSection = true;
-    }
-
-    if (inEmailSection) {
-      emailLines.push(line);
-    } else {
-      nameLines.push(line);
-    }
-  }
-
-  // Build email map: domain -> full email
   const emailMap = {};
   for (let i = 0; i < emailLines.length; i++) {
     const line = emailLines[i];
-    const dm = line.match(DOMAIN_RE);
     const fm = line.match(FULL_EMAIL);
-    const um = line.match(USER_FRAG);
-
+    const dm = line.match(DOMAIN_RE);
     if (fm) {
       const domain = line.split('@')[1].toLowerCase();
       if (!emailMap[domain]) emailMap[domain] = line.toLowerCase();
     } else if (dm) {
       const domain = dm[1].toLowerCase();
-      // Look forward for user@ fragment
+      // Look ahead for user@ fragment
       for (let j = i + 1; j < Math.min(i + 6, emailLines.length); j++) {
-        const um2 = emailLines[j].match(USER_FRAG);
-        if (um2) {
-          emailMap[domain] = `${um2[1]}@${domain}`.toLowerCase();
+        const um = emailLines[j].match(USER_FRAG);
+        if (um && emailLines[j].includes('@')) {
+          if (!emailMap[domain]) emailMap[domain] = `${um[1]}@${domain}`.toLowerCase();
           break;
         }
       }
-    } else if (um && um[1]) {
-      // user@ with partial/no domain — skip, wait for domain line
     }
   }
 
-  // Parse company/person pairs from nameLines (alternating pattern)
+  // Parse alternating company/person pairs from nameLines
   const contacts = [];
   let i = 0;
   while (i < nameLines.length) {
     const line = nameLines[i];
-    const nextLine = i + 1 < nameLines.length ? nameLines[i + 1] : '';
-
-    // Handle comma-separated multi-person: take first name only
     const company = line.split(',')[0].trim();
     if (!company || company.length < 2) { i++; continue; }
 
+    const nextLine = i + 1 < nameLines.length ? nameLines[i + 1] : '';
     let person = '';
     if (looksLikePerson(nextLine)) {
-      // Take first person if comma-separated
       person = nextLine.split(',')[0].trim();
       i += 2;
     } else {
       i += 1;
     }
 
+    // Skip if company looks like a person name and has no company suffix
+    if (looksLikePerson(company) && !COMPANY_SUFFIX.test(company)) continue;
+
     contacts.push({ company, person });
   }
 
-  // Match emails to contacts by normalizing domain vs company name
+  // Match emails to contacts by domain similarity
   const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const results = [];
-  const seen = new Set();
+  const results = []; const seen = new Set();
 
   for (const c of contacts) {
     const cn = normalize(c.company);
     if (!cn || cn.length < 2) continue;
 
-    // Skip if company looks like a person name
-    if (looksLikePerson(c.company) && !COMPANY_SUFFIX.test(c.company)) continue;
-
-    let email = '';
-    let bestLen = 0;
+    let email = ''; let bestLen = 0;
     for (const [domain, mail] of Object.entries(emailMap)) {
       const dn = normalize(domain.split('.')[0]);
-      if (dn.length < 3) continue; // skip too-short domain bases
-      // Match if domain base is contained in company or vice versa
+      if (dn.length < 3) continue;
       if ((dn.length >= 4 && cn.includes(dn)) || (cn.length >= 4 && dn.includes(cn))) {
         if (dn.length > bestLen) { bestLen = dn.length; email = mail; }
       }
     }
 
-    const key = cn;
-    if (!seen.has(key)) {
-      seen.add(key);
+    if (!seen.has(cn)) {
+      seen.add(cn);
       results.push({ personName: c.person || '', companyName: c.company, email });
     }
   }
-
   return results;
 }
+
 
 function extractContacts(raw) {
   const results = []; const seen = new Set();
@@ -3973,20 +3953,45 @@ function App() {
         showToast("Reading Numbers file...");
         const zip = new JSZip();
         const zipData = await zip.loadAsync(file);
-        let allText = "";
-        const iwaFiles = Object.keys(zipData.files).filter(f => f.includes("DataList") && f.endsWith(".iwa"));
-        for (const iwaPath of iwaFiles) {
-          const buf = await zipData.files[iwaPath].async("arraybuffer");
-          const bytes = new Uint8Array(buf);
-          let cur = "";
-          for (let i = 0; i < bytes.length; i++) {
-            const b = bytes[i];
-            if (b >= 32 && b < 127) { cur += String.fromCharCode(b); }
-            else { if (cur.length >= 3) allText += cur + "\n"; cur = ""; }
+
+        const getTextFromIwa = async (path) => {
+          if (!zipData.files[path]) return "";
+          const buf = await zipData.files[path].async("arraybuffer");
+          return extractStringsFromBuffer(new Uint8Array(buf)).join("\n");
+        };
+
+        // DataList-905026 = company names + person names
+        // DataList-905033 = email fragments + domains
+        // Also check the second sheet files (905614+) for additional data
+        const nameFiles = Object.keys(zipData.files).filter(f =>
+          f.endsWith(".iwa") && /DataList-9050(2[6-9]|[3-9]\d)/.test(f) === false &&
+          /DataList-905026/.test(f)
+        );
+        const emailFiles = Object.keys(zipData.files).filter(f =>
+          f.endsWith(".iwa") && /DataList-905033/.test(f)
+        );
+
+        // Fallback: if specific files not found, use all DataList files split in half
+        let namesText = "";
+        let emailsText = "";
+
+        if (nameFiles.length && emailFiles.length) {
+          namesText = await getTextFromIwa(nameFiles[0]);
+          emailsText = await getTextFromIwa(emailFiles[0]);
+        } else {
+          // Try to find the right files by content
+          const allIwa = Object.keys(zipData.files).filter(f => f.includes("DataList") && f.endsWith(".iwa"));
+          for (const iwaPath of allIwa) {
+            const text = await getTextFromIwa(iwaPath);
+            if (/@/.test(text) || /\.(se|com|io|ai|net|org)/.test(text)) {
+              emailsText += text + "\n";
+            } else {
+              namesText += text + "\n";
+            }
           }
-          if (cur.length >= 3) allText += cur + "\n";
         }
-        const contacts = extractContactsFromNumbers(allText);
+
+        const contacts = extractContactsFromNumbers(namesText, emailsText);
         if (!contacts.length) { showToast("No contacts found — try File > Export > CSV from Numbers"); return; }
         contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
         showToast(`${contacts.length} contacts imported`);
