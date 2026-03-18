@@ -3960,24 +3960,32 @@ function App() {
           return extractStringsFromBuffer(new Uint8Array(buf)).join("\n");
         };
 
-        // Read all DataList .iwa files, classify by content
+        // Get all DataList .iwa files sorted
         const allIwa = Object.keys(zipData.files)
           .filter(f => f.includes("DataList") && f.endsWith(".iwa"))
           .sort();
 
-        let namesText = "";
-        let emailsText = "";
-
+        // Read each file and classify by @ density:
+        // The names file has very few @ signs; the email file has many
+        const iwaContents = [];
         for (const iwaPath of allIwa) {
           const text = await getTextFromIwa(iwaPath);
           if (!text.trim()) continue;
-          const atCount = (text.match(/@/g) || []).length;
-          const domainCount = (text.match(/\.(?:se|com|io|ai|net|org|tech|app|cc|life|nu)(?:\*|\n|$)/gm) || []).length;
-          if (atCount > 2 || domainCount > 3) {
-            emailsText += text + "\n";
-          } else {
-            namesText += text + "\n";
-          }
+          iwaContents.push({ path: iwaPath, text, atCount: (text.match(/@/g) || []).length });
+        }
+
+        // Sort: file with most @ signs = email file
+        iwaContents.sort((a, b) => b.atCount - a.atCount);
+
+        let namesText = "";
+        let emailsText = "";
+
+        if (iwaContents.length >= 2) {
+          // Most @ = emails, least @ = names
+          emailsText = iwaContents[0].text;
+          namesText = iwaContents.slice(1).map(x => x.text).join("\n");
+        } else if (iwaContents.length === 1) {
+          namesText = iwaContents[0].text;
         }
 
         const contacts = extractContactsFromNumbers(namesText, emailsText);
