@@ -3713,6 +3713,10 @@ function App() {
     } catch { return []; }
   });
   const [pasteText, setPasteText] = useState("");
+  const [colNames, setColNames] = useState("");
+  const [colCompanies, setColCompanies] = useState("");
+  const [colDomains, setColDomains] = useState("");
+  const [colEmails, setColEmails] = useState("");
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
   const [singleEmail, setSingleEmail] = useState("");
@@ -3965,6 +3969,56 @@ function App() {
     contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
     showToast(`${contacts.length} contacts added${contacts.filter(c => c.email).length ? ` · ${contacts.filter(c => c.email).length} with email` : ""}`);
     setPasteText("");
+  };
+
+  const handleColumnPaste = () => {
+    const split = (text) => text.split(/\n/).map(l => l.trim()).filter(Boolean);
+    const names = split(colNames);
+    const companies = split(colCompanies);
+    const domains = split(colDomains);
+    const emails = split(colEmails);
+    const len = Math.max(companies.length, domains.length);
+    if (len === 0) { showToast("Lägg in minst bolagsnamn eller domän"); return; }
+    let added = 0;
+    for (let i = 0; i < len; i++) {
+      const personName = names[i] || "";
+      const companyRaw = companies[i] || "";
+      const domain = domains[i] || "";
+      const email = emails[i] || null;
+      // Build the entry: prefer explicit domain, else guess from company/email
+      if (!companyRaw && !domain) continue;
+      const resolvedDomain = domain || guessDomain(companyRaw, email);
+      const companyName = companyRaw
+        ? cleanCompanyName(companyRaw)
+        : domainToCompanyName(resolvedDomain);
+      if (!companyName) continue;
+      if (setCompanies && typeof addContact === "function") {
+        // Use addContact but with explicit domain override
+        const trimmed = companyName.trim();
+        if (!trimmed) continue;
+        const entry = {
+          id: Date.now() + Math.random() + i,
+          personName: personName.trim(),
+          companyName: trimmed,
+          domain: resolvedDomain,
+          email: email || null,
+          address: "",
+          status: "loading",
+          logoDataUrl: null,
+          logoEl: null,
+        };
+        setCompanies(cs => {
+          if (cs.find(c => c.companyName.toLowerCase() === trimmed.toLowerCase())) return cs;
+          added++;
+          return [...cs, entry];
+        });
+        fetchLogoDataURL(resolvedDomain)
+          .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
+          .catch(() => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "error" } : c)));
+      }
+    }
+    showToast(`${len} kontakter importerade`);
+    setColNames(""); setColCompanies(""); setColDomains(""); setColEmails("");
   };
 
 
@@ -4485,18 +4539,46 @@ function App() {
             </div>
 
             <span className="s-label">{t("app.contacts")}</span>
-            <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <textarea className="paste-area" placeholder={"Paste from CRM / LinkedIn:\n__Carl Hersaeus__\n__Flowlife__\n\nOr: Jordan, Acme Corp"} value={pasteText} onChange={e => setPasteText(e.target.value)} />
-              <button className="btn-p" onClick={handlePaste} disabled={!pasteText.trim()}>{t("app.extract_contacts")}</button>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+              {/* ── Four-column paste import ── */}
+              <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>Kopiera en hel kolumn från Numbers och klistra in:</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Förnamn</label>
+                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                    placeholder={"Carl\nJordan\nSofia"} value={colNames} onChange={e => setColNames(e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Bolagsnamn</label>
+                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                    placeholder={"Flowlife\nAcme Corp\nKlarna"} value={colCompanies} onChange={e => setColCompanies(e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Bolagsdomän</label>
+                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                    placeholder={"flowlife.se\nacmecorp.com\nklarna.com"} value={colDomains} onChange={e => setColDomains(e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>E-postadress</label>
+                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                    placeholder={"carl@flowlife.se\njordan@acme.com\nsofia@klarna.com"} value={colEmails} onChange={e => setColEmails(e.target.value)} />
+                </div>
+              </div>
+              <button className="btn-p" disabled={!colCompanies.trim() && !colDomains.trim()} onClick={handleColumnPaste}>
+                Importera kontakter
+              </button>
+
+              <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
                 <button className="btn-s" style={{ fontSize: 12, padding: "7px 12px" }}
                   onClick={() => spreadsheetRef.current?.click()}>
                   Import .csv / .numbers
                 </button>
-                <span style={{ fontSize: 11, color: "var(--t3)" }}>from Numbers, Excel or CSV</span>
+                <span style={{ fontSize: 11, color: "var(--t3)" }}>fil-import</span>
                 <input ref={spreadsheetRef} type="file" accept=".csv,.numbers,.xlsx"
                   style={{ display: "none" }} onChange={handleSpreadsheetFile} />
               </div>
+
               <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
                 <p style={{ fontSize: 12, color: "var(--t3)" }}>{t("app.add_manually")}</p>
                 <input className="inp sm shimmer-focus" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
