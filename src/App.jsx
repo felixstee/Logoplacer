@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, createContext, useContext } from "react";
+import React, { useState, useRef, useEffect, createContext, useContext } from "react";
 import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
@@ -4532,32 +4532,38 @@ function App() {
           <ImportTableModal
             rows={importRows}
             onClose={() => setShowImportTable(false)}
-            onConfirm={(rows) => {
-              let added = 0;
-              rows.forEach((r, i) => {
-                const companyRaw = r.companyName.trim();
-                const domain = r.domain.trim() || guessDomain(companyRaw, r.email.trim() || null);
-                const companyName = companyRaw || domainToCompanyName(domain);
+            onConfirm={(confirmedRows) => {
+              const existing = new Set(companies.map(c => c.companyName.toLowerCase()));
+              const toAdd = [];
+              confirmedRows.forEach((r, i) => {
+                const companyRaw = (r.companyName || "").trim();
+                const emailVal = (r.email || "").trim() || null;
+                const domainVal = (r.domain || "").trim() || guessDomain(companyRaw || "x", emailVal);
+                const companyName = companyRaw || domainToCompanyName(domainVal);
                 if (!companyName) return;
-                if (companies.find(c => c.companyName.toLowerCase() === companyName.toLowerCase())) return;
-                const entry = {
-                  id: Date.now() + Math.random() + i,
-                  personName: r.personName.trim(),
+                const key = companyName.toLowerCase();
+                if (existing.has(key)) return;
+                existing.add(key);
+                toAdd.push({
+                  id: Date.now() + i + Math.random(),
+                  personName: (r.personName || "").trim(),
                   companyName,
-                  domain,
-                  email: r.email.trim() || null,
+                  domain: domainVal,
+                  email: emailVal,
                   address: "",
                   status: "loading",
                   logoDataUrl: null,
                   logoEl: null,
-                };
-                added++;
-                setCompanies(cs => [...cs, entry]);
-                fetchLogoDataURL(domain)
+                });
+              });
+              if (toAdd.length === 0) { showToast("Inga nya kontakter att lägga till"); setShowImportTable(false); return; }
+              setCompanies(cs => [...cs, ...toAdd]);
+              toAdd.forEach(entry => {
+                fetchLogoDataURL(entry.domain)
                   .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
                   .catch(() => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "error" } : c)));
               });
-              showToast(`${added} kontakter importerade`);
+              showToast(`${toAdd.length} kontakter importerade`);
               setColNames(""); setColCompanies(""); setColDomains(""); setColEmails("");
               setShowImportTable(false);
             }}
@@ -4883,98 +4889,152 @@ function App() {
                 <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} companies · {readyCount} ready</span>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button className="btn-text" style={{ fontSize: 11, color: "var(--t3)" }} title="Hämta om alla loggor" onClick={() => {
+                    const ids = companies.map(c => c.id);
+                    setCompanies(cs => cs.map(c => ids.includes(c.id) ? { ...c, status: "loading", logoDataUrl: null, logoEl: null } : c));
                     companies.forEach(c => {
-                      setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "loading", logoDataUrl: null, logoEl: null } : x));
                       fetchLogoDataURL(c.domain)
                         .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "ok", logoDataUrl: dataUrl, logoEl: img } : x)); img.src = dataUrl; })
                         .catch(() => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "error" } : x)));
                     });
-                    showToast("Hämtar om alla loggor…");
+                    showToast(`Hämtar om ${companies.length} loggor…`);
                   }}>↺ Reload all</button>
                   <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
                 </div>
               </div>
               <div className="co-list-wrap">
                 {companies.map(c => {
-                  const multiName = /[,;]/.test(c.personName || "");
+                  const multiName  = /[,;]/.test(c.personName || "");
                   const multiEmail = /[,;]/.test(c.email || "");
                   const needsReview = multiName || multiEmail;
+                  const isEditing = editingContact?.id === c.id;
                   return (
-                  <div key={c.id}>
-                    <div className="co-row" style={needsReview ? { borderLeft: "2px solid rgba(251,191,36,.7)", background: "rgba(251,191,36,.03)" } : {}}>
-                      <div className="co-logo" style={{ cursor: c.status === "error" ? "pointer" : "default" }} onClick={() => c.status === "error" && retryCompany(c)}>
-                        {c.status === "loading" && <div className="spinner" />}
-                        {c.status === "ok" && <img src={c.logoDataUrl} alt={c.companyName} />}
-                        {c.status === "error" && <span className="ph">{(c.companyName || "?")[0].toUpperCase()}</span>}
-                      </div>
-                      <div className="co-info" style={{ flex: 1, minWidth: 0 }}>
-                        <div className="co-name">{c.companyName}
-                          {c.personName && <span style={{ fontWeight: 400, color: "var(--t3)", marginLeft: 5, fontSize: 12 }}>· {c.personName}</span>}
+                    <div key={c.id} style={{ borderBottom: "1px solid var(--sep)" }}>
+
+                      {/* ── Top row: logo + info + badges ── */}
+                      <div className="co-row" style={{
+                        borderBottom: "none",
+                        borderLeft: needsReview ? "2px solid rgba(251,191,36,.7)" : "none",
+                        background: needsReview ? "rgba(251,191,36,.02)" : "transparent"
+                      }}>
+                        {/* Logo */}
+                        <div className="co-logo" style={{ cursor: c.status === "error" ? "pointer" : "default" }}
+                          onClick={() => c.status === "error" && retryCompany(c)}>
+                          {c.status === "loading" && <div className="spinner" />}
+                          {c.status === "ok"      && <img src={c.logoDataUrl} alt={c.companyName} />}
+                          {c.status === "error"   && <span className="ph">{(c.companyName || "?")[0].toUpperCase()}</span>}
                         </div>
-                        {editingDomain[c.id] !== undefined ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                            <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="e.g. lysa.se"
-                              onChange={e => setEditingDomain(ed => ({ ...ed, [c.id]: e.target.value }))}
-                              onKeyDown={e => { if (e.key === "Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key === "Escape") setEditingDomain(ed => { const n = { ...ed }; delete n[c.id]; return n; }); }}
-                              onBlur={() => commitDomain(c.id, editingDomain[c.id])} />
+
+                        {/* Name + domain */}
+                        <div className="co-info" style={{ flex: 1, minWidth: 0 }}>
+                          <div className="co-name">{c.companyName}
+                            {c.personName && <span style={{ fontWeight: 400, color: "var(--t3)", marginLeft: 5, fontSize: 12 }}>· {c.personName}</span>}
                           </div>
-                        ) : (
                           <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 1 }}>
-                            <span className="co-sub" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.domain}</span>
-                            <button className="ico-edit" onClick={() => setEditingDomain(ed => ({ ...ed, [c.id]: c.domain }))}>✎</button>
+                            {editingDomain[c.id] !== undefined ? (
+                              <input className="domain-inp" value={editingDomain[c.id]} autoFocus placeholder="company.se"
+                                style={{ flex: 1 }}
+                                onChange={e => setEditingDomain(ed => ({ ...ed, [c.id]: e.target.value }))}
+                                onKeyDown={e => { if (e.key === "Enter") commitDomain(c.id, editingDomain[c.id]); if (e.key === "Escape") setEditingDomain(ed => { const n = { ...ed }; delete n[c.id]; return n; }); }}
+                                onBlur={() => commitDomain(c.id, editingDomain[c.id])} />
+                            ) : (
+                              <>
+                                <span className="co-sub" style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.domain}</span>
+                                <button className="ico-edit" onClick={() => setEditingDomain(ed => ({ ...ed, [c.id]: c.domain }))}>✎</button>
+                              </>
+                            )}
                           </div>
-                        )}
-                        {c.address && <div style={{ fontSize: 10, color: "var(--t4)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>📍 {c.address}</div>}
+                          {/* Email row — always visible */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 2 }}>
+                            {isEditing ? (
+                              <input className="domain-inp" value={editingContact.email}
+                                placeholder="namn@bolag.se" type="email"
+                                style={{ flex: 1, background: multiEmail ? "rgba(251,191,36,.08)" : undefined, borderColor: multiEmail ? "rgba(251,191,36,.4)" : undefined }}
+                                onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
+                            ) : (
+                              <span style={{ fontSize: 11, color: c.email ? (multiEmail ? "rgba(251,191,36,.8)" : "var(--green)") : "var(--t4)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {c.email || "— ingen mejl"}
+                                {multiEmail && " ⚠"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Badges */}
+                        {needsReview && <div style={{ fontSize: 10, color: "rgba(251,191,36,.9)", padding: "2px 6px", background: "rgba(251,191,36,.08)", borderRadius: 4, flexShrink: 0 }}>⚠</div>}
+                        {c.status === "ok"    && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>}
+                        {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
+
+                        {/* Edit toggle */}
+                        <button className="ico-edit" style={{ fontSize: 11, padding: "2px 5px" }}
+                          onClick={() => setEditingContact(ec => ec?.id === c.id ? null : {
+                            id: c.id, companyName: c.companyName || "", name: c.personName || "",
+                            email: c.email || "", address: c.address || ""
+                          })}>
+                          {isEditing ? "▲" : "✎"}
+                        </button>
+                        <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                       </div>
-                      {needsReview && (
-                        <div style={{ fontSize: 10, color: "rgba(251,191,36,.9)", padding: "3px 8px", background: "rgba(251,191,36,.08)", borderRadius: 5, flexShrink: 0 }} title="Flera värden i ett fält — klicka ▼ för att redigera">⚠ Flera</div>
+
+                      {/* ── Inline editor (expanded) ── */}
+                      {isEditing && (
+                        <div style={{ padding: "8px 12px 12px 12px", background: "var(--bg)", display: "flex", flexDirection: "column", gap: 7 }}>
+                          {needsReview && (
+                            <div style={{ fontSize: 11, color: "rgba(251,191,36,.85)", padding: "5px 10px", background: "rgba(251,191,36,.07)", borderRadius: 6, border: "1px solid rgba(251,191,36,.2)" }}>
+                              ⚠ Flera värden med komma — välj rätt nedan
+                            </div>
+                          )}
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                            <div>
+                              <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsnamn</div>
+                              <input className="domain-inp" style={{ width: "100%" }} value={editingContact.companyName}
+                                placeholder="Acme Corp" onChange={e => setEditingContact(ec => ({ ...ec, companyName: e.target.value }))} />
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Förnamn / kontakt</div>
+                              <input className="domain-inp" style={{ width: "100%" }} value={editingContact.name}
+                                placeholder="Johan Andersson" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>E-post</div>
+                              <input className="domain-inp" style={{ width: "100%", background: multiEmail ? "rgba(251,191,36,.08)" : undefined, borderColor: multiEmail ? "rgba(251,191,36,.4)" : undefined }}
+                                value={editingContact.email} placeholder="johan@acme.com" type="email"
+                                onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
+                              {multiEmail && (
+                                <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+                                  {(c.email || "").split(/[,;]/).map(m => m.trim()).filter(Boolean).map((m, i) => (
+                                    <button key={i} onClick={() => setEditingContact(ec => ({ ...ec, email: m }))}
+                                      style={{ textAlign: "left", background: "rgba(96,165,250,.08)", border: "1px solid rgba(96,165,250,.25)", borderRadius: 5, padding: "3px 8px", fontSize: 11, color: "rgba(96,165,250,.9)", cursor: "pointer", fontFamily: "monospace" }}>
+                                      ↙ {m}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Adress</div>
+                              <input className="domain-inp" style={{ width: "100%" }} value={editingContact.address || ""}
+                                placeholder="Storgatan 1, Stockholm" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", marginTop: 2 }}>
+                            <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>Avbryt</button>
+                            <button className="btn-p" style={{ width: "auto", padding: "4px 14px", fontSize: 11 }} onClick={(e) => {
+                              e.preventDefault();
+                              try {
+                                setCompanies(cs => cs.map(x => x.id === c.id ? {
+                                  ...x,
+                                  companyName: editingContact.companyName.trim() || x.companyName,
+                                  personName: editingContact.name,
+                                  email: editingContact.email.trim() || null,
+                                  address: editingContact.address || "",
+                                } : x));
+                                setEditingContact(null);
+                              } catch(err) { console.error("Save contact error:", err); }
+                            }}>Spara</button>
+                          </div>
+                        </div>
                       )}
-                      {c.email && !multiEmail && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
-                      {c.status === "ok" && <span className="badge-ok"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>}
-                      {c.status === "error" && <button className="badge-err" title="Retry" onClick={() => retryCompany(c)}>↺</button>}
-                      <button className="ico-edit" style={{ fontSize: 11, padding: "2px 5px" }}
-                        onClick={() => setEditingContact(ec => ec?.id === c.id ? null : { id: c.id, companyName: c.companyName || "", name: c.personName || "", email: c.email || "", address: c.address || "" })}>
-                        {editingContact?.id === c.id ? "▲" : "▼"}
-                      </button>
-                      <button className="ico-rm" onClick={() => setCompanies(cs => cs.filter(x => x.id !== c.id))}>×</button>
                     </div>
-                    {editingContact?.id === c.id && (
-                      <div style={{ padding: "8px 12px 10px 12px", background: "var(--bg)", borderBottom: "0.5px solid var(--sep)", display: "flex", flexDirection: "column", gap: 6 }}>
-                        {(multiName || multiEmail) && (
-                          <div style={{ fontSize: 11, color: "rgba(251,191,36,.9)", padding: "6px 10px", background: "rgba(251,191,36,.07)", borderRadius: 7, border: "1px solid rgba(251,191,36,.2)" }}>
-                            ⚠ Det finns flera värden separerade med komma — redigera manuellt nedan
-                          </div>
-                        )}
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsnamn</div>
-                            <input className="domain-inp" value={editingContact.companyName} placeholder="Acme Corp" onChange={e => setEditingContact(ec => ({ ...ec, companyName: e.target.value }))} />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.name_label")}</div>
-                            <input className="domain-inp" value={editingContact.name} placeholder="First Last" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.email_label")}</div>
-                            <input className="domain-inp" value={editingContact.email} placeholder="name@company.com" type="email" onChange={e => setEditingContact(ec => ({ ...ec, email: e.target.value }))} />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsadress</div>
-                            <input className="domain-inp" value={editingContact.address || ""} placeholder="Storgatan 1" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                          <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>{t("modal.cancel")}</button>
-                          <button className="btn-p" style={{ width: "auto", padding: "4px 12px", fontSize: 11 }} onClick={() => {
-                            setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, companyName: editingContact.companyName || x.companyName, personName: editingContact.name, email: editingContact.email || null, address: editingContact.address || "" } : x));
-                            setEditingContact(null);
-                          }}>Spara</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
                   );
                 })}
               </div>
@@ -5442,7 +5502,30 @@ function CookieNotice() {
   );
 }
 
+// ── Error Boundary — förhindrar att hela appen kraschar ──────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error("App error caught:", error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#080808", flexDirection: "column", gap: 16, padding: 32 }}>
+          <div style={{ fontSize: 32 }}>⚠️</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#f5f5f5" }}>Något gick fel</div>
+          <div style={{ fontSize: 13, color: "#888", maxWidth: 400, textAlign: "center" }}>{String(this.state.error)}</div>
+          <button onClick={() => this.setState({ error: null })}
+            style={{ background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, padding: "10px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            Försök igen
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function AppRouter() {
-  return <LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider>;
+  return <ErrorBoundary><LanguageProvider><AppRouterInner /><CookieNotice /></LanguageProvider></ErrorBoundary>;
 }
 // Tue Mar 17 14:33:47 CET 2026
