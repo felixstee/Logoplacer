@@ -3777,24 +3777,20 @@ function App() {
       company.personName, company.companyName, company.logoEl,
       { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
     );
-    // Scale down to max 1200px wide to keep email size small
-    const MAX_W = 1200;
-    let finalCanvas = off;
-    if (off.width > MAX_W) {
-      const scale = MAX_W / off.width;
-      const scaled = document.createElement("canvas");
-      scaled.width = MAX_W;
-      scaled.height = Math.round(off.height * scale);
-      scaled.getContext("2d").drawImage(off, 0, 0, scaled.width, scaled.height);
-      finalCanvas = scaled;
-    }
+    // Always scale down to max 600px wide for email
+    const MAX_W = 600;
+    const scale = Math.min(1, MAX_W / off.width);
+    const scaled = document.createElement("canvas");
+    scaled.width = Math.round(off.width * scale);
+    scaled.height = Math.round(off.height * scale);
+    scaled.getContext("2d").drawImage(off, 0, 0, scaled.width, scaled.height);
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
-      finalCanvas.toBlob(blob => {
+      scaled.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
-      }, "image/jpeg", 0.75);
+      }, "image/jpeg", 0.5);
     });
   };
 
