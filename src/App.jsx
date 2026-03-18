@@ -1372,7 +1372,7 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
         ...chunk76(bodyB64),
         "",
         `--${boundary}`,
-        `Content-Type: image/jpeg; name="${safeFilename}"`,
+        `Content-Type: image/png; name="${safeFilename}"`,
         "Content-Transfer-Encoding: base64",
         `Content-Disposition: attachment; filename="${safeFilename}"`,
         "",
@@ -2590,7 +2590,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
         const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.jpg`;
+        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
@@ -3813,23 +3813,14 @@ function App() {
       company.personName, company.companyName, company.logoEl,
       { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }
     );
-    // Scale to max 800px wide — stays under Gmail limit while keeping reasonable quality
-    const MAX_W = 800;
-    const scale = Math.min(1, MAX_W / off.width);
-    const scaled = document.createElement("canvas");
-    scaled.width = Math.round(off.width * scale);
-    scaled.height = Math.round(off.height * scale);
-    const sCtx = scaled.getContext("2d");
-    sCtx.imageSmoothingEnabled = true;
-    sCtx.imageSmoothingQuality = "high";
-    sCtx.drawImage(off, 0, 0, scaled.width, scaled.height);
+    // Use PNG for lossless quality — no compression artifacts
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
-      scaled.toBlob(blob => {
+      off.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
-      }, "image/jpeg", 0.88);
+      }, "image/png");
     });
   };
 
