@@ -3610,6 +3610,109 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) 
   );
 }
 
+// ── Import Table Modal ────────────────────────────────────────────────────────
+function ImportTableModal({ rows, onConfirm, onClose }) {
+  const [data, setData] = useState(rows.map(r => ({ ...r })));
+
+  const update = (id, field, val) =>
+    setData(d => d.map(r => r.id === id ? { ...r, [field]: val } : r));
+  const removeRow = (id) => setData(d => d.filter(r => r.id !== id));
+  const addRow = () => setData(d => [...d, { id: Date.now() + Math.random(), personName: "", companyName: "", domain: "", email: "" }]);
+
+  const needsReview = (r) => !r.companyName.trim() || !r.domain.trim() || !r.email.trim();
+  const reviewCount = data.filter(needsReview).length;
+  const allOk = reviewCount === 0;
+
+  const COL = { personName: "Förnamn", companyName: "Bolagsnamn", domain: "Domän", email: "E-post" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.82)", zIndex: 1200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(6px)" }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: "var(--bg2)", border: "1px solid var(--sep)", borderRadius: 18, width: "100%", maxWidth: 900, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 40px 100px rgba(0,0,0,.8)" }}>
+
+        {/* Header */}
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--sep)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--t1)" }}>Granska kontakter</div>
+            <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 2 }}>
+              {data.length} rader · {reviewCount > 0
+                ? <span style={{ color: "rgba(251,191,36,.9)" }}>⚠ {reviewCount} saknar uppgifter</span>
+                : <span style={{ color: "var(--green)" }}>✓ Alla rader är kompletta</span>}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Table */}
+        <div style={{ flex: 1, overflow: "auto", padding: "0 0 8px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ position: "sticky", top: 0, background: "var(--bg3)", zIndex: 2 }}>
+                <th style={{ width: 32, padding: "8px 10px", borderBottom: "1px solid var(--sep)", color: "var(--t4)", fontSize: 10, fontWeight: 700, textAlign: "center" }}>#</th>
+                {Object.entries(COL).map(([k, label]) => (
+                  <th key={k} style={{ padding: "8px 10px", borderBottom: "1px solid var(--sep)", color: "var(--t3)", fontSize: 10, fontWeight: 700, textAlign: "left", letterSpacing: "0.8px", textTransform: "uppercase" }}>{label}</th>
+                ))}
+                <th style={{ width: 36, borderBottom: "1px solid var(--sep)" }} />
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, i) => {
+                const bad = needsReview(row);
+                return (
+                  <tr key={row.id} style={{ background: bad ? "rgba(251,191,36,.04)" : "transparent", borderBottom: "1px solid var(--sep)" }}>
+                    <td style={{ padding: "6px 10px", color: "var(--t4)", fontSize: 11, textAlign: "center", verticalAlign: "middle" }}>
+                      {bad
+                        ? <span title="Saknar uppgifter" style={{ color: "rgba(251,191,36,.85)", fontSize: 13 }}>⚠</span>
+                        : <span style={{ color: "var(--green)", fontSize: 13 }}>✓</span>}
+                    </td>
+                    {Object.keys(COL).map(field => (
+                      <td key={field} style={{ padding: "4px 6px", verticalAlign: "middle" }}>
+                        <input
+                          value={row[field]}
+                          onChange={e => update(row.id, field, e.target.value)}
+                          style={{
+                            width: "100%", background: !row[field].trim() && field !== "personName" ? "rgba(251,191,36,.08)" : "var(--bg3)",
+                            border: `1px solid ${!row[field].trim() && field !== "personName" ? "rgba(251,191,36,.3)" : "var(--sep)"}`,
+                            borderRadius: 6, padding: "5px 8px", color: "var(--t1)", fontSize: 12,
+                            fontFamily: field === "domain" || field === "email" ? "monospace" : "inherit",
+                            outline: "none", boxSizing: "border-box"
+                          }}
+                          placeholder={field === "personName" ? "valfri" : field === "domain" ? "company.se" : field === "email" ? "name@company.se" : "bolagsnamn"}
+                        />
+                      </td>
+                    ))}
+                    <td style={{ padding: "4px 6px", textAlign: "center", verticalAlign: "middle" }}>
+                      <button onClick={() => removeRow(row.id)} style={{ background: "none", border: "none", color: "var(--t4)", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: "2px 4px", borderRadius: 4 }}
+                        onMouseEnter={e => e.currentTarget.style.color = "var(--red)"}
+                        onMouseLeave={e => e.currentTarget.style.color = "var(--t4)"}>×</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 24px", borderTop: "1px solid var(--sep)", display: "flex", alignItems: "center", gap: 10, flexShrink: 0, background: "var(--bg2)" }}>
+          <button onClick={addRow} style={{ background: "none", border: "1px dashed var(--sep)", borderRadius: 8, padding: "7px 14px", color: "var(--t3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>+ Ny rad</button>
+          <div style={{ flex: 1 }} />
+          {!allOk && (
+            <button onClick={() => onConfirm(data.filter(r => r.companyName.trim() || r.domain.trim()))}
+              style={{ background: "rgba(255,255,255,.06)", border: "1px solid var(--sep)", borderRadius: 9, padding: "9px 20px", color: "var(--t2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+              Importera ändå ({data.filter(r => r.companyName.trim() || r.domain.trim()).length})
+            </button>
+          )}
+          <button onClick={() => onConfirm(data.filter(r => r.companyName.trim() || r.domain.trim()))}
+            style={{ background: allOk ? "#000" : "var(--blue)", border: "none", borderRadius: 9, padding: "9px 22px", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            {allOk ? `✓ Importera alla ${data.length}` : `Importera kompletta (${data.filter(r => !needsReview(r)).length})`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const t = useT();
   const [appDark, setAppDark] = useState(true);
@@ -3717,6 +3820,8 @@ function App() {
   const [colCompanies, setColCompanies] = useState("");
   const [colDomains, setColDomains] = useState("");
   const [colEmails, setColEmails] = useState("");
+  const [showImportTable, setShowImportTable] = useState(false);
+  const [importRows, setImportRows] = useState([]);
   const [singleCompany, setSingleCompany] = useState("");
   const [singlePerson, setSinglePerson] = useState("");
   const [singleEmail, setSingleEmail] = useState("");
@@ -4299,6 +4404,42 @@ function App() {
 
         {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
 
+        {showImportTable && (
+          <ImportTableModal
+            rows={importRows}
+            onClose={() => setShowImportTable(false)}
+            onConfirm={(rows) => {
+              let added = 0;
+              rows.forEach((r, i) => {
+                const companyRaw = r.companyName.trim();
+                const domain = r.domain.trim() || guessDomain(companyRaw, r.email.trim() || null);
+                const companyName = companyRaw || domainToCompanyName(domain);
+                if (!companyName) return;
+                if (companies.find(c => c.companyName.toLowerCase() === companyName.toLowerCase())) return;
+                const entry = {
+                  id: Date.now() + Math.random() + i,
+                  personName: r.personName.trim(),
+                  companyName,
+                  domain,
+                  email: r.email.trim() || null,
+                  address: "",
+                  status: "loading",
+                  logoDataUrl: null,
+                  logoEl: null,
+                };
+                added++;
+                setCompanies(cs => [...cs, entry]);
+                fetchLogoDataURL(domain)
+                  .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "ok", logoDataUrl: dataUrl, logoEl: img } : c)); img.src = dataUrl; })
+                  .catch(() => setCompanies(cs => cs.map(c => c.id === entry.id ? { ...c, status: "error" } : c)));
+              });
+              showToast(`${added} kontakter importerade`);
+              setColNames(""); setColCompanies(""); setColDomains(""); setColEmails("");
+              setShowImportTable(false);
+            }}
+          />
+        )}
+
         {/* USER MANUAL MODAL */}
         {showManual && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowManual(false)}>
@@ -4565,8 +4706,28 @@ function App() {
                     placeholder={"carl@flowlife.se\njordan@acme.com\nsofia@klarna.com"} value={colEmails} onChange={e => setColEmails(e.target.value)} />
                 </div>
               </div>
-              <button className="btn-p" disabled={!colCompanies.trim() && !colDomains.trim()} onClick={handleColumnPaste}>
-                Importera kontakter
+              <button className="btn-p" onClick={() => {
+                const split = (t) => t.split(/\n/).map(l => l.trim());
+                const names = split(colNames);
+                const comps = split(colCompanies);
+                const doms  = split(colDomains);
+                const mails = split(colEmails);
+                const len = Math.max(names.length, comps.length, doms.length, mails.length);
+                if (len === 0) { showToast("Klistra in minst en kolumn"); return; }
+                const rows = [];
+                for (let i = 0; i < len; i++) {
+                  rows.push({
+                    id: uid(),
+                    personName: names[i] || "",
+                    companyName: comps[i] || "",
+                    domain: doms[i] || "",
+                    email: mails[i] || "",
+                  });
+                }
+                setImportRows(rows);
+                setShowImportTable(true);
+              }}>
+                Granska &amp; importera →
               </button>
 
               <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
