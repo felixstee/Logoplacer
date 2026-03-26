@@ -409,6 +409,8 @@ function StepSlideshow() {
     },
   ];
 
+  const touchStartX = useRef(null);
+
   const go = useCallback((next) => {
     setAnimDir(next > active ? 1 : -1);
     setActive(next);
@@ -420,6 +422,15 @@ function StepSlideshow() {
     }, 4200);
     return () => clearInterval(timerRef.current);
   }, [active, go, SLIDES.length]);
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (diff < -50) { clearInterval(timerRef.current); go((active + 1) % SLIDES.length); }
+    else if (diff > 50) { clearInterval(timerRef.current); go((active - 1 + SLIDES.length) % SLIDES.length); }
+  };
 
   // Glass visual for each slide
   const renderVisual = (type) => {
@@ -568,7 +579,10 @@ function StepSlideshow() {
       <div className="step-slide-grid" style={{
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center",
         minHeight: 360,
-      }}>
+      }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Text */}
         <div>
           <div style={{
@@ -822,12 +836,12 @@ function FeaturesShowcase() {
               onMouseEnter={() => setActiveTag(i)}
               style={{
                 padding: "6px 14px", borderRadius: 100,
-                background: activeTag === i ? `${pill.color}18` : "rgba(255,255,255,0.04)",
-                border: `1px solid ${activeTag === i ? pill.color + "50" : "rgba(255,255,255,0.08)"}`,
+                background: activeTag === i ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${activeTag === i ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.08)"}`,
                 fontSize: 11, fontWeight: 600,
-                color: activeTag === i ? pill.color : "rgba(255,255,255,0.35)",
+                color: activeTag === i ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.35)",
                 cursor: "default", transition: "all .2s",
-                boxShadow: activeTag === i ? `0 0 12px ${pill.color}20` : "none",
+                boxShadow: "none",
               }}>
               {pill.label}
             </div>
@@ -959,6 +973,8 @@ function TestimonialCarousel() {
   const { lang } = useLang();
   const [ref, vis] = useReveal(0.08);
 
+  const touchStartX = useRef(null);
+
   const go = useCallback((next) => {
     if (fading) return;
     setFading(true);
@@ -969,6 +985,15 @@ function TestimonialCarousel() {
     const t = setInterval(() => go((idx + 1) % TDATA.length), 4800);
     return () => clearInterval(t);
   }, [idx, go]);
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (diff < -50) go((idx + 1) % TDATA.length);
+    else if (diff > 50) go((idx - 1 + TDATA.length) % TDATA.length);
+  };
 
   const cur = TDATA[idx];
   return (
@@ -981,7 +1006,10 @@ function TestimonialCarousel() {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 14 }}>{lang === "sv" ? "Vad folk säger" : "What people say"}</div>
         <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 800, letterSpacing: "-2px", margin: 0, color: "#fff" }}><CDShimmerText dark={darkMode}>{lang === "sv" ? "Säljteam älskar det." : "Sales teams love it."}</CDShimmerText></h2>
       </div>
-      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "clamp(28px,4vw,52px)", backdropFilter: "blur(20px)", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", opacity: fading ? 0 : 1, transition: "opacity .25s" }}>
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "clamp(28px,4vw,52px)", backdropFilter: "blur(20px)", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", opacity: fading ? 0 : 1, transition: "opacity .25s" }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div style={{ display: "flex", gap: 3, marginBottom: 20 }}>
           {[...Array(5)].map((_, i) => <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>)}
         </div>
@@ -1085,7 +1113,7 @@ function FloatingDock({ onEnterApp, onOpenBlog }) {
   ];
 
   return (
-    <div style={{ position: "fixed", bottom: 28, left: "50%", transform: `translateX(-50%) translateY(${visible ? 0 : 100}px)`, zIndex: 500, transition: "transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s", opacity: visible ? 1 : 0, pointerEvents: visible ? "all" : "none" }}>
+    <div className="floating-dock" style={{ position: "fixed", bottom: 28, left: "50%", transform: `translateX(-50%) translateY(${visible ? 0 : 100}px)`, zIndex: 500, transition: "transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s", opacity: visible ? 1 : 0, pointerEvents: visible ? "all" : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 9px", background: "rgba(0,0,0,0.95)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, boxShadow: "0 8px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         {items.map((item) => (
           <div key={item.id} style={{ position: "relative" }}>
@@ -2530,10 +2558,10 @@ function HiDemoCard({ lang, statsVis }) {
   }, []);
   const p = HI_PERSONAS[idx];
   return (
-    <div style={{
+    <div className="hi-demo-card-wrap" style={{
       position: "relative", borderRadius: 22, overflow: "hidden",
       background: "linear-gradient(160deg, #09090b 0%, #07070a 100%)",
-      border: "1px solid rgba(255,255,255,0.09)",
+      border: "1px solid rgba(255,255,255,0.06)",
       boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
       display: "flex", flexDirection: "column",
       minHeight: 320,
@@ -2677,12 +2705,13 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {[
-              { label: lang === "sv" ? "Funktioner" : "Features", href: "#features" },
-              { label: lang === "sv" ? "Hur det funkar" : "How it works", href: "#how-it-works" },
-              { label: lang === "sv" ? "Priser" : "Pricing", href: "#pricing" },
-              { label: "FAQ", href: "#faq" },
+              { label: lang === "sv" ? "Funktioner" : "Features", id: "features" },
+              { label: lang === "sv" ? "Hur det funkar" : "How it works", id: "how-it-works" },
+              { label: lang === "sv" ? "Priser" : "Pricing", id: "pricing" },
+              { label: "FAQ", id: "faq" },
             ].map(item => (
-              <a key={item.label} href={item.href}
+              <a key={item.label} href="#"
+                onClick={e => { e.preventDefault(); document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" }); }}
                 style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "8px 12px", borderRadius: 8, transition: "color .15s" }}
                 onMouseEnter={e => e.target.style.color = "#fff"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.4)"}>
                 {item.label}
@@ -2776,7 +2805,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
             </div>
 
             {/* RIGHT — HiDemoCard */}
-            <div style={{ animation: "fadeSlideUp .8s .15s ease both" }}>
+            <div className="hero-demo-card" style={{ animation: "fadeSlideUp .8s .15s ease both" }}>
               <HiDemoCard lang={lang} statsVis={true} />
             </div>
           </div>
@@ -2953,9 +2982,9 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
           </div>
           <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
             <button onClick={onOpenBlog} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("nav.blog")}</button>
-            <a href="#privacy" style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>{t("footer.privacy")}</a>
-            <a href="#terms" style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>{t("footer.terms")}</a>
-            <a href="mailto:hello@logoplacers.com" style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>hello@logoplacers.com</a>
+            <a href={lang === "sv" ? "/sv/privacy" : "/en/privacy"} onClick={e => { e.preventDefault(); window.history.pushState({}, "", lang === "sv" ? "/sv/privacy" : "/en/privacy"); window.dispatchEvent(new PopStateEvent("popstate")); }} style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>{t("footer.privacy")}</a>
+            <a href={lang === "sv" ? "/sv/terms" : "/en/terms"} onClick={e => { e.preventDefault(); window.history.pushState({}, "", lang === "sv" ? "/sv/terms" : "/en/terms"); window.dispatchEvent(new PopStateEvent("popstate")); }} style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>{t("footer.terms")}</a>
+            <a href="mailto:adminlogoplacers@gmail.com" style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, textDecoration: "none" }}>adminlogoplacers@gmail.com</a>
             <span style={{ fontSize: 12, color: "rgba(255,255,255,0.12)" }}>© 2025 Logoplacers</span>
           </div>
         </footer>
@@ -3022,6 +3051,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
         @media (max-width: 768px) {
           /* Hero: stack vertically on mobile */
           .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 60px 20px 40px !important; }
+          .hero-demo-card { display: none !important; }
 
           /* Stats: 2x2 on mobile */
           .dashboard-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }

@@ -5679,10 +5679,10 @@ function AdminPanel({ onBack }) {
 
 function getViewFromPath(pathname) {
   if (pathname === "/app") return "app";
-  if (pathname.startsWith("/blog") || pathname.startsWith("/blogg")) return "blog";
+  if (pathname.startsWith("/blog") || pathname.startsWith("/blogg") || pathname.startsWith("/sv/blogg") || pathname.startsWith("/en/blog")) return "blog";
   if (pathname === "/admin") return "admin";
-  if (pathname === "/privacy") return "privacy";
-  if (pathname === "/terms") return "terms";
+  if (pathname === "/privacy" || pathname === "/en/privacy" || pathname === "/sv/privacy") return "privacy";
+  if (pathname === "/terms" || pathname === "/en/terms" || pathname === "/sv/terms") return "terms";
   if (pathname === "/en" || pathname === "/sv") return "landing";
   // Legacy hash support — if someone arrives with #app etc. redirect cleanly
   const hash = window.location.hash;
@@ -5723,7 +5723,7 @@ function AppRouterInner() {
     setView("app");
   };
   const goToBlog = () => {
-    window.history.pushState({}, "", "/blog");
+    window.history.pushState({}, "", lang === "sv" ? "/sv/blogg" : "/en/blog");
     setView("blog");
   };
   const goHome = () => {

@@ -885,7 +885,12 @@ function BlogIndex({ onPost }) {
             { code: "en", label: t("blog.lang_en"), abbr: "EN" },
             { code: "sv", label: t("blog.lang_sv"), abbr: "SV" },
           ].map(l => (
-            <button key={l.code} onClick={() => { setLang(l.code); setFilter("All"); }} style={{ background: lang === l.code ? "rgba(255,255,255,.10)" : "rgba(255,255,255,.04)", border: `1px solid ${lang === l.code ? "rgba(255,255,255,.30)" : "rgba(255,255,255,.08)"}`, color: lang === l.code ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,.38)", borderRadius: 100, padding: "5px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, letterSpacing: ".5px" }}>
+            <button key={l.code} onClick={() => {
+              setLang(l.code);
+              setFilter("All");
+              const newPath = l.code === "sv" ? "/sv/blogg" : "/en/blog";
+              window.history.replaceState({}, "Logoplacers Blog", newPath);
+            }} style={{ background: lang === l.code ? "rgba(255,255,255,.10)" : "rgba(255,255,255,.04)", border: `1px solid ${lang === l.code ? "rgba(255,255,255,.30)" : "rgba(255,255,255,.08)"}`, color: lang === l.code ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,.38)", borderRadius: 100, padding: "5px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, letterSpacing: ".5px" }}>
               <span style={{ width: 18, height: 14, borderRadius: 3, background: lang === l.code ? "rgba(255,255,255,.18)" : "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: lang === l.code ? "rgba(255,255,255,.85)" : "rgba(255,255,255,.3)", letterSpacing: ".5px", flexShrink: 0 }}>{l.abbr}</span>
               {l.label}
             </button>
@@ -919,14 +924,17 @@ function slugify(str) {
 }
 
 function postToPath(p) {
-  const base = p.lang === "sv" ? "/blogg" : "/blog";
-  return `${base}/${p.lang}/${slugify(p.cat)}/${slugify(p.title)}`;
+  const base = p.lang === "sv" ? "/sv/blogg" : "/en/blog";
+  return `${base}/${slugify(p.cat)}/${slugify(p.title)}`;
 }
 
 function pathToPost(pathname) {
-  const m = pathname.match(/^\/(blog|blogg)\/([^/]+)\/[^/]+\/([^/]+)/);
+  const m = pathname.match(/^(?:\/en\/blog|\/sv\/blogg|\/blog|\/blogg)\/([^/]+)\/([^/]+)/);
   if (!m) return null;
-  const [, , lang, titleSlug] = m;
+  const [, catSlug, titleSlug] = m;
+  // Detect lang from URL prefix
+  const isSv = pathname.startsWith("/sv/blogg") || pathname.startsWith("/blogg");
+  const lang = isSv ? "sv" : "en";
   return POSTS.find(p => p.lang === lang && slugify(p.title) === titleSlug) || null;
 }
 
@@ -961,7 +969,7 @@ export default function Blog() {
   };
 
   const handleBack = () => {
-    const blogPath = lang === "sv" ? "/blogg" : "/blog";
+    const blogPath = lang === "sv" ? "/sv/blogg" : "/en/blog";
     window.history.pushState({}, "Logoplacers Blog", blogPath);
     document.title = "Logoplacers Blog — Personalised Sales Demos";
     setActivePost(null);
