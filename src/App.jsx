@@ -2828,8 +2828,8 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
         const emailMaxWidth = emailSize === "compact" ? "480px" : emailSize === "spacious" ? "640px" : "560px";
-        const emailFontSize = emailSize === "compact" ? "13px" : emailSize === "spacious" ? "16px" : "15px";
-        const emailLineHeight = emailSize === "spacious" ? "1.85" : "1.7";
+        const emailFontSize = "15px";
+        const emailLineHeight = "1.7";
         const html = `<div style="font-family:sans-serif;font-size:${emailFontSize};line-height:${emailLineHeight};color:#1a1a1a;max-width:${emailMaxWidth}">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
