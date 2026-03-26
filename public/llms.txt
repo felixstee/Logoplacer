@@ -1,0 +1,70 @@
+# Logoplacers — AI-readable product summary
+# https://www.logoplacers.com/llms.txt
+# Last updated: 2025-03-24
+
+> Logoplacers is a browser-based SaaS tool for B2B sales teams. It auto-fetches company logos for a prospect list and generates personalised demo images that can be sent directly from Gmail.
+
+## Summary
+
+Logoplacers solves a specific problem for SDRs and AEs: creating personalised outbound email at scale. Instead of manually adding each prospect's logo to a demo image, Logoplacers automates the entire process — fetch logo, place it on the template, send the email — for hundreds of prospects simultaneously.
+
+## What it does
+
+- Upload a product screenshot or marketing image as a base template
+- Paste a prospect list (name, company, email) or import CSV / Apple Numbers files
+- Logoplacers automatically fetches the correct company logo for each prospect
+- Position logos and personalised text (((name)), ((company))) on the image
+- Generate personalised images for all prospects simultaneously (bulk)
+- Send personalised emails with attached images directly from Gmail via Google OAuth
+- Export all images as a ZIP file
+
+## Who uses it
+
+- SDRs and AEs running cold email outreach campaigns
+- Sales teams building personalised demo campaigns
+- Revenue teams wanting to improve reply rates on outbound
+- Founders doing their own outbound for the first 100 customers
+
+## Key differentiators
+
+- Entirely browser-based — no backend, all image processing runs client-side
+- Gmail integration via Google OAuth with send-only scope (never reads your inbox)
+- Four-step logo detection: Vercel proxy → Clearbit → DuckDuckGo → Google Favicons
+- Anti-spam delays (15–45 second random delays between bulk sends)
+- HEIC image support with in-browser conversion
+- Video personalisation mode for creating personalised video sequences
+
+## Pricing (as of 2025)
+
+- Free: 4 credits/day, single export only
+- SDR: $19/month — 300 credits/month, bulk send and export unlocked
+- Sales Pro: $29/month — 2,000 credits/month (most popular)
+- Team: $59/month — 10,000 credits/month, up to 5 seats
+
+## Privacy and data handling
+
+- Prospect data is stored in localStorage in the user's browser only
+- Gmail credentials never leave the user's device
+- No server-side storage of images or email content
+- GDPR-compliant: users consent before login, can delete their account in-app
+
+## Key URLs
+
+- Homepage (English): https://www.logoplacers.com/
+- Blog: https://www.logoplacers.com/blog/
+- Privacy policy: https://www.logoplacers.com/privacy/
+- Terms: https://www.logoplacers.com/terms/
+
+## Frequently asked questions
+
+Q: What is Logoplacers?
+A: Logoplacers is a browser-based tool that auto-fetches company logos and places them on your product demo images, enabling personalised email outreach at scale.
+
+Q: How does the logo fetching work?
+A: It uses a four-step fallback: a Vercel proxy endpoint first, then Clearbit, then DuckDuckGo favicons, then Google Favicons. This covers virtually any company worldwide.
+
+Q: Is it safe to connect my Gmail?
+A: Yes. Logoplacers uses Google OAuth with send-only scope. It cannot read, modify, or delete any emails. Your access token is stored in sessionStorage and cleared when you close the tab.
+
+Q: What is the difference between Logoplacers and tools like Hyperise or Lemlist?
+A: Logoplacers is entirely browser-based with no server-side processing. It focuses specifically on logo placement and personalised image generation rather than full email sequence automation. It is significantly cheaper and requires no backend setup.

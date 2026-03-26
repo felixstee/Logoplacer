@@ -2,14 +2,170 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <title>Logoplacers — Your product. Their logo. Every email.</title>
-    <meta name="description" content="Personalise your sales demos with your prospect's logo in seconds. Upload once, generate 100 personalised images, send from Gmail." />
-    <script type="module" crossorigin src="/assets/index-CiueUu5e.js"></script>
+
+    <!-- ── Primary SEO ───────────────────────────────────────────── -->
+    <title>Logoplacers — Personalised Sales Demos at Scale</title>
+    <meta name="description" content="Auto-fetch company logos and create personalised demo images for every prospect. Send directly from Gmail. Used by SDRs and AEs to increase reply rates." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.logoplacers.com/" />
+
+    <!-- ── hreflang — tells Google which page is EN vs SV ───────── -->
+    <!-- NOTE: When you migrate to BrowserRouter (Steg 2), change these to:
+         https://www.logoplacers.com/en  and  https://www.logoplacers.com/se -->
+    <link rel="alternate" hreflang="en" href="https://www.logoplacers.com/en" />
+    <link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/sv" />
+    <link rel="alternate" hreflang="x-default" href="https://www.logoplacers.com/en" />
+
+    <!-- ── Open Graph ────────────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.logoplacers.com/" />
+    <meta property="og:title" content="Logoplacers — Personalised Sales Demos at Scale" />
+    <meta property="og:description" content="Auto-fetch company logos and create personalised demo images for every prospect. Send directly from Gmail." />
+    <meta property="og:image" content="https://www.logoplacers.com/og-image.png" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="sv_SE" />
+    <meta property="og:site_name" content="Logoplacers" />
+
+    <!-- ── Twitter Card ──────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Logoplacers — Personalised Sales Demos at Scale" />
+    <meta name="twitter:description" content="Auto-fetch company logos and create personalised demo images for every prospect." />
+    <meta name="twitter:image" content="https://www.logoplacers.com/og-image.png" />
+
+    <!-- ── Favicons ──────────────────────────────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- ── Schema.org: SoftwareApplication ──────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Logoplacers",
+      "url": "https://www.logoplacers.com",
+      "description": "Browser-based SaaS tool for B2B sales teams that enables visual personalisation of outbound email at scale. Auto-fetches company logos and generates personalised demo images.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "4 credits per day, single export"
+        },
+        {
+          "@type": "Offer",
+          "name": "SDR",
+          "price": "19",
+          "priceCurrency": "USD",
+          "description": "300 credits per month, bulk send and export"
+        },
+        {
+          "@type": "Offer",
+          "name": "Sales Pro",
+          "price": "29",
+          "priceCurrency": "USD",
+          "description": "2000 credits per month, most popular plan"
+        },
+        {
+          "@type": "Offer",
+          "name": "Team",
+          "price": "59",
+          "priceCurrency": "USD",
+          "description": "10000 credits per month, up to 5 seats"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "47"
+      },
+      "featureList": [
+        "Auto-fetch company logos",
+        "Bulk personalised image generation",
+        "Gmail OAuth integration",
+        "Video personalisation mode",
+        "HEIC image support",
+        "Anti-spam bulk sending"
+      ]
+    }
+    </script>
+
+    <!-- ── Schema.org: Organization ─────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Logoplacers",
+      "url": "https://www.logoplacers.com",
+      "logo": "https://www.logoplacers.com/favicon.svg",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "hello@logoplacers.com",
+        "contactType": "customer support"
+      }
+    }
+    </script>
+
+    <!-- ── Schema.org: FAQPage (AEO — helps AI cite you) ─────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Logoplacers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Logoplacers is a browser-based sales tool that automatically fetches company logos for your prospect list and overlays them on your product demo images. You can then send personalised emails with unique images directly from Gmail."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Logoplacers fetch company logos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Logoplacers uses a four-step fallback chain: a Vercel proxy, Clearbit's logo API, DuckDuckGo favicons, and Google Favicons. This achieves a high logo fetch success rate for any company worldwide."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Logoplacers store my data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "All image processing happens in your browser. Your prospect data and Gmail credentials never leave your device. Logoplacers uses Google OAuth with send-only scope — it cannot read your inbox."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Logoplacers cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Logoplacers offers a free plan with 4 credits per day. Paid plans start at $19/month (SDR, 300 credits), $29/month (Sales Pro, 2000 credits), and $59/month (Team, 10000 credits)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I send personalised emails in bulk?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. With a paid plan, you can send up to 300–10000 personalised emails per month directly from your Gmail account. Anti-spam delays of 15–45 seconds are built in between sends."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Performance hints ──────────────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://logo.clearbit.com" />
+    <link rel="dns-prefetch" href="https://icons.duckduckgo.com" />
+    <script type="module" crossorigin src="/assets/index-C8wyWvAi.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-CWUWpx8h.css">
   </head>
   <body>

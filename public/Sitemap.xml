@@ -1,58 +1,516 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.logoplacers.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://www.logoplacers.com/#blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.logoplacers.com/#privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://www.logoplacers.com/#terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Blog posts (EN) -->
-  <url><loc>https://www.logoplacers.com/#personalised-demos-reply-rate</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#cold-email-personalisation-sdrs</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#visual-demos-b2b-outreach</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#gmail-bulk-send-personalised</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#logo-personalisation-saas-sales</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#write-cold-email-that-gets-replies</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#sales-email-templates-b2b</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#best-sales-tool-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#how-to-use-logoplacers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.logoplacers.com/#increase-reply-rates-cold-outreach</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#what-is-logoplacers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.logoplacers.com/#figma-alternative-sales-demos</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#seo-for-saas-sales-tools</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#cold-email-personalisation-calculator</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#startup-outbound-first-100-customers</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#landing-page-conversion-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#how-to-write-for-sdr</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#outbound-sales-team-structure</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#digital-sales-room</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#price-objection-handling</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#email-open-rate-improvement</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#ab-testing-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#deliverability-cold-email-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#follow-up-email-sequence</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#saas-outbound-playbook</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#linkedin-outreach-vs-cold-email</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#best-time-to-send-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#personalisation-at-scale-tactics</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#cold-email-metrics-benchmarks</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#video-vs-image-cold-email</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#outbound-sales-mistakes</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#growth-hacking-b2b-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#account-based-selling-guide</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#revenue-intelligence-tools</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#champion-building-sales</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#cold-calling-vs-cold-email</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#saas-pricing-strategy</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#referral-program-b2b-saas</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#saas-go-to-market-guide</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#detailing-cold-email-anatomy</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#email-warming-guide</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.logoplacers.com/#account-executive-skills</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#saas-trial-conversion</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#storytelling-b2b-sales</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#outbound-sales-mistakes</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#trust-signals-b2b</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#negotiation-tactics-b2b</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#sales-tech-stack-guide</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.logoplacers.com/#gdpr-sales-tools-2025</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <!-- ── Static pages ─────────────────────────────────────────── -->
+  <url>
+    <loc>https://www.logoplacers.com/</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/"/>
+  </url>
+  <url><loc>https://www.logoplacers.com/blog</loc><lastmod>2025-03-24</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.logoplacers.com/privacy</loc><lastmod>2025-03-24</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.logoplacers.com/terms</loc><lastmod>2025-03-24</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+
+  <!-- ── Blog posts ────────────────────────────────────────────── -->
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-personalised-sales-demos-increase-reply-rates-by-3x</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-personalised-sales-demos-increase-reply-rates-by-3x"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/cold-email-personalisation-at-scale-a-practical-guide-for-sdrs</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/cold-email-personalisation-at-scale-a-practical-guide-for-sdrs"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/how-to-send-100-personalised-emails-from-gmail-in-under-10-minutes</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/how-to-send-100-personalised-emails-from-gmail-in-under-10-minutes"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/logo-personalisation-the-easiest-win-in-saas-sales-outreach</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/logo-personalisation-the-easiest-win-in-saas-sales-outreach"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/how-to-use-logoplacers-complete-guide-from-setup-to-first-send</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/how-to-use-logoplacers-complete-guide-from-setup-to-first-send"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/comparison/the-best-figma-alternative-for-sales-demo-personalisation</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/comparison/the-best-figma-alternative-for-sales-demo-personalisation"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/hur-personaliserade-saljdemos-okar-svarsfrekvensen-med-3x</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/hur-personaliserade-saljdemos-okar-svarsfrekvensen-med-3x"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/spelbok/kall-e-post-i-skala-en-praktisk-guide-for-sdr-er</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/spelbok/kall-e-post-i-skala-en-praktisk-guide-for-sdr-er"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/guide/hur-man-anvander-logoplacers-komplett-guide-fran-installation-till-forsta-utskick</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/guide/hur-man-anvander-logoplacers-komplett-guide-fran-installation-till-forsta-utskick"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/cold-email-roi-calculator-how-much-is-personalisation-worth</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/cold-email-roi-calculator-how-much-is-personalisation-worth"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-get-your-first-100-b2b-customers-with-outbound</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-get-your-first-100-b2b-customers-with-outbound"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/saas-landing-page-conversion-the-elements-that-actually-matter</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/saas-landing-page-conversion-the-elements-that-actually-matter"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/how-to-structure-your-outbound-sales-team-for-maximum-output</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/how-to-structure-your-outbound-sales-team-for-maximum-output"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/visuell-saljstrategi-sa-anvander-du-bilder-for-att-vinna-fler-affarer</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/visuell-saljstrategi-sa-anvander-du-bilder-for-att-vinna-fler-affarer"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/spelbok/referensstrategi-sa-far-du-kunder-att-rekkommendera-dig</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/spelbok/referensstrategi-sa-far-du-kunder-att-rekkommendera-dig"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/email-domain-warming-a-complete-step-by-step-guide</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/email-domain-warming-a-complete-step-by-step-guide"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/the-10-skills-that-separate-top-account-executives-from-average-ones</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/the-10-skills-that-separate-top-account-executives-from-average-ones"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-to-convert-free-trial-users-to-paid-a-data-driven-playbook</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-to-convert-free-trial-users-to-paid-a-data-driven-playbook"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/guide/leveransbarhet-for-kall-e-post-2025-den-kompletta-guiden</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/guide/leveransbarhet-for-kall-e-post-2025-den-kompletta-guiden"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/digital-sales-rooms-the-future-of-b2b-sales-enablement</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/digital-sales-rooms-the-future-of-b2b-sales-enablement"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/outbound-vs-inbound-leads-kvalitet-kostnad-och-vad-du-bor-prioritera</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/outbound-vs-inbound-leads-kvalitet-kostnad-och-vad-du-bor-prioritera"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-handle-the-price-objection-without-discounting</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-handle-the-price-objection-without-discounting"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-to-improve-your-email-open-rate-15-tactics-that-work</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-to-improve-your-email-open-rate-15-tactics-that-work"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/produktvision-och-roadmap-hur-du-prioriterar-nasta-funktioner</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/produktvision-och-roadmap-hur-du-prioriterar-nasta-funktioner"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-win-back-churned-customers-win-back-playbook</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-win-back-churned-customers-win-back-playbook"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/saas-go-to-market-strategy-the-complete-guide-for-b2b-founders</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/saas-go-to-market-strategy-the-complete-guide-for-b2b-founders"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/the-anatomy-of-a-perfect-cold-email-every-element-explained</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/the-anatomy-of-a-perfect-cold-email-every-element-explained"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/konverteringsoptimering-for-b2b-hur-du-far-fler-signups-fran-samma-trafik</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/konverteringsoptimering-for-b2b-hur-du-far-fler-signups-fran-samma-trafik"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-to-a-b-test-cold-email-subject-lines-the-right-way</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-to-a-b-test-cold-email-subject-lines-the-right-way"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/cold-email-deliverability-in-2025-the-complete-guide</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/cold-email-deliverability-in-2025-the-complete-guide"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/comparison/linkedin-outreach-vs-cold-email-which-converts-better-in-2025</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/comparison/linkedin-outreach-vs-cold-email-which-converts-better-in-2025"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/the-best-time-to-send-cold-email-data-backed-guide</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/the-best-time-to-send-cold-email-data-backed-guide"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/5-ways-to-personalise-cold-email-at-scale-without-losing-quality</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/5-ways-to-personalise-cold-email-at-scale-without-losing-quality"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/comparison/personalised-video-vs-personalised-image-in-cold-email-which-wins</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/comparison/personalised-video-vs-personalised-image-in-cold-email-which-wins"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/growth-hacking-for-b2b-saas-what-works-in-2025</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/growth-hacking-for-b2b-saas-what-works-in-2025"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/account-based-selling-the-complete-guide-for-modern-sales-teams</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/account-based-selling-the-complete-guide-for-modern-sales-teams"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/saas-pricing-strategy-how-to-price-a-sales-tool-without-losing-deals</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/saas-pricing-strategy-how-to-price-a-sales-tool-without-losing-deals"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/building-a-b2b-saas-referral-program-that-actually-generates-leads</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/building-a-b2b-saas-referral-program-that-actually-generates-leads"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-to-define-your-ideal-customer-profile-icp-for-b2b-saas</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-to-define-your-ideal-customer-profile-icp-for-b2b-saas"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/customer-success-and-expansion-revenue-the-underrated-growth-engine</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/customer-success-and-expansion-revenue-the-underrated-growth-engine"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-shorten-the-enterprise-sales-cycle-without-discounting</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-shorten-the-enterprise-sales-cycle-without-discounting"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/tutorial/personalisation-roi-calculator-is-cold-email-personalisation-worth-it</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/tutorial/personalisation-roi-calculator-is-cold-email-personalisation-worth-it"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/the-morning-routine-of-a-top-performing-sdr</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/the-morning-routine-of-a-top-performing-sdr"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/personalisering-som-ger-resultat-data-fran-1000-saljkampanjer</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/personalisering-som-ger-resultat-data-fran-1000-saljkampanjer"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/spelbok/hur-du-anvander-linkedin-for-att-boka-fler-moten</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/spelbok/hur-du-anvander-linkedin-for-att-boka-fler-moten"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/basta-tidpunkten-att-skicka-saljmejl-datadriven-guide</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/basta-tidpunkten-att-skicka-saljmejl-datadriven-guide"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/spelbok/hur-du-bokar-fler-saljmoten-den-kompletta-guiden</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/spelbok/hur-du-bokar-fler-saljmoten-den-kompletta-guiden"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/crm-best-practices-how-to-keep-your-pipeline-clean-and-accurate</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/crm-best-practices-how-to-keep-your-pipeline-clean-and-accurate"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/the-psychology-of-cold-email-why-prospects-respond-or-don-t</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/the-psychology-of-cold-email-why-prospects-respond-or-don-t"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/how-great-onboarding-reduces-churn-by-40</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/how-great-onboarding-reduces-churn-by-40"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/objection-handling-in-b2b-sales-the-complete-playbook</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/objection-handling-in-b2b-sales-the-complete-playbook"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/outbound-vs-inbound-leads-quality-cost-and-what-to-prioritise</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/outbound-vs-inbound-leads-quality-cost-and-what-to-prioritise"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-run-a-great-sales-demo-the-structure-that-converts</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-run-a-great-sales-demo-the-structure-that-converts"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/pricing-psychology-in-saas-how-presentation-affects-conversion</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/pricing-psychology-in-saas-how-presentation-affects-conversion"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/produktledd-tillvaxt-hur-saas-bolag-vaxer-med-produkten-som-saljverktyg</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/produktledd-tillvaxt-hur-saas-bolag-vaxer-med-produkten-som-saljverktyg"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/spelbok/saljer-du-till-smb-eller-enterprise-sa-hanterar-du-bada</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/spelbok/saljer-du-till-smb-eller-enterprise-sa-hanterar-du-bada"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/guide/hur-du-gor-den-perfekta-produktdemon-guide-for-saljare</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/guide/hur-du-gor-den-perfekta-produktdemon-guide-for-saljare"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/comparison/the-best-email-personalisation-tools-in-2025-compared</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/comparison/the-best-email-personalisation-tools-in-2025-compared"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/10-signals-that-you-have-product-market-fit-and-5-that-you-don-t</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/10-signals-that-you-have-product-market-fit-and-5-that-you-don-t"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/saas-churn-prevention-the-7-most-effective-tactics</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/saas-churn-prevention-the-7-most-effective-tactics"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/b2b-content-marketing-that-actually-generates-leads</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/b2b-content-marketing-that-actually-generates-leads"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/10-cold-email-examples-that-generated-real-meetings-in-2025</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/10-cold-email-examples-that-generated-real-meetings-in-2025"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/why-personalisation-works-the-neuroscience-behind-cold-email-response</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/why-personalisation-works-the-neuroscience-behind-cold-email-response"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/how-to-coach-sdrs-to-150-quota-a-manager-s-framework</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/how-to-coach-sdrs-to-150-quota-a-manager-s-framework"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/bransch/saas-laget-2025-trender-som-formar-b2b-forsaljning</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/bransch/saas-laget-2025-trender-som-formar-b2b-forsaljning"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/playbook/negotiation-tactics-for-b2b-sales-how-to-hold-price-while-winning-deals</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/playbook/negotiation-tactics-for-b2b-sales-how-to-hold-price-while-winning-deals"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/guide/hur-du-sparar-10-timmar-per-vecka-som-saljare</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/guide/hur-du-sparar-10-timmar-per-vecka-som-saljare"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/strategy/trust-signals-that-convert-what-b2b-buyers-look-for-before-saying-yes</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/strategy/trust-signals-that-convert-what-b2b-buyers-look-for-before-saying-yes"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/strategi/saljpsykologi-varfor-prospekter-sager-ja-och-nej</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/strategi/saljpsykologi-varfor-prospekter-sager-ja-och-nej"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/en/industry/gdpr-and-sales-tools-what-you-need-to-know-before-sending-cold-email-in-europe</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.logoplacers.com/blog/en/industry/gdpr-and-sales-tools-what-you-need-to-know-before-sending-cold-email-in-europe"/>
+  </url>
+  <url>
+    <loc>https://www.logoplacers.com/blog/sv/bransch/gdpr-och-saljverktyg-vad-du-behover-veta-innan-du-skickar-kall-outreach-i-europa</loc>
+    <lastmod>2025-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://www.logoplacers.com/blog/sv/bransch/gdpr-och-saljverktyg-vad-du-behover-veta-innan-du-skickar-kall-outreach-i-europa"/>
+  </url>
 </urlset>

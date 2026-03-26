@@ -1,0 +1,696 @@
+src/Landing.jsx:80:          <stop offset="0%" stopColor="#22d3ee" />
+src/Landing.jsx:81:          <stop offset="30%" stopColor="#4ade80" />
+src/Landing.jsx:82:          <stop offset="55%" stopColor="#a78bfa" />
+src/Landing.jsx:83:          <stop offset="75%" stopColor="#f472b6" />
+src/Landing.jsx:84:          <stop offset="100%" stopColor="#ef4444" />
+src/Landing.jsx:87:          <stop offset="0%" stopColor="#3b82f6" />
+src/Landing.jsx:88:          <stop offset="50%" stopColor="#8b5cf6" />
+src/Landing.jsx:89:          <stop offset="100%" stopColor="#ef4444" />
+src/Landing.jsx:318:        background: grad || "linear-gradient(135deg,#fff,rgba(14,165,233,0.7))",
+src/Landing.jsx:321:      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 12, letterSpacing: ".2px" }}>{lbl}</div>
+src/Landing.jsx:466:        setAccentColor(`rgb(${Math.round(r / count)},${Math.round(g / count)},${Math.round(b / count)})`);
+src/Landing.jsx:482:    ctx.fillStyle = "#f0f4f8";
+src/Landing.jsx:488:    const brand = accentColor || "#1a2744";
+src/Landing.jsx:489:    const brandMid = accentColor || "#1d3a6e";
+src/Landing.jsx:490:    ctx.fillStyle = accentColor ? brand : "#1a2744";
+src/Landing.jsx:494:    ctx.fillStyle = "rgba(255,255,255,0.08)";
+src/Landing.jsx:498:    ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:501:    ctx.fillStyle = "#fff";
+src/Landing.jsx:510:        ctx.fillStyle = accentColor ? "rgba(255,255,255,0.15)" : "rgba(59,130,246,0.25)";
+src/Landing.jsx:513:        ctx.fillStyle = accentColor ? "rgba(255,255,255,0.9)" : "#60a5fa";
+src/Landing.jsx:515:        ctx.fillStyle = "rgba(255,255,255,0.38)";
+src/Landing.jsx:523:      ctx.fillStyle = "rgba(255,255,255,0.06)";
+src/Landing.jsx:527:      ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:529:      ctx.fillStyle = "#fff";
+src/Landing.jsx:534:      ctx.fillStyle = "rgba(255,255,255,0.7)";
+src/Landing.jsx:537:      ctx.fillStyle = "rgba(255,255,255,0.3)";
+src/Landing.jsx:544:    ctx.fillStyle = "#fff";
+src/Landing.jsx:546:    ctx.fillStyle = "#e8edf2";
+src/Landing.jsx:550:    ctx.fillStyle = "#9ba3ae";
+src/Landing.jsx:553:    ctx.fillStyle = "#1a2744";
+src/Landing.jsx:559:      ctx.fillStyle = "#eff6ff";
+src/Landing.jsx:562:      ctx.strokeStyle = "#bfdbfe";
+src/Landing.jsx:565:      ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:576:    ctx.fillStyle = "#0f172a";
+src/Landing.jsx:580:      ctx.fillStyle = "#64748b";
+src/Landing.jsx:588:      { label: "Reply Rate", val: "34%", sub: "+12% this week", accent: "#3b82f6" },
+src/Landing.jsx:589:      { label: "Demos Sent", val: "247", sub: "to prospects", accent: "#10b981" },
+src/Landing.jsx:590:      { label: "Time Saved", val: "12h", sub: "this month", accent: "#8b5cf6" },
+src/Landing.jsx:596:      ctx.fillStyle = "#ffffff";
+src/Landing.jsx:597:      ctx.shadowColor = "rgba(0,0,0,0.07)";
+src/Landing.jsx:607:      ctx.fillStyle = "#64748b";
+src/Landing.jsx:610:      ctx.fillStyle = "#0f172a";
+src/Landing.jsx:625:    ctx.fillStyle = "#ffffff";
+src/Landing.jsx:626:    ctx.shadowColor = "rgba(0,0,0,0.06)"; ctx.shadowBlur = 10;
+src/Landing.jsx:630:    ctx.fillStyle = "#0f172a";
+src/Landing.jsx:634:      ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:647:      ctx.fillStyle = "#f1f5f9";
+src/Landing.jsx:651:      ctx.fillStyle = i === 5 ? (accentColor || "#3b82f6") : (accentColor ? accentColor.replace("rgb(", "rgba(").replace(")", ",0.25)") : "#bfdbfe");
+src/Landing.jsx:658:    ctx.fillStyle = "#ffffff";
+src/Landing.jsx:659:    ctx.shadowColor = "rgba(0,0,0,0.06)"; ctx.shadowBlur = 10;
+src/Landing.jsx:663:    ctx.fillStyle = "#0f172a";
+src/Landing.jsx:669:      ctx.fillStyle = "#1e293b";
+src/Landing.jsx:674:        ctx.fillStyle = "#475569";
+src/Landing.jsx:680:        ctx.fillStyle = "#94a3b8";
+src/Landing.jsx:686:      ctx.fillStyle = "#dcfce7";
+src/Landing.jsx:689:      ctx.fillStyle = "#16a34a";
+src/Landing.jsx:696:      ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:699:      ctx.fillStyle = "#fff";
+src/Landing.jsx:705:      ctx.fillStyle = "#cbd5e1";
+src/Landing.jsx:717:      ctx.shadowColor = "rgba(0,0,0,0.18)";
+src/Landing.jsx:722:      ctx.strokeStyle = "rgba(59,130,246,0.5)";
+src/Landing.jsx:730:        ctx.fillStyle = "#3b82f6";
+src/Landing.jsx:738:      ctx.fillStyle = "#ffffff";
+src/Landing.jsx:739:      ctx.shadowColor = "rgba(0,0,0,0.15)";
+src/Landing.jsx:745:      ctx.strokeStyle = "rgba(180,190,210,0.6)";
+src/Landing.jsx:752:      ctx.strokeStyle = "rgba(150,165,190,0.5)";
+src/Landing.jsx:757:      ctx.fillStyle = "rgba(26,130,255,0.06)";
+src/Landing.jsx:759:      ctx.fillStyle = "rgba(100,130,180,0.8)";
+src/Landing.jsx:764:      ctx.fillStyle = fetching ? "#1a82ff" : "rgba(80,100,140,0.7)";
+src/Landing.jsx:846:    width: "100%", background: "rgba(255,255,255,0.03)",
+src/Landing.jsx:847:    border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10,
+src/Landing.jsx:848:    padding: "11px 14px", color: "rgba(255,255,255,0.88)", fontSize: 14,
+src/Landing.jsx:855:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Live demo</div>
+src/Landing.jsx:857:        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+src/Landing.jsx:866:          border: "1px solid rgba(255,255,255,0.1)",
+src/Landing.jsx:867:          boxShadow: "0 40px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(91,79,255,0.2)",
+src/Landing.jsx:879:          background: "rgba(255,255,255,0.025)", backdropFilter: "blur(24px)",
+src/Landing.jsx:881:          border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20,
+src/Landing.jsx:886:            background: "rgba(26,130,255,0.08)", border: "1px solid rgba(26,130,255,0.18)",
+src/Landing.jsx:889:            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="1.8" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 1 }}>
+src/Landing.jsx:893:            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+src/Landing.jsx:894:              {lang === "sv" ? <>I det riktiga verktyget, klistra in <strong style={{ color: "#5ba4ff" }}>100 företag på en gång</strong> och få 100 personaliserade demos på sekunder.</> : <>In the real tool, paste <strong style={{ color: "#5ba4ff" }}>100 companies at once</strong> and get 100 personalised demos in seconds.</>}
+src/Landing.jsx:898:          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: ".2px" }}>
+src/Landing.jsx:908:              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+src/Landing.jsx:911:                onFocus={e => e.target.style.borderColor = "rgba(59,130,246,0.45)"}
+src/Landing.jsx:912:                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
+src/Landing.jsx:919:              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>
+src/Landing.jsx:923:                style={{ width: "100%", accentColor: "#3b82f6" }} />
+src/Landing.jsx:929:            border: `1.5px dashed rgba(180,190,210,0.5)`,
+src/Landing.jsx:931:            background: "rgba(255,255,255,0.04)",
+src/Landing.jsx:937:                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{lang === "sv" ? "Dra logotypen på canvasen" : "Drag the logo on the canvas"}</div>
+src/Landing.jsx:941:                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" style={{ margin: "0 auto 8px", display: "block" }}>
+src/Landing.jsx:945:                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+src/Landing.jsx:956:                border: "1px solid rgba(255,255,255,0.15)", boxShadow: `0 0 16px ${accentColor}55`
+src/Landing.jsx:958:              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+src/Landing.jsx:963:          <div style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+src/Landing.jsx:964:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
+src/Landing.jsx:1042:    ctx.fillStyle = "#0f1520"; ctx.fillRect(0, 0, W, H);
+src/Landing.jsx:1043:    ctx.fillStyle = "#141e30"; ctx.fillRect(0, 0, W, 52);
+src/Landing.jsx:1044:    ctx.fillStyle = "rgba(26,130,255,0.4)"; ctx.fillRect(0, 51, W, 1);
+src/Landing.jsx:1047:    ctx.fillStyle = "#1a82ff"; rr(16, 14, 26, 26, 7); ctx.fill();
+src/Landing.jsx:1048:    ctx.fillStyle = "#fff"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+src/Landing.jsx:1050:    ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans',sans-serif";
+src/Landing.jsx:1052:    ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1059:      ctx.fillStyle = i === 1 ? "#1a82ff" : "rgba(255,255,255,0.07)";
+src/Landing.jsx:1061:      ctx.fillStyle = i === 1 ? "#fff" : "rgba(255,255,255,0.5)";
+src/Landing.jsx:1067:    ctx.fillStyle = "#141e30"; ctx.fillRect(0, 52, W, 36);
+src/Landing.jsx:1068:    ctx.fillStyle = "#1a82ff"; ctx.fillRect(0, 87, W, 1);
+src/Landing.jsx:1071:      ctx.fillStyle = i === 0 ? "#fff" : "rgba(255,255,255,0.3)";
+src/Landing.jsx:1074:      if (i === 0) { ctx.fillStyle = "#1a82ff"; ctx.fillRect(tx - 30, 85, 60, 2); }
+src/Landing.jsx:1078:    ctx.fillStyle = "#141e30"; ctx.fillRect(0, 88, 240, H - 88);
+src/Landing.jsx:1079:    ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.fillRect(240, 88, 1, H - 88);
+src/Landing.jsx:1084:      ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.strokeStyle = "rgba(255,255,255,0.12)";
+src/Landing.jsx:1087:      ctx.fillStyle = "rgba(255,255,255,0.25)"; ctx.font = "11px 'DM Sans',sans-serif";
+src/Landing.jsx:1089:      ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.font = "600 12px 'DM Sans',sans-serif";
+src/Landing.jsx:1091:      ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1098:      ctx.fillStyle = "#0a1020"; ctx.fillRect(241, 88, W - 241, H - 88);
+src/Landing.jsx:1099:      ctx.fillStyle = "rgba(255,255,255,0.06)";
+src/Landing.jsx:1101:      ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.font = "13px 'DM Sans',sans-serif";
+src/Landing.jsx:1103:      ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "11px 'DM Sans',sans-serif";
+src/Landing.jsx:1109:      ctx.fillStyle = "rgba(255,255,255,0.04)";
+src/Landing.jsx:1110:      ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1;
+src/Landing.jsx:1112:      ctx.fillStyle = "#5ba4ff"; ctx.font = "600 10px 'DM Sans',sans-serif";
+src/Landing.jsx:1114:      ctx.fillStyle = "#1a82ff"; ctx.font = "600 10px 'DM Sans',sans-serif";
+src/Landing.jsx:1121:        ctx.fillStyle = isActive ? "rgba(26,130,255,0.15)" : "rgba(255,255,255,0.03)";
+src/Landing.jsx:1122:        ctx.strokeStyle = isActive ? "rgba(26,130,255,0.4)" : "rgba(255,255,255,0.07)";
+src/Landing.jsx:1126:        ctx.fillStyle = lead.status === "ok" ? "#10b981" : "#f59e0b";
+src/Landing.jsx:1129:        ctx.fillStyle = isActive ? "#fff" : "rgba(255,255,255,0.7)";
+src/Landing.jsx:1132:        ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1137:      ctx.fillStyle = "#0a1020"; ctx.fillRect(241, 88, W - 241, H - 88);
+src/Landing.jsx:1141:      ctx.fillStyle = "#fff"; rr(270, 108, W - 290, H - 120, 12); ctx.fill();
+src/Landing.jsx:1144:      ctx.fillStyle = "#f0f4f8"; rr(270, 108, 140, H - 120, 12); ctx.fill();
+src/Landing.jsx:1145:      ctx.fillStyle = "#e2e8f0"; ctx.fillRect(410, 108, 1, H - 120);
+src/Landing.jsx:1148:        ctx.fillStyle = i === 1 ? "#eff6ff" : "transparent";
+src/Landing.jsx:1150:        ctx.fillStyle = i === 1 ? "#1d4ed8" : "#64748b";
+src/Landing.jsx:1156:      ctx.fillStyle = "#1e293b"; ctx.font = "bold 14px 'DM Sans',sans-serif";
+src/Landing.jsx:1158:      ctx.fillStyle = "#64748b"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1162:      [{ l: "Reply Rate", v: "34%", c: "#3b82f6" }, { l: "Demos", v: "247", c: "#10b981" }, { l: "Saved", v: "12h", c: "#8b5cf6" }].forEach((card, i) => {
+src/Landing.jsx:1164:        ctx.fillStyle = "#fff"; ctx.shadowColor = "rgba(0,0,0,0.08)"; ctx.shadowBlur = 6;
+src/Landing.jsx:1167:        ctx.fillStyle = "#94a3b8"; ctx.font = "9px 'DM Sans',sans-serif"; ctx.fillText(card.l, cx + 8, cy + 14);
+src/Landing.jsx:1168:        ctx.fillStyle = "#0f172a"; ctx.font = "bold 16px 'DM Sans',sans-serif"; ctx.fillText(card.v, cx + 8, cy + 38);
+src/Landing.jsx:1172:      ctx.fillStyle = "rgba(59,130,246,0.08)"; ctx.strokeStyle = "rgba(59,130,246,0.4)";
+src/Landing.jsx:1175:      ctx.fillStyle = "#3b82f6"; ctx.font = "600 10px 'DM Sans',sans-serif";
+src/Landing.jsx:1177:      ctx.fillStyle = "rgba(59,130,246,0.5)"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1183:      ctx.fillStyle = "#0a1020"; ctx.fillRect(241, 88, W - 241, H - 88);
+src/Landing.jsx:1184:      ctx.fillStyle = "#fff"; rr(260, 100, W - 280, H - 112, 12); ctx.fill();
+src/Landing.jsx:1187:      ctx.fillStyle = "#f8fafc"; rr(260, 100, W - 280, 52, 12); ctx.fill();
+src/Landing.jsx:1188:      ctx.fillStyle = "#e2e8f0"; ctx.fillRect(260, 150, W - 280, 1);
+src/Landing.jsx:1190:      ctx.fillStyle = "#0f172a"; ctx.font = "bold 13px 'DM Sans',sans-serif";
+src/Landing.jsx:1192:      ctx.fillStyle = "#64748b"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1196:      ctx.fillStyle = "#f8fafc"; rr(260, 152, 160, H - 164, 8); ctx.fill();
+src/Landing.jsx:1197:      ctx.fillStyle = "#e2e8f0"; ctx.fillRect(420, 152, 1, H - 164);
+src/Landing.jsx:1201:        ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1203:        ctx.fillStyle = "rgba(0,0,0,0.06)"; rr(270, ly + 6, 146, 36, 6); ctx.fill();
+src/Landing.jsx:1204:        ctx.strokeStyle = "rgba(0,0,0,0.08)"; ctx.lineWidth = 1; ctx.stroke();
+src/Landing.jsx:1205:        if (i === 0) { ctx.fillStyle = "#334155"; ctx.font = "11px sans-serif"; ctx.fillText("Hi Emma, see how...", 278, ly + 28); }
+src/Landing.jsx:1206:        if (i === 1) { ctx.fillStyle = "#1d4ed8"; ctx.font = "600 11px sans-serif"; ctx.fillText("Pied Piper logo ✓", 278, ly + 28); }
+src/Landing.jsx:1208:          ctx.fillStyle = "#3b82f6"; rr(270, ly + 20, 80, 8, 4); ctx.fill();
+src/Landing.jsx:1209:          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(350, ly + 24, 5, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1214:      ctx.fillStyle = "#f0f4f8"; rr(422, 156, W - 442, H - 168, 8); ctx.fill();
+src/Landing.jsx:1216:      ctx.strokeStyle = "rgba(59,130,246,0.06)"; ctx.lineWidth = 0.5;
+src/Landing.jsx:1221:      [{ l: "Shares", v: "22,200", c: "#3b82f6" }, { l: "Valuation", v: "42M", c: "#10b981" }].forEach((w, i) => {
+src/Landing.jsx:1223:        ctx.fillStyle = "#fff"; ctx.shadowColor = "rgba(0,0,0,0.1)"; ctx.shadowBlur = 8;
+src/Landing.jsx:1226:        ctx.fillStyle = "#94a3b8"; ctx.font = "9px sans-serif"; ctx.fillText(w.l, wx + 9, wy + 16);
+src/Landing.jsx:1227:        ctx.fillStyle = "#0f172a"; ctx.font = "bold 18px sans-serif"; ctx.fillText(w.v, wx + 9, wy + 42);
+src/Landing.jsx:1231:      ctx.fillStyle = "rgba(255,20,100,0.12)"; ctx.strokeStyle = "rgba(255,20,100,0.4)";
+src/Landing.jsx:1234:      ctx.fillStyle = "#e0115f"; ctx.font = "bold 11px sans-serif";
+src/Landing.jsx:1238:        ctx.fillStyle = "#3b82f6"; ctx.fillRect(hx - 3, hy - 3, 6, 6);
+src/Landing.jsx:1242:      ctx.fillStyle = "#1e293b"; ctx.font = "bold 12px 'DM Sans',sans-serif";
+src/Landing.jsx:1244:      ctx.fillStyle = "#64748b"; ctx.font = "10px 'DM Sans',sans-serif";
+src/Landing.jsx:1250:      ctx.fillStyle = "#0a1020"; ctx.fillRect(0, 88, W, H - 88);
+src/Landing.jsx:1258:        ctx.fillStyle = "#fff"; ctx.shadowColor = "rgba(0,0,0,0.2)"; ctx.shadowBlur = 10;
+src/Landing.jsx:1262:        ctx.fillStyle = "#f0f4f8"; rr(dx, dy, dw, 22, 8); ctx.fill();
+src/Landing.jsx:1263:        ctx.fillStyle = "#1e293b"; ctx.font = "bold 9px sans-serif";
+src/Landing.jsx:1267:        const colors = { "Pied Piper": "#1a82ff", "Hooli": "#ff6b35", "Aviato": "#f59e0b", "Initech": "#10b981", "Globodyne": "#8b5cf6", "Vandelay": "#e0115f", "Dinoco": "#0099ff", "Bluth Co": "#f97316" };
+src/Landing.jsx:1268:        ctx.fillStyle = colors[co] || "#3b82f6"; rr(dx + dw - 44, dy + 26, 36, 22, 5); ctx.fill();
+src/Landing.jsx:1269:        ctx.fillStyle = "#fff"; ctx.font = "bold 8px sans-serif";
+src/Landing.jsx:1274:          ctx.fillStyle = "rgba(59,130,246,0.3)";
+src/Landing.jsx:1279:        ctx.fillStyle = "#10b981"; ctx.beginPath(); ctx.arc(dx + dw - 10, dy + 10, 7, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1280:        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5;
+src/Landing.jsx:1285:      ctx.fillStyle = "rgba(20,30,50,0.95)"; ctx.fillRect(0, H - 56, W, 56);
+src/Landing.jsx:1286:      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(0, H - 57, W, 1);
+src/Landing.jsx:1288:      ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.font = "12px 'DM Sans',sans-serif";
+src/Landing.jsx:1292:        { label: "Download ZIP", color: "rgba(255,255,255,0.1)", tx: "rgba(255,255,255,0.8)", bx: W - 380 },
+src/Landing.jsx:1293:        { label: "Send via Gmail", color: "#1a82ff", tx: "#fff", bx: W - 240 },
+src/Landing.jsx:1294:        { label: "Export slides", color: "rgba(91,79,255,0.8)", tx: "#fff", bx: W - 110 },
+src/Landing.jsx:1304:      ctx.fillStyle = "#0f1520"; ctx.fillRect(0, 0, W, H);
+src/Landing.jsx:1307:      ctx.fillStyle = "#141e30"; ctx.fillRect(0, 0, W, 52);
+src/Landing.jsx:1308:      ctx.fillStyle = "rgba(26,130,255,0.4)"; ctx.fillRect(0, 51, W, 1);
+src/Landing.jsx:1309:      ctx.fillStyle = "#1a82ff"; rr(16, 14, 26, 26, 7); ctx.fill();
+src/Landing.jsx:1310:      ctx.fillStyle = "#fff"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+src/Landing.jsx:1312:      ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans',sans-serif"; ctx.fillText("LogoPlacer", 50, 28);
+src/Landing.jsx:1313:      ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px 'DM Sans',sans-serif"; ctx.fillText("Personalised demos", 50, 41);
+src/Landing.jsx:1315:      [["Preview", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.6)", W - 310],
+src/Landing.jsx:1316:      ["Send", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.6)", W - 210],
+src/Landing.jsx:1317:      ["Download (5)", "#1a82ff", "#fff", W - 120]].forEach(([lbl, bg, tc, bx]) => {
+src/Landing.jsx:1324:      ctx.fillStyle = "#141e30"; ctx.fillRect(0, 52, W, 34);
+src/Landing.jsx:1326:        ctx.fillStyle = i === 1 ? "#fff" : "rgba(255,255,255,0.3)";
+src/Landing.jsx:1329:        if (i === 1) { ctx.fillStyle = "#1a82ff"; ctx.fillRect(W * 0.73 - 30, 84, 60, 2); }
+src/Landing.jsx:1331:      ctx.fillStyle = "rgba(26,130,255,0.4)"; ctx.fillRect(0, 86, W, 1);
+src/Landing.jsx:1334:      ctx.fillStyle = "#141e30"; ctx.fillRect(0, 87, 240, H - 87);
+src/Landing.jsx:1335:      ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.fillRect(240, 87, 1, H - 87);
+src/Landing.jsx:1338:      ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1340:      ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.strokeStyle = "rgba(255,255,255,0.12)";
+src/Landing.jsx:1344:      ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5;
+src/Landing.jsx:1347:      ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.stroke();
+src/Landing.jsx:1348:      ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.font = "600 10px 'DM Sans',sans-serif";
+src/Landing.jsx:1350:      ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1354:      ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1356:      ctx.fillStyle = "rgba(16,185,129,0.1)"; ctx.strokeStyle = "rgba(16,185,129,0.3)";
+src/Landing.jsx:1358:      ctx.fillStyle = "#10b981"; ctx.beginPath(); ctx.arc(28, 255, 5, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1359:      ctx.fillStyle = "#fff"; ctx.font = "600 11px 'DM Sans',sans-serif"; ctx.fillText("Demo image ready", 40, 252);
+src/Landing.jsx:1360:      ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1364:      ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1366:      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(16, 306, 210, 30, 6); ctx.fill();
+src/Landing.jsx:1367:      ctx.fillStyle = "#fff"; ctx.font = "11px 'DM Sans',sans-serif"; ctx.fillText("((name))'s future IR", 22, 325);
+src/Landing.jsx:1371:        ctx.fillStyle = "rgba(26,130,255,0.15)"; rr(tx, 341, 66, 18, 5); ctx.fill();
+src/Landing.jsx:1372:        ctx.fillStyle = "#5ba4ff"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1377:      ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1379:      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(16, 379, 70, 22, 5); ctx.fill();
+src/Landing.jsx:1380:      ctx.fillStyle = "#fff"; ctx.font = "11px 'DM Sans',sans-serif"; ctx.fillText("28", 22, 394);
+src/Landing.jsx:1381:      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(100, 379, 130, 22, 5); ctx.fill();
+src/Landing.jsx:1382:      ctx.fillStyle = "#fff"; ctx.font = "11px 'DM Sans',sans-serif"; ctx.fillText("Inter", 106, 394);
+src/Landing.jsx:1385:      ctx.fillStyle = "rgba(255,255,255,0.07)"; rr(16, 408, 100, 22, 5); ctx.fill();
+src/Landing.jsx:1386:      ctx.fillStyle = "#fff"; ctx.font = "bold 10px 'DM Sans',sans-serif"; ctx.textAlign = "center"; ctx.fillText("B Bold", 66, 423); ctx.textAlign = "left";
+src/Landing.jsx:1392:      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(vx, vy, vw, 36, 6); ctx.fill();
+src/Landing.jsx:1393:      ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.beginPath(); ctx.arc(vx + 20, vy + 18, 10, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1394:      ctx.fillStyle = "#1a82ff"; ctx.font = "bold 10px 'DM Sans',sans-serif"; ctx.textAlign = "center"; ctx.fillText("PP", vx + 20, vy + 22); ctx.textAlign = "left";
+src/Landing.jsx:1395:      ctx.fillStyle = "#fff"; ctx.font = "600 11px 'DM Sans',sans-serif"; ctx.fillText("Jared Dunn", vx + 36, vy + 16);
+src/Landing.jsx:1396:      ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "9px 'DM Sans',sans-serif"; ctx.fillText("piedpiper.com", vx + 36, vy + 28);
+src/Landing.jsx:1398:      ctx.fillStyle = "#3b82f6"; ctx.beginPath(); ctx.arc(vx + vw - 180, vy + 18, 4, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1399:      ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.font = "9px"; ctx.fillText("4s intro", vx + vw - 170, vy + 22);
+src/Landing.jsx:1400:      ctx.fillStyle = "#8b5cf6"; ctx.beginPath(); ctx.arc(vx + vw - 110, vy + 18, 4, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1402:      ctx.fillStyle = "#10b981"; ctx.beginPath(); ctx.arc(vx + vw - 42, vy + 18, 4, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1409:      ctx.fillStyle = "#0a0f1a"; rr(vx, panelY, splitX - vx - 4, panelH, 8); ctx.fill();
+src/Landing.jsx:1410:      ctx.strokeStyle = "rgba(26,130,255,0.2)"; ctx.lineWidth = 1;
+src/Landing.jsx:1415:      ctx.fillStyle = "#1a2744"; rr(fx, fy, fw2, fh, 8); ctx.fill();
+src/Landing.jsx:1417:      ctx.fillStyle = "#0d1628"; rr(fx + 10, fy + 10, fw2 - 20, fh - 20, 5); ctx.fill();
+src/Landing.jsx:1421:        ctx.fillStyle = i === 3 ? "#1a82ff" : "rgba(26,130,255,0.3)";
+src/Landing.jsx:1426:      ctx.fillStyle = "rgba(0,0,0,0.6)"; rr(fx + 10, fy + fh - 24, chipW, 18, 9); ctx.fill();
+src/Landing.jsx:1427:      ctx.fillStyle = "#fff"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1430:      ctx.fillStyle = "rgba(26,130,255,0.85)"; ctx.beginPath(); ctx.arc(splitX - vx - 24 >> 1, panelY + panelH / 2, 18, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1431:      ctx.fillStyle = "#fff"; ctx.beginPath();
+src/Landing.jsx:1435:      ctx.fillStyle = "rgba(255,255,255,0.08)"; rr(vx + 10, panelY + panelH - 18, splitX - vx - 24, 6, 3); ctx.fill();
+src/Landing.jsx:1436:      ctx.fillStyle = "#1a82ff"; rr(vx + 10, panelY + panelH - 18, Math.floor((splitX - vx - 24) * 0.35), 6, 3); ctx.fill();
+src/Landing.jsx:1437:      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(vx + 10 + Math.floor((splitX - vx - 24) * 0.35), panelY + panelH - 15, 5, 0, Math.PI * 2); ctx.fill();
+src/Landing.jsx:1440:      ctx.fillStyle = "#e8edf5"; rr(splitX + 4, panelY, vx + vw - splitX - 14, panelH, 8); ctx.fill();
+src/Landing.jsx:1441:      ctx.strokeStyle = "rgba(0,0,0,0.08)"; ctx.lineWidth = 1;
+src/Landing.jsx:1445:      ctx.fillStyle = "#fff"; rr(splitX + 4, panelY, vx + vw - splitX - 14, 32, 8); ctx.fill();
+src/Landing.jsx:1446:      ctx.fillStyle = "#e8edf5"; ctx.fillRect(splitX + 4, panelY + 24, vx + vw - splitX - 14, 8);
+src/Landing.jsx:1448:      [0, 1, 2].forEach(i => { ctx.fillStyle = ["#ff5f57", "#ffbd2e", "#28c940"][i]; ctx.beginPath(); ctx.arc(splitX + 16 + i * 14, panelY + 16, 4, 0, Math.PI * 2); ctx.fill(); });
+src/Landing.jsx:1450:      ctx.fillStyle = "#f1f5f9"; rr(splitX + 52, panelY + 8, Math.min(vx + vw - splitX - 80, 160), 18, 9); ctx.fill();
+src/Landing.jsx:1451:      ctx.fillStyle = "#64748b"; ctx.font = "9px monospace";
+src/Landing.jsx:1456:      ctx.fillStyle = "#1e3a5f"; rr(wx2, wy2, ww, 40, 0); ctx.fill();
+src/Landing.jsx:1457:      ctx.fillStyle = "#fff"; ctx.font = "bold 12px 'DM Sans',sans-serif";
+src/Landing.jsx:1459:      ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "9px 'DM Sans',sans-serif";
+src/Landing.jsx:1461:      ctx.fillStyle = "#fff"; ctx.font = "600 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1464:      ctx.fillStyle = "#f8fafc"; rr(wx2, wy2 + 62, ww, panelH - 110, 0); ctx.fill();
+src/Landing.jsx:1465:      [[0.3, "#3b82f6"], [0.6, "#93c5fd"], [0.45, "#bfdbfe"], [0.7, "#3b82f6"]].forEach(([h3, col], i) => {
+src/Landing.jsx:1470:      ctx.fillStyle = "rgba(26,130,255,0.12)"; ctx.strokeStyle = "rgba(26,130,255,0.4)"; ctx.lineWidth = 1.5;
+src/Landing.jsx:1472:      ctx.fillStyle = "rgba(26,130,255,0.1)"; rr(splitX + 8, panelY + panelH - 28, 120, 20, 10); ctx.fill();
+src/Landing.jsx:1473:      ctx.fillStyle = "#3b82f6"; ctx.font = "bold 9px 'DM Sans',sans-serif";
+src/Landing.jsx:1477:    ctx.fillStyle = "rgba(0,0,0,0)"; // flush
+src/Landing.jsx:1508:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Hur det fungerar" : "How it works"}</div>
+src/Landing.jsx:1512:        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+src/Landing.jsx:1522:            background: step === i ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.05)",
+src/Landing.jsx:1523:            color: step === i ? "#fff" : "rgba(255,255,255,0.45)",
+src/Landing.jsx:1526:            boxShadow: step === i ? "0 4px 20px rgba(26,130,255,0.3)" : "none",
+src/Landing.jsx:1536:        border: "1px solid rgba(255,255,255,0.08)",
+src/Landing.jsx:1537:        boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(26,130,255,0.1)",
+src/Landing.jsx:1545:          background: "linear-gradient(to top, rgba(7,11,18,0.95) 0%, transparent 100%)",
+src/Landing.jsx:1549:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 6 }}>
+src/Landing.jsx:1552:          <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-.3px", marginBottom: 6 }}>
+src/Landing.jsx:1555:          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, maxWidth: 500 }}>
+src/Landing.jsx:1564:              width: 36, height: 36, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)",
+src/Landing.jsx:1565:              background: "rgba(10,16,26,0.8)", backdropFilter: "blur(12px)",
+src/Landing.jsx:1566:              color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+src/Landing.jsx:1574:              background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:1575:              color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+src/Landing.jsx:1576:              boxShadow: "0 4px 16px rgba(26,130,255,0.4)",
+src/Landing.jsx:1589:            background: step === i ? "#1a82ff" : "rgba(255,255,255,0.15)",
+src/Landing.jsx:1625:        background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:1627:        boxShadow: "0 0 40px rgba(26,130,255,0.5)",
+src/Landing.jsx:1633:      <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 10 }}>You're on the list.</div>
+src/Landing.jsx:1634:      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, marginBottom: 24 }}>
+src/Landing.jsx:1638:        background: "rgba(26,130,255,0.15)", border: "1px solid rgba(26,130,255,0.3)",
+src/Landing.jsx:1639:        color: "#5ba4ff", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
+src/Landing.jsx:1655:          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+src/Landing.jsx:1656:          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+src/Landing.jsx:1660:        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.35)"}
+src/Landing.jsx:1661:        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
+src/Landing.jsx:1667:          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+src/Landing.jsx:1668:          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+src/Landing.jsx:1672:        onFocus={e => e.target.style.borderColor = "rgba(26,130,255,0.35)"}
+src/Landing.jsx:1673:        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.07)"}
+src/Landing.jsx:1676:        background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:1677:        color: "#fff", border: "none", borderRadius: 12, padding: "15px",
+src/Landing.jsx:1679:        boxShadow: "0 4px 20px rgba(26,130,255,0.2)",
+src/Landing.jsx:1708:    "rgba(26,130,255,0.18)", "rgba(139,92,246,0.18)", "rgba(16,185,129,0.18)",
+src/Landing.jsx:1709:    "rgba(245,158,11,0.18)", "rgba(236,72,153,0.18)", "rgba(6,182,212,0.18)",
+src/Landing.jsx:1713:    "rgba(26,130,255,0.5)", "rgba(139,92,246,0.5)", "rgba(16,185,129,0.5)",
+src/Landing.jsx:1714:    "rgba(245,158,11,0.5)", "rgba(236,72,153,0.5)", "rgba(6,182,212,0.5)",
+src/Landing.jsx:1725:        background: "rgba(255,255,255,0.02)",
+src/Landing.jsx:1727:        border: `1px solid ${mouse.inside ? borderColor : "rgba(255,255,255,0.07)"}`,
+src/Landing.jsx:1732:        boxShadow: mouse.inside ? `0 20px 60px rgba(0,0,0,0.3), 0 0 0 0.5px ${borderColor}` : "none",
+src/Landing.jsx:1752:        background: mouse.inside ? `${glowColor}` : "rgba(255,255,255,0.04)",
+src/Landing.jsx:1753:        border: `1px solid ${mouse.inside ? borderColor : "rgba(255,255,255,0.08)"}`,
+src/Landing.jsx:1755:        color: mouse.inside ? "#fff" : "rgba(255,255,255,0.5)",
+src/Landing.jsx:1759:        <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8, letterSpacing: "-.3px" }}>{title}</div>
+src/Landing.jsx:1760:        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.42)", lineHeight: 1.72 }}>{desc}</div>
+src/Landing.jsx:1778:        background: "linear-gradient(135deg,rgba(26,130,255,0.2),rgba(91,79,255,0.2))",
+src/Landing.jsx:1779:        border: "1px solid rgba(26,130,255,0.3)",
+src/Landing.jsx:1781:        color: "#5ba4ff", boxShadow: "0 0 20px rgba(26,130,255,0.15)",
+src/Landing.jsx:1784:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "rgba(26,130,255,0.7)", textTransform: "uppercase", marginBottom: 6 }}>Step {n}</div>
+src/Landing.jsx:1785:        <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8, letterSpacing: "-.3px" }}>{title}</div>
+src/Landing.jsx:1786:        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.42)", lineHeight: 1.72 }}>{desc}</div>
+src/Landing.jsx:1798:      background: "rgba(255,255,255,0.025)",
+src/Landing.jsx:1799:      border: "1px solid rgba(255,255,255,0.07)",
+src/Landing.jsx:1806:          <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#1a82ff" stroke="none">
+src/Landing.jsx:1811:      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 22, fontStyle: "italic" }}>
+src/Landing.jsx:1817:          background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:1819:          fontSize: 14, fontWeight: 700, color: "#fff",
+src/Landing.jsx:1822:          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{name}</div>
+src/Landing.jsx:1823:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{role}, {company}</div>
+src/Landing.jsx:1837:      border: `1px solid ${open ? "rgba(26,130,255,0.3)" : "rgba(255,255,255,0.07)"}`,
+src/Landing.jsx:1843:        color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer",
+src/Landing.jsx:1847:        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round"
+src/Landing.jsx:1853:        <div style={{ padding: "0 24px 22px", fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>{a}</div>
+src/Landing.jsx:1864:  { quote: "I sent 40 personalised demos in the same time it used to take me to build one in Figma. My reply rate went through the roof.", quoteSv: "Jag skickade 40 personaliserade demos på den tid det brukade ta att bygga en i Figma. Min svarsfrekvens sköt i höjden.", name: "Marcus L.", role: "Senior AE", roleSv: "Senior AE", company: "Scaleup SaaS", c: "#1a82ff" },
+src/Landing.jsx:1865:  { quote: "The Gmail integration is a game changer. Prospects respond saying they were impressed by how tailored the outreach felt.", quoteSv: "Gmail-integrationen är revolutionerande. Prospects svarar och säger att de var imponerade av hur skräddarsydd outreachen kändes.", name: "Sofia R.", role: "SDR Lead", roleSv: "SDR Lead", company: "B2B Fintech", c: "#8b5cf6" },
+src/Landing.jsx:1866:  { quote: "Every cold email tool promises personalisation. This is the first one that makes it visual. Like Loom but for demos.", quoteSv: "Varje cold email-verktyg lovar personalisering. Det här är det första som gör det visuellt. Som Loom men för demos.", name: "Erik J.", role: "Head of Sales", roleSv: "Säljchef", company: "Growth Agency", c: "#10b981" },
+src/Landing.jsx:1867:  { quote: "We went from 4% reply rate to 18% in two weeks. Visual personalisation makes prospects feel you really did your homework.", quoteSv: "Vi gick från 4% svarsfrekvens till 18% på två veckor. Visuell personalisering får prospects att känna att du verkligen gjort din research.", name: "Anna K.", role: "VP Sales", roleSv: "VP Försäljning", company: "SaaS Startup", c: "#f59e0b" },
+src/Landing.jsx:1868:  { quote: "Logo auto-detection saves me 20 minutes per prospect. I now send personalised demos to everyone on my list.", quoteSv: "Automatisk logotypdetektering sparar mig 20 minuter per prospekt. Nu skickar jag personaliserade demos till alla på min lista.", name: "Johan B.", role: "Account Executive", roleSv: "Account Executive", company: "B2B Tech", c: "#ec4899" },
+src/Landing.jsx:1869:  { quote: "Outreach that actually stands out. Our SDR team adopted it in one day — zero training needed.", quoteSv: "Outreach som faktiskt sticker ut. Vårt SDR-team tog det i bruk på en dag — noll träning behövdes.", name: "Lena M.", role: "Sales Manager", roleSv: "Säljansvarig", company: "Enterprise SaaS", c: "#06b6d4" },
+src/Landing.jsx:1874:      <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b" stroke="none">
+src/Landing.jsx:1900:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>{lang === "sv" ? "Vad folk säger" : "What people say"}</div>
+src/Landing.jsx:1906:          background: "rgba(255,255,255,0.022)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)",
+src/Landing.jsx:1909:          boxShadow: `0 0 80px ${cur.c}14,0 24px 64px rgba(0,0,0,.32)`,
+src/Landing.jsx:1916:          <p style={{ fontSize: "clamp(15px,2vw,20px)", color: "rgba(255,255,255,.83)", lineHeight: 1.65, marginBottom: 28, fontStyle: "italic", maxWidth: 800, position: "relative", margin: "0 0 28px" }}>
+src/Landing.jsx:1920:            <div style={{ width: 42, height: 42, borderRadius: "50%", background: `linear-gradient(135deg,${cur.c},${cur.c}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", boxShadow: `0 0 16px ${cur.c}55`, flexShrink: 0 }}>{cur.name[0]}</div>
+src/Landing.jsx:1922:              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{cur.name}</div>
+src/Landing.jsx:1923:              <div style={{ fontSize: 12, color: "rgba(255,255,255,.32)", marginTop: 2 }}>{lang === "sv" && cur.roleSv ? cur.roleSv : cur.role} · {cur.company}</div>
+src/Landing.jsx:1932:            background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)",
+src/Landing.jsx:1933:            color: "rgba(255,255,255,.4)", fontSize: 14, cursor: "pointer",
+src/Landing.jsx:1936:            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,.12)"; e.currentTarget.style.color = "#fff"; }}
+src/Landing.jsx:1937:            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,.05)"; e.currentTarget.style.color = "rgba(255,255,255,.4)"; }}
+src/Landing.jsx:1944:          <button key={i} onClick={() => go(i)} style={{ width: i === idx ? 22 : 7, height: 7, borderRadius: 4, background: i === idx ? cur.c : "rgba(255,255,255,.15)", border: "none", cursor: "pointer", padding: 0, transition: "width .3s,background .3s" }} />
+src/Landing.jsx:1951:            background: i === idx ? "rgba(255,255,255,.04)" : "rgba(255,255,255,.012)",
+src/Landing.jsx:1952:            border: `1px solid ${i === idx ? `${tt.c}44` : "rgba(255,255,255,.05)"}`,
+src/Landing.jsx:1957:            <div style={{ fontSize: 10, color: "rgba(255,255,255,.38)", lineHeight: 1.45, marginBottom: 7 }}>"{tt.quote.slice(0, 52)}…"</div>
+src/Landing.jsx:1959:              <div style={{ width: 18, height: 18, borderRadius: "50%", background: `linear-gradient(135deg,${tt.c},${tt.c}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tt.name[0]}</div>
+src/Landing.jsx:1960:              <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,.45)" }}>{tt.name}</span>
+src/Landing.jsx:2020:        background: "rgba(7,11,18,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+src/Landing.jsx:2021:        border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20,
+src/Landing.jsx:2022:        boxShadow: "0 8px 48px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06)",
+src/Landing.jsx:2030:                background: "rgba(7,11,18,0.95)", border: "1px solid rgba(255,255,255,0.12)",
+src/Landing.jsx:2032:                color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", pointerEvents: "none",
+src/Landing.jsx:2033:                boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+src/Landing.jsx:2045:                  ? "linear-gradient(135deg,#1a82ff,#5b4fff)"
+src/Landing.jsx:2046:                  : hovered === item.id ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+src/Landing.jsx:2047:                color: item.highlight ? "#fff" : hovered === item.id ? "#fff" : "rgba(255,255,255,0.5)",
+src/Landing.jsx:2051:                boxShadow: item.highlight ? "0 4px 20px rgba(26,130,255,0.35)" : "none",
+src/Landing.jsx:2101:      background: "rgba(7,11,18,.94)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+src/Landing.jsx:2102:      border: "1px solid rgba(255,255,255,.08)", borderRadius: 13, padding: "10px 14px", maxWidth: 290,
+src/Landing.jsx:2103:      boxShadow: "0 8px 32px rgba(0,0,0,.5)",
+src/Landing.jsx:2108:      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", flexShrink: 0, boxShadow: "0 0 7px #10b981" }} />
+src/Landing.jsx:2109:      <span style={{ fontSize: 11, color: "rgba(255,255,255,.6)", lineHeight: 1.4 }}>{ticks[i]}</span>
+src/Landing.jsx:2131:    ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={hi ? "#10b981" : "rgba(255,255,255,.22)"} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+src/Landing.jsx:2132:    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+src/Landing.jsx:2136:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>vs the alternatives</div>
+src/Landing.jsx:2139:      <div style={{ overflowX: "auto", borderRadius: 20, border: "1px solid rgba(255,255,255,.07)" }}>
+src/Landing.jsx:2143:              <th style={{ padding: "13px 18px", textAlign: "left", fontSize: 11, color: "rgba(255,255,255,.28)", fontWeight: 600, background: "rgba(255,255,255,.02)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>{lang === "sv" ? "Funktion" : "Feature"}</th>
+src/Landing.jsx:2145:                <th key={i} style={{ padding: "13px 18px", textAlign: "center", fontSize: 12, fontWeight: 700, color: c.hi ? "#fff" : "rgba(255,255,255,.35)", background: c.hi ? "rgba(26,130,255,.1)" : "rgba(255,255,255,.02)", borderBottom: `2px solid ${c.hi ? "rgba(26,130,255,.5)" : "rgba(255,255,255,.05)"}` }}>
+src/Landing.jsx:2146:                  {c.l}{c.hi ? <span style={{ display: "block", fontSize: 9, color: "#5ba4ff", fontWeight: 600, marginTop: 2 }}>{lang === "sv" ? "← du är här" : "← you're here"}</span> : null}
+src/Landing.jsx:2154:                <td style={{ padding: "11px 18px", fontSize: 12, color: "rgba(255,255,255,.5)", borderBottom: "1px solid rgba(255,255,255,.04)", background: "rgba(255,255,255,.01)" }}>{lang === "sv" && row.fSv ? row.fSv : row.f}</td>
+src/Landing.jsx:2156:                  <td key={ci} style={{ padding: "11px 18px", textAlign: "center", background: c.hi ? "rgba(26,130,255,.05)" : "transparent", borderBottom: "1px solid rgba(255,255,255,.04)", borderLeft: c.hi ? "1px solid rgba(26,130,255,.1)" : undefined, borderRight: c.hi ? "1px solid rgba(26,130,255,.1)" : undefined }}>
+src/Landing.jsx:2183:    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,.76)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeUp .3s ease" }}
+src/Landing.jsx:2185:      <div style={{ background: "rgba(7,11,18,.98)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 28, padding: "46px 44px", maxWidth: 440, width: "100%", textAlign: "center", boxShadow: "0 40px 100px rgba(0,0,0,.8),0 0 0 0.5px rgba(26,130,255,.2)" }}>
+src/Landing.jsx:2187:        <h3 style={{ fontSize: 25, fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 12px", lineHeight: 1.12, color: "#fff" }}>{lang === "sv" ? "Vänta — hämta 10 gratis krediter" : "Wait — grab 10 free credits"}</h3>
+src/Landing.jsx:2188:        <p style={{ fontSize: 14, color: "rgba(255,255,255,.42)", lineHeight: 1.65, marginBottom: 28 }}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
+src/Landing.jsx:2189:        <button onClick={() => { setShow(false); onEnterApp(); }} style={{ background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none", borderRadius: 13, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", boxShadow: "0 8px 32px rgba(26,130,255,.4)", marginBottom: 10 }}>
+src/Landing.jsx:2192:        <button onClick={() => setShow(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,.22)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+src/Landing.jsx:2223:    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden" }}>
+src/Landing.jsx:2234:        background: navScrolled ? "rgba(7,11,18,0.88)" : "transparent",
+src/Landing.jsx:2236:        borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+src/Landing.jsx:2245:            { label: lang === "sv" ? "Funktioner" : "Features", href: "#features" },
+src/Landing.jsx:2251:              style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
+src/Landing.jsx:2252:              onMouseEnter={e => e.target.style.color = "#fff"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.45)"}>
+src/Landing.jsx:2257:            style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
+src/Landing.jsx:2258:            onMouseEnter={e => e.target.style.color = "#fff"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.45)"}>
+src/Landing.jsx:2262:          <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: 2 }}>
+src/Landing.jsx:2264:              <button key={l} onClick={() => setLang(l)} style={{ background: lang === l ? "rgba(26,130,255,.2)" : "none", border: "none", borderRadius: 6, padding: "3px 9px", color: lang === l ? "#60a5fa" : "rgba(255,255,255,.35)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase" }}>{l}</button>
+src/Landing.jsx:2269:            background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:2270:            color: "#fff", border: "none", borderRadius: 10, padding: "9px 20px",
+src/Landing.jsx:2272:            boxShadow: "0 4px 20px rgba(26,130,255,0.3)", letterSpacing: "-.1px",
+src/Landing.jsx:2283:        <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "radial-gradient(ellipse 100% 50% at 50% 100%, #070b12 0%, transparent 60%)" }} />
+src/Landing.jsx:2284:        <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "radial-gradient(ellipse 60% 80% at 50% 50%, transparent 40%, rgba(7,11,18,0.5) 100%)" }} />
+src/Landing.jsx:2286:        <div style={{ position: "absolute", top: "20%", left: "15%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(26,130,255,0.06) 0%, transparent 70%)", pointerEvents: "none", zIndex: 2, animation: "floatOrb1 8s ease-in-out infinite" }} />
+src/Landing.jsx:2287:        <div style={{ position: "absolute", top: "30%", right: "12%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(91,79,255,0.07) 0%, transparent 70%)", pointerEvents: "none", zIndex: 2, animation: "floatOrb2 10s ease-in-out infinite" }} />
+src/Landing.jsx:2293:            background: "rgba(26,130,255,0.08)", border: "1px solid rgba(26,130,255,0.2)",
+src/Landing.jsx:2295:            fontSize: 11, fontWeight: 700, color: "#5ba4ff", letterSpacing: "1.5px", textTransform: "uppercase",
+src/Landing.jsx:2297:            boxShadow: "0 0 32px rgba(26,130,255,0.12), inset 0 1px 0 rgba(255,255,255,0.06)",
+src/Landing.jsx:2300:              <span style={{ position: "absolute", inset: -2, borderRadius: "50%", background: "#1a82ff", opacity: 0, animation: "pingDot 2s ease infinite" }} />
+src/Landing.jsx:2301:              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1a82ff", display: "inline-block", boxShadow: "0 0 10px #1a82ff" }} />
+src/Landing.jsx:2310:            <span style={{ color: "#fff", display: "block", animation: "fadeSlideUp .8s .08s ease both" }}>
+src/Landing.jsx:2315:              background: "linear-gradient(135deg, #22d3ee 0%, #4ade80 30%, #a78bfa 65%, #f472b6 100%)",
+src/Landing.jsx:2323:            fontSize: "clamp(15px, 1.8vw, 19px)", color: "rgba(255,255,255,0.45)",
+src/Landing.jsx:2334:              background: "linear-gradient(135deg,#1a82ff,#5b4fff)",
+src/Landing.jsx:2335:              color: "#fff", border: "none", borderRadius: 14, padding: "18px 44px",
+src/Landing.jsx:2337:              boxShadow: "0 8px 40px rgba(26,130,255,0.4), inset 0 1px 0 rgba(255,255,255,0.15)", letterSpacing: "-.2px",
+src/Landing.jsx:2340:              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 16px 56px rgba(26,130,255,0.55), inset 0 1px 0 rgba(255,255,255,0.15)"; }}
+src/Landing.jsx:2341:              onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 40px rgba(26,130,255,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"; }}>
+src/Landing.jsx:2345:              color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.04)",
+src/Landing.jsx:2346:              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "18px 28px",
+src/Landing.jsx:2350:              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
+src/Landing.jsx:2351:              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}>
+src/Landing.jsx:2359:          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round">
+src/Landing.jsx:2366:      <section ref={statsRef} style={{ padding: "80px 48px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", position: "relative", overflow: "hidden" }}>
+src/Landing.jsx:2367:        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 300, background: "radial-gradient(ellipse, rgba(26,130,255,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+src/Landing.jsx:2370:            { target: 340, suffix: "%", prefix: "+", lbl: lang === "sv" ? "fler svar vs generisk outreach" : "more replies vs generic outreach", grad: "linear-gradient(135deg,#22d3ee,#3b82f6)" },
+src/Landing.jsx:2371:            { target: 30, suffix: "s", prefix: "< ", lbl: lang === "sv" ? "att personalisera per prospekt" : "to personalise per prospect", grad: "linear-gradient(135deg,#a78bfa,#6366f1)" },
+src/Landing.jsx:2372:            { target: 94, suffix: "%", prefix: "", lbl: lang === "sv" ? "av köpare föredrar visuella demos" : "of buyers prefer visual demos", grad: "linear-gradient(135deg,#34d399,#10b981)" },
+src/Landing.jsx:2380:      <section style={{ padding: "80px 48px 60px", background: "rgba(255,255,255,.015)", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
+src/Landing.jsx:2382:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 18 }}>{lang === "sv" ? "HUR DET FUNGERAR" : "HOW IT WORKS"}</div>
+src/Landing.jsx:2383:          <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 56px", color: "#fff" }}>
+src/Landing.jsx:2385:            <span style={{ color: "rgba(255,255,255,.38)" }}>{lang === "sv" ? "på under 10 minuter." : "in under 10 minutes."}</span>
+src/Landing.jsx:2389:              { n: "01", title: lang === "sv" ? "Ladda upp din produktskärmbild" : "Upload your product screenshot", body: lang === "sv" ? "Dra in valfri UI-skärmbild, mockup eller bild. Stöder PNG, JPG, HEIC. Inga designkunskaper behövs." : "Drag in any UI screenshot, mockup, or image. Supports PNG, JPG, HEIC. No design skills needed.", color: "#1a82ff" },
+src/Landing.jsx:2390:              { n: "02", title: lang === "sv" ? "Klistra in din prospektlista" : "Paste your prospect list", body: lang === "sv" ? "Skriv eller klistra in företagsnamn. Logoplacers hämtar automatiskt varje logotyp på sekunder — Salesforce, Spotify, vilket företag som helst." : "Type or paste company names. Logoplacers auto-fetches every logo in seconds — Salesforce, Spotify, any company.", color: "#8b5cf6" },
+src/Landing.jsx:2391:              { n: "03", title: lang === "sv" ? "Skicka från ditt eget Gmail" : "Send from your own Gmail", body: lang === "sv" ? "Anslut Gmail med ett klick. Varje prospekt får en unik personaliserad bild. Mejl skickas med naturliga fördröjningar." : "Connect Gmail in one click. Each prospect gets a unique personalised image. Emails sent with natural delays.", color: "#10b981" },
+src/Landing.jsx:2393:              <div key={s.n} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 18, padding: "28px 24px" }}>
+src/Landing.jsx:2395:                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 10, lineHeight: 1.3 }}>{s.title}</div>
+src/Landing.jsx:2396:                <div style={{ fontSize: 13, color: "rgba(255,255,255,.42)", lineHeight: 1.65 }}>{s.body}</div>
+src/Landing.jsx:2405:              <div key={b} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "rgba(255,255,255,.45)" }}>
+src/Landing.jsx:2406:                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+src/Landing.jsx:2418:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Funktioner" : "Features"}</div>
+src/Landing.jsx:2437:      <section id="how-it-works" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+src/Landing.jsx:2447:      <section id="comparison" style={{ padding: "100px 48px", background: "rgba(255,255,255,0.018)" }}>
+src/Landing.jsx:2452:      <section id="demo" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+src/Landing.jsx:2458:        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 500, background: "radial-gradient(ellipse, rgba(26,130,255,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+src/Landing.jsx:2459:        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 400, height: 300, background: "radial-gradient(ellipse, rgba(91,79,255,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+src/Landing.jsx:2466:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 20 }}>{lang === "sv" ? "Tidig åtkomst" : "Early access"}</div>
+src/Landing.jsx:2470:          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", marginBottom: 48, lineHeight: 1.7 }}>
+src/Landing.jsx:2475:            background: "rgba(255,255,255,0.02)", backdropFilter: "blur(32px)",
+src/Landing.jsx:2477:            border: "1px solid rgba(255,255,255,0.06)", borderRadius: 24, padding: "36px",
+src/Landing.jsx:2478:            boxShadow: "0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
+src/Landing.jsx:2483:          <div style={{ marginTop: 28, fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+src/Landing.jsx:2493:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>{t("nav.pricing")}</div>
+src/Landing.jsx:2495:            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.38)", maxWidth: 380, margin: "0 auto" }}>{t("pricing.sub")}</p>
+src/Landing.jsx:2505:                background: p.highlight ? "rgba(26,130,255,0.08)" : "rgba(255,255,255,0.02)",
+src/Landing.jsx:2506:                border: `1px solid ${p.highlight ? "rgba(26,130,255,0.4)" : "rgba(255,255,255,0.07)"}`,
+src/Landing.jsx:2511:                {p.highlight && <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: "1px", padding: "4px 12px", borderRadius: 100, whiteSpace: "nowrap", textTransform: "uppercase" }}>Most popular</div>}
+src/Landing.jsx:2512:                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)" }}>{p.name}</div>
+src/Landing.jsx:2513:                <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-2px", color: "#fff", lineHeight: 1 }}>
+src/Landing.jsx:2514:                  {p.price}<span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>{p.period}</span>
+src/Landing.jsx:2516:                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>{p.credits}</div>
+src/Landing.jsx:2520:                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.3)"} strokeWidth="2.5" strokeLinecap="round" style={{ marginTop: 1, flexShrink: 0 }}><polyline points="20 6 9 17 4 12" /></svg>
+src/Landing.jsx:2521:                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>{f}</span>
+src/Landing.jsx:2534:                    background: p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
+src/Landing.jsx:2535:                    color: "#fff",
+src/Landing.jsx:2536:                    border: p.highlight ? "none" : "0.5px solid rgba(255,255,255,0.12)",
+src/Landing.jsx:2539:                    boxShadow: p.highlight ? "0 4px 20px rgba(26,130,255,0.3)" : "none",
+src/Landing.jsx:2550:      <section id="faq" style={{ padding: "120px 48px", background: "rgba(255,255,255,0.018)" }}>
+src/Landing.jsx:2553:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "VANLIGA FRÅGOR" : "FAQ"}</div>
+src/Landing.jsx:2578:            <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+src/Landing.jsx:2587:      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "32px 48px", marginTop: 32, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+src/Landing.jsx:2590:          <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>Logoplacers</span>
+src/Landing.jsx:2593:          <button onClick={onOpenBlog} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("nav.blog")}</button>
+src/Landing.jsx:2594:          <a href="#privacy" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>{t("footer.privacy")}</a>
+src/Landing.jsx:2595:          <a href="#terms" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>{t("footer.terms")}</a>
+src/Landing.jsx:2596:          <a href="mailto:hello@logoplacers.com" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>hello@logoplacers.com</a>
+src/Landing.jsx:2597:          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.15)" }}>© 2025 Logoplacers</span>
+src/Landing.jsx:2610:        ::placeholder{color:rgba(255,255,255,0.25)}
+src/App.jsx:43:  .header::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(26,130,255,0.45) 30%, rgba(91,79,255,0.45) 70%, transparent); pointer-events: none; }
+src/App.jsx:45:  .header-icon { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#1a82ff,#5b4fff); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(26,130,255,0.3); }
+src/App.jsx:46:  .header-name { font-size: 16px; font-weight: 700; background: linear-gradient(135deg,#ffffff,#a5c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.3px; }
+src/App.jsx:54:  .mode-tab.active { color: #7db8ff; border-bottom-color: #1a82ff; text-shadow: 0 0 20px rgba(26,130,255,0.4); }
+src/App.jsx:58:  .sidebar { background: linear-gradient(180deg, rgba(26,15,50,0.4) 0%, var(--bg2) 120px); border-right: 0.5px solid rgba(91,79,255,0.12); overflow-y: auto; padding-bottom: 40px; }
+src/App.jsx:62:  .s-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(167,139,250,0.7); padding: 20px 16px 7px; display: block; }
+src/App.jsx:86:  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--blue); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+src/App.jsx:110:  .tag-btn { background: linear-gradient(135deg,rgba(26,130,255,0.12),rgba(91,79,255,0.12)); border: 0.5px solid rgba(91,79,255,0.35); color: #a78bfa; font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
+src/App.jsx:111:  .tag-btn:hover { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
+src/App.jsx:125:  .tbtn.on { background: linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15)); border-color: rgba(91,79,255,0.5); color: #a78bfa; }
+src/App.jsx:133:  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.76); z-index:800; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeup .15s; }
+src/App.jsx:134:  .modal-box { background:var(--bg2); border:0.5px solid var(--sep); border-radius:var(--r-lg); width:100%; max-width:660px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,.72); }
+src/App.jsx:159:  .google-btn { display:flex; align-items:center; gap:10px; background:#fff; color:#3c4043; border:none; font-family:inherit; font-size:14px; font-weight:500; padding:10px 22px; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.25); transition:box-shadow .15s; }
+src/App.jsx:160:  .google-btn:hover { box-shadow:0 4px 16px rgba(0,0,0,.3); }
+src/App.jsx:166:  .btn-p { background: linear-gradient(135deg, #1a82ff, #5b4fff); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s; box-shadow: 0 4px 16px rgba(26,130,255,0.25); }
+src/App.jsx:167:  .btn-p:hover { opacity: .92; box-shadow: 0 6px 22px rgba(26,130,255,0.38); }
+src/App.jsx:170:  .btn-s:hover { background: rgba(26,130,255,0.1); border-color: rgba(26,130,255,0.3); color: #7db8ff; }
+src/App.jsx:194:  .co-logo { width: 32px; height: 32px; background: #fff; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+src/App.jsx:196:  .co-logo .ph { font-size: 12px; color: #888; font-weight: 600; }
+src/App.jsx:197:  .co-logo .spinner { width: 13px; height: 13px; border: 2px solid #ddd; border-top-color: #888; border-radius: 50%; animation: spin .7s linear infinite; }
+src/App.jsx:218:  .canvas-container { position: relative; border-radius: var(--r-lg); overflow: hidden; user-select: none; box-shadow: 0 24px 80px rgba(0,0,0,.7), 0 0 0 0.5px rgba(255,255,255,.07); }
+src/App.jsx:226:  .ov-pill { position: absolute; top: -20px; left: 0; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 100px; color: #fff; pointer-events: none; white-space: nowrap; }
+src/App.jsx:235:  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg3); color: var(--t1); font-size: 13px; font-weight: 500; padding: 10px 18px; border-radius: 100px; z-index: 999; border: 0.5px solid var(--sep); box-shadow: 0 8px 32px rgba(0,0,0,.5); white-space: nowrap; animation: fadeup .2s; }
+src/App.jsx:255:  .gen-btn { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+src/App.jsx:257:  .gen-btn.generating { background: linear-gradient(135deg,#1a82ff,#5b4fff); }
+src/App.jsx:334:  "#ffffff", "#000000", "#c8f04c", "#60a5fa", "#f87171", "#fbbf24", "#a78bfa",
+src/App.jsx:335:  "#34d399", "#f97316", "#e879f9", "#38bdf8", "#fb7185", "#4ade80", "#facc15",
+src/App.jsx:336:  "#c084fc", "#22d3ee", "#f43f5e", "#84cc16", "#818cf8", "#fb923c",
+src/App.jsx:359:const LAYER_COLORS = ["#c8f04c", "#60a5fa", "#f87171", "#a78bfa", "#fbbf24", "#34d399", "#f97316", "#e879f9"];
+src/App.jsx:622:    ctx.fillStyle = "#000";
+src/App.jsx:633:    ctx.shadowColor = "rgba(0,0,0,0.8)";
+src/App.jsx:635:    ctx.fillStyle = "#ffffff";
+src/App.jsx:645:    ctx.fillStyle = "#fff";
+src/App.jsx:646:    ctx.shadowColor = "rgba(0,0,0,0.9)"; ctx.shadowBlur = 6;
+src/App.jsx:777:  color: "#ffffff",
+src/App.jsx:897:      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1.5;
+src/App.jsx:910:      ctx.fillStyle = "rgba(0,0,0,0.85)"; rrect(px, py, pw, ph, ph / 2); ctx.fill(); ctx.restore();
+src/App.jsx:917:      if (!img) { ctx.fillStyle = "#0d0d14"; ctx.fillRect(0, 0, VW, VH); return; }
+src/App.jsx:1009:                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({ bgOpacity: Number(e.target.value) })} style={{ accentColor: "#1a82ff" }} />
+src/App.jsx:1051:          <div style={{ fontSize: Math.max(overlay.fontSize * 0.35, 12), fontFamily: overlay.fontFamily, color: overlay.color, fontWeight: overlay.bold ? "bold" : "normal", background: "rgba(0,0,0,0.55)", display: "inline-block", padding: "4px 14px", borderRadius: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
+src/App.jsx:1063:              <div style={{ width: 30, height: 30, background: "#fff", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+src/App.jsx:1089:                      v.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
+src/App.jsx:1090:                      const ov = document.createElement("div"); ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
+src/App.jsx:1300:        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 10px", background: "rgba(26,130,255,.08)", border: "1px solid rgba(26,130,255,.2)", borderRadius: 8 }}>
+src/App.jsx:1301:          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5ba4ff" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+src/App.jsx:1335:  bgGrad.addColorStop(0, "#0d1520");
+src/App.jsx:1336:  bgGrad.addColorStop(1, "#070b12");
+src/App.jsx:1373:  bezelGrad.addColorStop(0, "#2a2a2a");
+src/App.jsx:1374:  bezelGrad.addColorStop(1, "#1a1a1a");
+src/App.jsx:1380:  ctx.fillStyle = "rgba(255,255,255,0.04)";
+src/App.jsx:1387:  ctx.fillStyle = "#000";
+src/App.jsx:1407:  glare.addColorStop(0, "rgba(255,255,255,0.07)");
+src/App.jsx:1408:  glare.addColorStop(1, "rgba(255,255,255,0)");
+src/App.jsx:1413:  ctx.fillStyle = "#222";
+src/App.jsx:1417:  ctx.fillStyle = "#1a1a2e";
+src/App.jsx:1424:  hinge.addColorStop(0, "#1e1e1e");
+src/App.jsx:1425:  hinge.addColorStop(1, "#252525");
+src/App.jsx:1433:  baseGrad.addColorStop(0, "#252525");
+src/App.jsx:1434:  baseGrad.addColorStop(0.5, "#222222");
+src/App.jsx:1435:  baseGrad.addColorStop(1, "#1a1a1a");
+src/App.jsx:1446:  ctx.fillStyle = "rgba(255,255,255,0.025)";
+src/App.jsx:1456:      ctx.fillStyle = "rgba(255,255,255,0.018)";
+src/App.jsx:1463:  ctx.fillStyle = "rgba(255,255,255,0.04)";
+src/App.jsx:1464:  ctx.strokeStyle = "rgba(255,255,255,0.06)";
+src/App.jsx:1472:  refl.addColorStop(0, "rgba(255,255,255,0)");
+src/App.jsx:1473:  refl.addColorStop(1, "rgba(255,255,255,0.03)");
+src/App.jsx:1582:    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+src/App.jsx:1590:        <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 20, background: "#070b12", display: "flex", justifyContent: "center" }}>
+src/App.jsx:1634:          <div style={{ marginBottom: 12, padding: "10px 14px", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 10, fontSize: 13, color: "#f87171", display: "flex", alignItems: "center", gap: 8 }}>
+src/App.jsx:1635:            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", animation: "pulse 1s infinite" }} />
+src/App.jsx:1654:            ? <button className="btn-s" style={{ background: "rgba(239,68,68,.12)", borderColor: "rgba(239,68,68,.3)", color: "#f87171" }} onClick={stopRecording}>■ Stop</button>
+src/App.jsx:1676:    bgColor: "#e8e4dc",
+src/App.jsx:1685:    bgColor: "#d4c5b0",
+src/App.jsx:1693:    bgColor: "#c8d4e8",
+src/App.jsx:1701:    bgColor: "#2d3748",
+src/App.jsx:1709:    bgColor: "#b8cce0",
+src/App.jsx:1717:    bgColor: "#f5e6c8",
+src/App.jsx:1725:    bgColor: "#1a2540",
+src/App.jsx:1733:    bgColor: "#e8d5b0",
+src/App.jsx:1741:    bgColor: "#2c2c2c",
+src/App.jsx:1749:    bgColor: "#111827",
+src/App.jsx:1814:      octx.fillStyle = `rgba(255,255,255,${exposure * 0.6})`;
+src/App.jsx:1818:      octx.fillStyle = `rgba(0,0,0,${Math.abs(exposure) * 0.6})`;
+src/App.jsx:1889:  const isDark = bgColor < "#888888";
+src/App.jsx:1896:    grad.addColorStop(0, "#ffffff");
+src/App.jsx:1897:    grad.addColorStop(0.5, "#e8e4dc");
+src/App.jsx:1898:    grad.addColorStop(1, "#c8c0b0");
+src/App.jsx:1902:    ctx.strokeStyle = "rgba(0,0,0,0.06)"; ctx.lineWidth = 1;
+src/App.jsx:1911:    shadow.addColorStop(0, "rgba(0,0,0,0.2)"); shadow.addColorStop(1, "rgba(0,0,0,0)");
+src/App.jsx:1921:    bodyGrad.addColorStop(0, "rgba(0,0,0,0.15)");
+src/App.jsx:1922:    bodyGrad.addColorStop(0.2, "rgba(255,255,255,0.1)");
+src/App.jsx:1923:    bodyGrad.addColorStop(0.5, "rgba(255,255,255,0.05)");
+src/App.jsx:1924:    bodyGrad.addColorStop(0.85, "rgba(255,255,255,0.12)");
+src/App.jsx:1925:    bodyGrad.addColorStop(1, "rgba(0,0,0,0.2)");
+src/App.jsx:1935:    topGrad.addColorStop(0, "rgba(255,255,255,0.3)"); topGrad.addColorStop(1, "rgba(255,255,255,0.05)");
+src/App.jsx:1946:    const isTshirt = (bgColor === "#c8d4e8" || bgColor === "#2d3748" || bgColor === "#e8d5b0" || bgColor === "#2c2c2c" || bgColor === "#f5e6c8");
+src/App.jsx:1954:    ctx.fillStyle = "rgba(255,255,255,0.04)";
+src/App.jsx:1957:    ctx.fillStyle = "rgba(0,0,0,0.12)";
+src/App.jsx:1971:    ctx.fillStyle = "rgba(0,0,0,0.25)";
+src/App.jsx:2038:    ctx.strokeStyle = "rgba(26,130,255,0.5)";
+src/App.jsx:2060:      ctx.fillStyle = isCorner ? "rgba(26,130,255,0.9)" : "rgba(26,130,255,0.55)";
+src/App.jsx:2115:    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+src/App.jsx:2132:                  background: templateId === tmpl.id ? "rgba(26,130,255,.15)" : "rgba(255,255,255,.04)",
+src/App.jsx:2133:                  border: `1px solid ${templateId === tmpl.id ? "rgba(26,130,255,.4)" : "rgba(255,255,255,.1)"}`,
+src/App.jsx:2135:                  color: templateId === tmpl.id ? "#60a5fa" : "var(--t3)", cursor: "pointer", fontFamily: "inherit",
+src/App.jsx:2144:            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#0d0d14", border: "0.5px solid var(--sep)" }}>
+src/App.jsx:2153:                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.5)", color: "var(--t3)", fontSize: 13 }}>
+src/App.jsx:2335:          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#1a82ff;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+src/App.jsx:2338:          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#1a82ff;text-decoration:none;font-weight:600">Logoplacers</a></div>`
+src/App.jsx:2340:        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
+src/App.jsx:2410:                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2a10.34 10.34 0 0 0-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91A8.87 8.87 0 0 0 17.64 9.2z" /><path fill="#34A853" d="M9 18a8.7 8.7 0 0 0 6.04-2.18l-2.91-2.26A5.49 5.49 0 0 1 3.66 9.8H.7v2.34A9 9 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.66 9.8A5.36 5.36 0 0 1 3.38 9c0-.28.04-.55.1-.8V5.86H.7A9 9 0 0 0 0 9a9 9 0 0 0 .7 3.14L3.66 9.8z" /><path fill="#EA4335" d="M9 3.58a4.86 4.86 0 0 1 3.44 1.35L14.5 2.87A8.7 8.7 0 0 0 9 0 9 9 0 0 0 .7 5.86L3.66 8.2A5.36 5.36 0 0 1 9 3.58z" /></svg>
+src/App.jsx:2450:                        style={{ accentColor: "#1a82ff", width: 14, height: 14, flexShrink: 0 }} />
+src/App.jsx:2451:                      <div style={{ width: 26, height: 26, background: "#fff", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+src/App.jsx:2452:                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} /> : <span style={{ fontSize: 11, color: "#888" }}>{c.companyName[0]}</span>}
+src/App.jsx:2503:                  <div style={{ fontSize: 28 }}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>}</div>
+src/App.jsx:2556:    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "rgba(255,255,255,.05)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: 2, flexShrink: 0 }}>
+src/App.jsx:2559:          background: lang === l ? "rgba(26,130,255,.25)" : "none",
+src/App.jsx:2561:          color: lang === l ? "#60a5fa" : "var(--t3)",
+src/App.jsx:2590:      color: Math.random() > 0.8 ? "rgba(91,79,255," : Math.random() > 0.5 ? "rgba(26,130,255," : "rgba(180,210,255,",
+src/App.jsx:2601:      ctx.fillStyle = "#070b12"; ctx.fillRect(0, 0, W, H);
+src/App.jsx:2607:        g.addColorStop(0, `rgba(${o.color},${o.alpha})`); g.addColorStop(1, `rgba(${o.color},0)`);
+src/App.jsx:2626:            ctx.strokeStyle = `rgba(26,130,255,${(1 - dist / 90) * 0.07})`; ctx.lineWidth = 0.5; ctx.stroke();
+src/App.jsx:2636:    <div style={{ position: "fixed", inset: 0, background: "#070b12", overflow: "hidden" }}>
+src/App.jsx:2640:          <div style={{ width: 50, height: 50, borderRadius: 15, background: "linear-gradient(135deg,#1a82ff,#5b4fff)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 48px rgba(26,130,255,0.45)" }}>
+src/App.jsx:2644:            <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>LogoPlacer</div>
+src/App.jsx:2645:            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 3, letterSpacing: "1px", textTransform: "uppercase" }}>Personalised demos</div>
+src/App.jsx:2648:        <div style={{ background: "rgba(10,16,26,0.8)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 24, padding: "40px 44px", width: "100%", maxWidth: 390, display: "flex", flexDirection: "column", alignItems: "center", gap: 26, boxShadow: "0 48px 96px rgba(0,0,0,0.7)" }}>
+src/App.jsx:2650:            <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 8 }}>Sign in</div>
+src/App.jsx:2651:            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>Use your Google account to<br />access the app.</div>
+src/App.jsx:2653:          <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.05)" }} />
+src/App.jsx:2657:              style={{ marginTop: 2, accentColor: "#1a82ff", flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
+src/App.jsx:2658:            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", lineHeight: 1.6 }}>
+src/App.jsx:2660:              Läs vår <a href="#privacy" style={{ color: "rgba(100,180,255,0.7)", textDecoration: "underline" }}>integritetspolicy</a>.
+src/App.jsx:2665:            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s" }}>
+src/App.jsx:2666:            <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent || loading) ? "#aaa" : "#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
+src/App.jsx:2669:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center", marginTop: -10 }}>
+src/App.jsx:2685:          <stop offset="0%" stopColor="#22d3ee" />
+src/App.jsx:2686:          <stop offset="30%" stopColor="#4ade80" />
+src/App.jsx:2687:          <stop offset="55%" stopColor="#a78bfa" />
+src/App.jsx:2688:          <stop offset="75%" stopColor="#f472b6" />
+src/App.jsx:2689:          <stop offset="100%" stopColor="#ef4444" />
+src/App.jsx:2692:          <stop offset="0%" stopColor="#3b82f6" />
+src/App.jsx:2693:          <stop offset="50%" stopColor="#8b5cf6" />
+src/App.jsx:2694:          <stop offset="100%" stopColor="#ef4444" />
+src/App.jsx:2872:const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
+src/App.jsx:3023:        background: low ? "rgba(239,68,68,0.12)" : "rgba(26,130,255,0.1)",
+src/App.jsx:3024:        border: `0.5px solid ${low ? "rgba(239,68,68,0.35)" : "rgba(26,130,255,0.25)"}`,
+src/App.jsx:3027:        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low ? "#ef4444" : "#5ba4ff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+src/App.jsx:3030:        <span style={{ fontSize: 12, fontWeight: 600, color: low ? "#ef4444" : "#7db8ff", fontVariantNumeric: "tabular-nums" }}>
+src/App.jsx:3037:          background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
+src/App.jsx:3095:                border: `1px solid ${p.highlight ? "rgba(26,130,255,0.5)" : "rgba(255,255,255,0.07)"}`,
+src/App.jsx:3097:                background: p.highlight ? "rgba(26,130,255,0.08)" : "rgba(255,255,255,0.02)",
+src/App.jsx:3100:                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>{p.label}</div>
+src/App.jsx:3101:                <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", lineHeight: 1 }}>
+src/App.jsx:3107:                      <span style={{ color: p.highlight ? "#5ba4ff" : "var(--t3)", fontSize: 11, marginTop: 1 }}>✓</span>
+src/App.jsx:3116:                    background: p.current ? "var(--bg4)" : p.highlight ? "linear-gradient(135deg,#1a82ff,#5b4fff)" : "rgba(255,255,255,0.06)",
+src/App.jsx:3117:                    color: p.current ? "var(--t4)" : "#fff",
+src/App.jsx:3118:                    border: p.highlight ? "none" : "0.5px solid rgba(255,255,255,0.1)",
+src/App.jsx:3268:  const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
+src/App.jsx:3271:  const [colorToReplace, setColorToReplace] = useState("#ffffff");
+src/App.jsx:3399:    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
+src/App.jsx:3648:            {!saving && sessionLoaded && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>{t("app.saved")}</span>}
+src/App.jsx:3649:            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>?</button>
+src/App.jsx:3650:            <button onClick={() => setShowFeedback(true)} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "0 10px", height: 30, display: "flex", alignItems: "center", gap: 5, cursor: "pointer", color: "var(--t2)", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>
+src/App.jsx:3671:              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "var(--blue)", color: "#fff", borderRadius: "100px", padding: "1px 5px" }}>{companies.filter(c => c.email).length}</span>}
+src/App.jsx:3683:          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowManual(false)}>
+src/App.jsx:3698:                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--blue-dim)", border: "1px solid rgba(26,130,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--blue)", flexShrink: 0 }}>{s.step}</div>
+src/App.jsx:3705:              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(26,130,255,.06)", border: "1px solid rgba(26,130,255,.15)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
+src/App.jsx:3714:          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => { setShowFeedback(false); setFeedbackSent(false); }}>
+src/App.jsx:3747:                }} style={{ width: "100%", padding: "11px 0", background: "var(--blue)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: feedbackText.trim() ? 1 : 0.4 }}>
+src/App.jsx:3787:                }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{t("app.remove_image")}</button>
+src/App.jsx:3796:                  <div style={{ position: "absolute", top: 3, left: canvasBg.enabled ? 16 : 3, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.4)" }} />
+src/App.jsx:3817:                    <span style={{ position: "absolute", top: 2, left: personalisedColors ? 16 : 2, width: 14, height: 14, borderRadius: "50%", background: "#fff", transition: "left .2s" }} />
+src/App.jsx:3830:                      background: eyedropperActive ? "rgba(26,130,255,.15)" : "var(--bg4)",
+src/App.jsx:3833:                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eyedropperActive ? "#5ba4ff" : "var(--t2)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+src/App.jsx:3889:                    <button onClick={() => loadTemplate(tpl)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: "var(--blue)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Load</button>
+src/App.jsx:3908:                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{ flex: 1, accentColor: "#fbbf24" }} />
+src/App.jsx:4032:                          <div className="overlay-box" style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
+src/App.jsx:4050:                            style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
+src/App.jsx:4051:                            <div className="ov-pill" style={{ background: "var(--yellow)", color: "#000" }}>Symbol</div>
+src/App.jsx:4079:            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+src/App.jsx:4082:                <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{allPreviews[previewIdx]?.name}</span>
+src/App.jsx:4083:                {allPreviews.length > 1 && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{previewIdx + 1} / {allPreviews.length}</span>}
+src/App.jsx:4085:              <img src={allPreviews[previewIdx]?.url || previewUrl} style={{ maxWidth: "88vw", maxHeight: "72vh", borderRadius: 12, boxShadow: "0 24px 80px rgba(0,0,0,.7)", display: "block" }} alt="Preview" />
+src/App.jsx:4276:    <div style={{ minHeight: "100vh", background: "#070b12", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans','Helvetica Neue',sans-serif" }}>
+src/App.jsx:4277:      <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 24, padding: "44px 48px", width: 360, display: "flex", flexDirection: "column", gap: 20, alignItems: "center", textAlign: "center" }}>
+src/App.jsx:4278:        <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#1a82ff,#5b4fff)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 32px rgba(26,130,255,.35)" }}>
+src/App.jsx:4282:          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 6 }}>Admin</div>
+src/App.jsx:4283:          <div style={{ fontSize: 13, color: "rgba(255,255,255,.3)", lineHeight: 1.6 }}>Sign in with your Google account.<br />Access is restricted to admins.</div>
+src/App.jsx:4285:        {denied && <div style={{ fontSize: 12, color: "#ef4444", padding: "8px 14px", background: "rgba(239,68,68,.1)", borderRadius: 8, width: "100%" }}>Access denied — your account is not an admin.</div>}
+src/App.jsx:4287:          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "12px 20px", borderRadius: 12, border: "none", background: loading ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.93)", color: "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: loading ? "default" : "pointer", transition: "all .15s" }}>
+src/App.jsx:4288:          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
+src/App.jsx:4291:        <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(255,255,255,.25)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.back")}</button>
+src/App.jsx:4298:    <div style={{ minHeight: "100vh", background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", padding: "40px 32px" }}>
+src/App.jsx:4304:            <img src={adminUser.picture} alt="" style={{ width: 36, height: 36, borderRadius: "50%", border: "2px solid rgba(255,255,255,.1)" }} />
+src/App.jsx:4307:              <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>{adminUser.email}</div>
+src/App.jsx:4311:            <button onClick={addUser} style={{ padding: "8px 16px", background: "rgba(26,130,255,.15)", border: "1px solid rgba(26,130,255,.3)", color: "#5ba4ff", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
+src/App.jsx:4313:              style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
+src/App.jsx:4314:            <button onClick={onBack} style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← App</button>
+src/App.jsx:4326:            <div key={label} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12, padding: "14px 16px" }}>
+src/App.jsx:4328:              <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 2 }}>{label}</div>
+src/App.jsx:4335:          style={{ width: "100%", padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,.08)", background: "rgba(255,255,255,.04)", color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+src/App.jsx:4340:            <div key={u.email} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "14px 18px" }}>
+src/App.jsx:4345:                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}>
+src/App.jsx:4349:                    style={{ width: 88, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit" }}
+src/App.jsx:4352:                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: editing.trial_until ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, fontFamily: "inherit" }}
+src/App.jsx:4354:                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "#1a82ff", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+src/App.jsx:4355:                  <button onClick={() => setEditing(null)} style={{ padding: "6px 12px", background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.5)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.cancel")}</button>
+src/App.jsx:4362:                    background: u.plan === "free" || !u.plan ? "rgba(255,255,255,.06)" : u.plan === "sdr" ? "rgba(26,130,255,.15)" : u.plan === "pro" ? "rgba(91,79,255,.2)" : "rgba(16,185,129,.15)",
+src/App.jsx:4363:                    color: u.plan === "free" || !u.plan ? "rgba(255,255,255,.4)" : u.plan === "sdr" ? "#5ba4ff" : u.plan === "pro" ? "#a78bfa" : "#34d399"
+src/App.jsx:4373:                    const barColor = pct > 90 ? "#ef4444" : pct > 60 ? "#f59e0b" : "#34d399";
+src/App.jsx:4376:                        <div style={{ width: 80, height: 5, background: "rgba(255,255,255,.08)", borderRadius: 3, overflow: "hidden" }}>
+src/App.jsx:4379:                        <span style={{ fontSize: 12, color: "rgba(255,255,255,.5)", fontVariantNumeric: "tabular-nums", minWidth: 70 }}>
+src/App.jsx:4385:                  {u.trial_until && new Date(u.trial_until) > new Date() && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "rgba(251,191,36,.1)", color: "#fbbf24" }}>trial until {u.trial_until}</span>}
+src/App.jsx:4386:                  {saved === u.email && <span style={{ fontSize: 11, color: "#34d399", fontWeight: 600 }}>✓ Saved</span>}
+src/App.jsx:4388:                    style={{ padding: "5px 13px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.45)", borderRadius: 8, fontSize: 12, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto" }}>
+src/App.jsx:4395:          {filtered.length === 0 && <div style={{ textAlign: "center", color: "rgba(255,255,255,.2)", padding: "48px 0", fontSize: 13 }}>No users found</div>}
+src/App.jsx:4398:        <div style={{ marginTop: 28, padding: "14px 18px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, fontSize: 11, color: "rgba(255,255,255,.2)", lineHeight: 1.7 }}>
+src/App.jsx:4450:      zIndex: 9999, background: "rgba(10,16,26,0.96)", backdropFilter: "blur(20px)",
+src/App.jsx:4451:      border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14,
+src/App.jsx:4453:      boxShadow: "0 8px 40px rgba(0,0,0,0.6)", maxWidth: 520, width: "calc(100% - 40px)",
+src/App.jsx:4455:      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, flex: 1 }}>
+src/App.jsx:4457:        {" "}<a href="#privacy" style={{ color: "rgba(100,180,255,0.7)" }}>Integritetspolicy</a>
+src/App.jsx:4460:        background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",

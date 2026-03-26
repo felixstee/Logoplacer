@@ -1,0 +1,401 @@
+src/Landing.jsx:148:      color: 0xeef6ff, emissive: 0x081428, emissiveIntensity: 0.02,
+src/Landing.jsx:152:    const wireMat = () => new THREE.LineBasicMaterial({ color: 0xc8dcf8, transparent: true, opacity: 0.85 });
+src/Landing.jsx:208:    const orbMat = new THREE.MeshPhongMaterial({ color: 0xaaccff, transparent: true, opacity: 0.6, specular: 0xffffff, shininess: 200 });
+src/Landing.jsx:241:    scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x5577aa, size: 0.05, transparent: true, opacity: 0.4 })));
+src/Landing.jsx:319:        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+src/Landing.jsx:321:      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 12, letterSpacing: ".2px" }}>{lbl}</div>
+src/Landing.jsx:355:      color: 0xddeeff, emissive: 0x112244, emissiveIntensity: 0.05,
+src/Landing.jsx:359:    const wireMat = new THREE.LineBasicMaterial({ color: 0x99bbdd, transparent: true, opacity: 0.65 });
+src/Landing.jsx:376:    const orbMat = new THREE.MeshPhongMaterial({ color: 0xbbddff, transparent: true, opacity: 0.55, specular: 0xffffff, shininess: 200 });
+src/Landing.jsx:848:    padding: "11px 14px", color: "rgba(255,255,255,0.88)", fontSize: 14,
+src/Landing.jsx:855:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>Live demo</div>
+src/Landing.jsx:857:        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+src/Landing.jsx:893:            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+src/Landing.jsx:894:              {lang === "sv" ? <>I det riktiga verktyget, klistra in <strong style={{ color: "#5ba4ff" }}>100 företag på en gång</strong> och få 100 personaliserade demos på sekunder.</> : <>In the real tool, paste <strong style={{ color: "#5ba4ff" }}>100 companies at once</strong> and get 100 personalised demos in seconds.</>}
+src/Landing.jsx:898:          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: ".2px" }}>
+src/Landing.jsx:908:              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>{label}</div>
+src/Landing.jsx:919:              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>
+src/Landing.jsx:923:                style={{ width: "100%", accentColor: "#3b82f6" }} />
+src/Landing.jsx:937:                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{lang === "sv" ? "Dra logotypen på canvasen" : "Drag the logo on the canvas"}</div>
+src/Landing.jsx:945:                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+src/Landing.jsx:958:              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+src/Landing.jsx:964:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
+src/Landing.jsx:1292:        { label: "Download ZIP", color: "rgba(255,255,255,0.1)", tx: "rgba(255,255,255,0.8)", bx: W - 380 },
+src/Landing.jsx:1293:        { label: "Send via Gmail", color: "#1a82ff", tx: "#fff", bx: W - 240 },
+src/Landing.jsx:1294:        { label: "Export slides", color: "rgba(91,79,255,0.8)", tx: "#fff", bx: W - 110 },
+src/Landing.jsx:1508:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Hur det fungerar" : "How it works"}</div>
+src/Landing.jsx:1512:        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>
+src/Landing.jsx:1523:            color: step === i ? "#fff" : "rgba(255,255,255,0.45)",
+src/Landing.jsx:1549:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 6 }}>
+src/Landing.jsx:1552:          <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-.3px", marginBottom: 6 }}>
+src/Landing.jsx:1555:          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, maxWidth: 500 }}>
+src/Landing.jsx:1566:              color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+src/Landing.jsx:1575:              color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+src/Landing.jsx:1633:      <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 10 }}>You're on the list.</div>
+src/Landing.jsx:1634:      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, marginBottom: 24 }}>
+src/Landing.jsx:1639:        color: "#5ba4ff", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
+src/Landing.jsx:1656:          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+src/Landing.jsx:1668:          borderRadius: 12, padding: "13px 18px", color: "rgba(255,255,255,0.85)", fontSize: 14,
+src/Landing.jsx:1677:        color: "#fff", border: "none", borderRadius: 12, padding: "15px",
+src/Landing.jsx:1755:        color: mouse.inside ? "#fff" : "rgba(255,255,255,0.5)",
+src/Landing.jsx:1759:        <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8, letterSpacing: "-.3px" }}>{title}</div>
+src/Landing.jsx:1760:        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.42)", lineHeight: 1.72 }}>{desc}</div>
+src/Landing.jsx:1781:        color: "#5ba4ff", boxShadow: "0 0 20px rgba(26,130,255,0.15)",
+src/Landing.jsx:1784:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "rgba(26,130,255,0.7)", textTransform: "uppercase", marginBottom: 6 }}>Step {n}</div>
+src/Landing.jsx:1785:        <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8, letterSpacing: "-.3px" }}>{title}</div>
+src/Landing.jsx:1786:        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.42)", lineHeight: 1.72 }}>{desc}</div>
+src/Landing.jsx:1811:      <div style={{ fontSize: 14, color: "rgba(255,255,255,0.62)", lineHeight: 1.75, marginBottom: 22, fontStyle: "italic" }}>
+src/Landing.jsx:1819:          fontSize: 14, fontWeight: 700, color: "#fff",
+src/Landing.jsx:1822:          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{name}</div>
+src/Landing.jsx:1823:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>{role}, {company}</div>
+src/Landing.jsx:1843:        color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer",
+src/Landing.jsx:1853:        <div style={{ padding: "0 24px 22px", fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}>{a}</div>
+src/Landing.jsx:1900:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>{lang === "sv" ? "Vad folk säger" : "What people say"}</div>
+src/Landing.jsx:1914:          <div style={{ position: "absolute", top: 10, left: 32, fontSize: 100, lineHeight: 1, color: `${cur.c}12`, fontFamily: "Georgia,serif", fontWeight: 700, pointerEvents: "none", userSelect: "none" }}>"</div>
+src/Landing.jsx:1916:          <p style={{ fontSize: "clamp(15px,2vw,20px)", color: "rgba(255,255,255,.83)", lineHeight: 1.65, marginBottom: 28, fontStyle: "italic", maxWidth: 800, position: "relative", margin: "0 0 28px" }}>
+src/Landing.jsx:1920:            <div style={{ width: 42, height: 42, borderRadius: "50%", background: `linear-gradient(135deg,${cur.c},${cur.c}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", boxShadow: `0 0 16px ${cur.c}55`, flexShrink: 0 }}>{cur.name[0]}</div>
+src/Landing.jsx:1922:              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{cur.name}</div>
+src/Landing.jsx:1923:              <div style={{ fontSize: 12, color: "rgba(255,255,255,.32)", marginTop: 2 }}>{lang === "sv" && cur.roleSv ? cur.roleSv : cur.role} · {cur.company}</div>
+src/Landing.jsx:1933:            color: "rgba(255,255,255,.4)", fontSize: 14, cursor: "pointer",
+src/Landing.jsx:1957:            <div style={{ fontSize: 10, color: "rgba(255,255,255,.38)", lineHeight: 1.45, marginBottom: 7 }}>"{tt.quote.slice(0, 52)}…"</div>
+src/Landing.jsx:1959:              <div style={{ width: 18, height: 18, borderRadius: "50%", background: `linear-gradient(135deg,${tt.c},${tt.c}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tt.name[0]}</div>
+src/Landing.jsx:1960:              <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,.45)" }}>{tt.name}</span>
+src/Landing.jsx:2032:                color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", pointerEvents: "none",
+src/Landing.jsx:2047:                color: item.highlight ? "#fff" : hovered === item.id ? "#fff" : "rgba(255,255,255,0.5)",
+src/Landing.jsx:2109:      <span style={{ fontSize: 11, color: "rgba(255,255,255,.6)", lineHeight: 1.4 }}>{ticks[i]}</span>
+src/Landing.jsx:2136:        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>vs the alternatives</div>
+src/Landing.jsx:2143:              <th style={{ padding: "13px 18px", textAlign: "left", fontSize: 11, color: "rgba(255,255,255,.28)", fontWeight: 600, background: "rgba(255,255,255,.02)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>{lang === "sv" ? "Funktion" : "Feature"}</th>
+src/Landing.jsx:2145:                <th key={i} style={{ padding: "13px 18px", textAlign: "center", fontSize: 12, fontWeight: 700, color: c.hi ? "#fff" : "rgba(255,255,255,.35)", background: c.hi ? "rgba(26,130,255,.1)" : "rgba(255,255,255,.02)", borderBottom: `2px solid ${c.hi ? "rgba(26,130,255,.5)" : "rgba(255,255,255,.05)"}` }}>
+src/Landing.jsx:2146:                  {c.l}{c.hi ? <span style={{ display: "block", fontSize: 9, color: "#5ba4ff", fontWeight: 600, marginTop: 2 }}>{lang === "sv" ? "← du är här" : "← you're here"}</span> : null}
+src/Landing.jsx:2154:                <td style={{ padding: "11px 18px", fontSize: 12, color: "rgba(255,255,255,.5)", borderBottom: "1px solid rgba(255,255,255,.04)", background: "rgba(255,255,255,.01)" }}>{lang === "sv" && row.fSv ? row.fSv : row.f}</td>
+src/Landing.jsx:2187:        <h3 style={{ fontSize: 25, fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 12px", lineHeight: 1.12, color: "#fff" }}>{lang === "sv" ? "Vänta — hämta 10 gratis krediter" : "Wait — grab 10 free credits"}</h3>
+src/Landing.jsx:2188:        <p style={{ fontSize: 14, color: "rgba(255,255,255,.42)", lineHeight: 1.65, marginBottom: 28 }}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
+src/Landing.jsx:2189:        <button onClick={() => { setShow(false); onEnterApp(); }} style={{ background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none", borderRadius: 13, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", boxShadow: "0 8px 32px rgba(26,130,255,.4)", marginBottom: 10 }}>
+src/Landing.jsx:2192:        <button onClick={() => setShow(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,.22)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+src/Landing.jsx:2223:    <div style={{ background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden" }}>
+src/Landing.jsx:2251:              style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
+src/Landing.jsx:2257:            style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "8px 14px", borderRadius: 8, transition: "color .15s" }}
+src/Landing.jsx:2264:              <button key={l} onClick={() => setLang(l)} style={{ background: lang === l ? "rgba(26,130,255,.2)" : "none", border: "none", borderRadius: 6, padding: "3px 9px", color: lang === l ? "#60a5fa" : "rgba(255,255,255,.35)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textTransform: "uppercase" }}>{l}</button>
+src/Landing.jsx:2270:            color: "#fff", border: "none", borderRadius: 10, padding: "9px 20px",
+src/Landing.jsx:2295:            fontSize: 11, fontWeight: 700, color: "#5ba4ff", letterSpacing: "1.5px", textTransform: "uppercase",
+src/Landing.jsx:2310:            <span style={{ color: "#fff", display: "block", animation: "fadeSlideUp .8s .08s ease both" }}>
+src/Landing.jsx:2316:              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+src/Landing.jsx:2323:            fontSize: "clamp(15px, 1.8vw, 19px)", color: "rgba(255,255,255,0.45)",
+src/Landing.jsx:2335:              color: "#fff", border: "none", borderRadius: 14, padding: "18px 44px",
+src/Landing.jsx:2345:              color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.04)",
+src/Landing.jsx:2382:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#5ba4ff", textTransform: "uppercase", marginBottom: 18 }}>{lang === "sv" ? "HUR DET FUNGERAR" : "HOW IT WORKS"}</div>
+src/Landing.jsx:2383:          <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 56px", color: "#fff" }}>
+src/Landing.jsx:2385:            <span style={{ color: "rgba(255,255,255,.38)" }}>{lang === "sv" ? "på under 10 minuter." : "in under 10 minutes."}</span>
+src/Landing.jsx:2389:              { n: "01", title: lang === "sv" ? "Ladda upp din produktskärmbild" : "Upload your product screenshot", body: lang === "sv" ? "Dra in valfri UI-skärmbild, mockup eller bild. Stöder PNG, JPG, HEIC. Inga designkunskaper behövs." : "Drag in any UI screenshot, mockup, or image. Supports PNG, JPG, HEIC. No design skills needed.", color: "#1a82ff" },
+src/Landing.jsx:2390:              { n: "02", title: lang === "sv" ? "Klistra in din prospektlista" : "Paste your prospect list", body: lang === "sv" ? "Skriv eller klistra in företagsnamn. Logoplacers hämtar automatiskt varje logotyp på sekunder — Salesforce, Spotify, vilket företag som helst." : "Type or paste company names. Logoplacers auto-fetches every logo in seconds — Salesforce, Spotify, any company.", color: "#8b5cf6" },
+src/Landing.jsx:2391:              { n: "03", title: lang === "sv" ? "Skicka från ditt eget Gmail" : "Send from your own Gmail", body: lang === "sv" ? "Anslut Gmail med ett klick. Varje prospekt får en unik personaliserad bild. Mejl skickas med naturliga fördröjningar." : "Connect Gmail in one click. Each prospect gets a unique personalised image. Emails sent with natural delays.", color: "#10b981" },
+src/Landing.jsx:2394:                <div style={{ fontSize: 11, fontWeight: 800, color: s.color, letterSpacing: "1px", marginBottom: 14 }}>{s.n}</div>
+src/Landing.jsx:2395:                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 10, lineHeight: 1.3 }}>{s.title}</div>
+src/Landing.jsx:2396:                <div style={{ fontSize: 13, color: "rgba(255,255,255,.42)", lineHeight: 1.65 }}>{s.body}</div>
+src/Landing.jsx:2405:              <div key={b} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "rgba(255,255,255,.45)" }}>
+src/Landing.jsx:2418:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Funktioner" : "Features"}</div>
+src/Landing.jsx:2466:          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 20 }}>{lang === "sv" ? "Tidig åtkomst" : "Early access"}</div>
+src/Landing.jsx:2470:          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.42)", marginBottom: 48, lineHeight: 1.7 }}>
+src/Landing.jsx:2483:          <div style={{ marginTop: 28, fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+src/Landing.jsx:2493:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 14 }}>{t("nav.pricing")}</div>
+src/Landing.jsx:2495:            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.38)", maxWidth: 380, margin: "0 auto" }}>{t("pricing.sub")}</p>
+src/Landing.jsx:2511:                {p.highlight && <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: "1px", padding: "4px 12px", borderRadius: 100, whiteSpace: "nowrap", textTransform: "uppercase" }}>Most popular</div>}
+src/Landing.jsx:2512:                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)" }}>{p.name}</div>
+src/Landing.jsx:2513:                <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-2px", color: "#fff", lineHeight: 1 }}>
+src/Landing.jsx:2514:                  {p.price}<span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>{p.period}</span>
+src/Landing.jsx:2516:                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>{p.credits}</div>
+src/Landing.jsx:2521:                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>{f}</span>
+src/Landing.jsx:2535:                    color: "#fff",
+src/Landing.jsx:2553:            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "#1a82ff", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "VANLIGA FRÅGOR" : "FAQ"}</div>
+src/Landing.jsx:2578:            <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+src/Landing.jsx:2590:          <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>Logoplacers</span>
+src/Landing.jsx:2593:          <button onClick={onOpenBlog} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("nav.blog")}</button>
+src/Landing.jsx:2594:          <a href="#privacy" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>{t("footer.privacy")}</a>
+src/Landing.jsx:2595:          <a href="#terms" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>{t("footer.terms")}</a>
+src/Landing.jsx:2596:          <a href="mailto:hello@logoplacers.com" style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, textDecoration: "none" }}>hello@logoplacers.com</a>
+src/Landing.jsx:2597:          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.15)" }}>© 2025 Logoplacers</span>
+src/Landing.jsx:2610:        ::placeholder{color:rgba(255,255,255,0.25)}
+src/App.jsx:37:  body { background: var(--bg); color: var(--t1); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+src/App.jsx:46:  .header-name { font-size: 16px; font-weight: 700; background: linear-gradient(135deg,#ffffff,#a5c8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.3px; }
+src/App.jsx:47:  .header-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
+src/App.jsx:52:  .mode-tab { flex: 1; padding: 11px 0; text-align: center; font-size: 13px; font-weight: 500; color: var(--t3); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; font-family: inherit; }
+src/App.jsx:53:  .mode-tab:hover { color: var(--t2); }
+src/App.jsx:54:  .mode-tab.active { color: #7db8ff; border-bottom-color: #1a82ff; text-shadow: 0 0 20px rgba(26,130,255,0.4); }
+src/App.jsx:62:  .s-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(167,139,250,0.7); padding: 20px 16px 7px; display: block; }
+src/App.jsx:72:  .upload-zone:hover { border-color: var(--blue); background: var(--blue-dim); }
+src/App.jsx:75:  .uz-text { font-size: 13px; color: var(--t2); }
+src/App.jsx:76:  .uz-active { font-size: 13px; color: var(--blue); }
+src/App.jsx:77:  .uz-hint { font-size: 11px; color: var(--t4); margin-top: 3px; }
+src/App.jsx:82:  .sl-label { font-size: 12px; color: var(--t2); }
+src/App.jsx:84:  .sl-val-inp { font-size: 12px; font-weight: 500; background: var(--bg4); border: 0.5px solid var(--blue); color: var(--t1); font-family: inherit; border-radius: 4px; padding: 1px 4px; width: 52px; text-align: right; outline: none; }
+src/App.jsx:93:  .lcard-title { font-size: 13px; font-weight: 500; color: var(--t1); flex: 1; }
+src/App.jsx:94:  .lcard-prev { font-size: 12px; color: var(--t3); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+src/App.jsx:96:  .lrm { background: none; border: none; color: var(--t4); font-size: 16px; cursor: pointer; line-height: 1; flex-shrink: 0; }
+src/App.jsx:97:  .lrm:hover { color: var(--red); }
+src/App.jsx:98:  .lchev { font-size: 10px; color: var(--t4); }
+src/App.jsx:101:  .inp { width: 100%; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 8px 10px; border-radius: var(--r-sm); outline: none; transition: border-color .15s; }
+src/App.jsx:102:  .inp:focus { border-color: var(--blue); }
+src/App.jsx:103:  .inp::placeholder { color: var(--t4); }
+src/App.jsx:110:  .tag-btn { background: linear-gradient(135deg,rgba(26,130,255,0.12),rgba(91,79,255,0.12)); border: 0.5px solid rgba(91,79,255,0.35); color: #a78bfa; font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
+src/App.jsx:111:  .tag-btn:hover { background: linear-gradient(135deg,#1a82ff,#5b4fff); color:#fff; border-color:transparent; }
+src/App.jsx:116:  .cg-label { font-size: 11px; color: var(--t3); }
+src/App.jsx:124:  .tbtn { flex: 1; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t3); font-family: inherit; font-size: 12px; padding: 6px; border-radius: 7px; cursor: pointer; transition: all .15s; }
+src/App.jsx:125:  .tbtn.on { background: linear-gradient(135deg,rgba(26,130,255,0.15),rgba(91,79,255,0.15)); border-color: rgba(91,79,255,0.5); color: #a78bfa; }
+src/App.jsx:129:  .wbtn { flex: 1; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t3); font-family: inherit; font-size: 11px; padding: 5px 2px; border-radius: 6px; cursor: pointer; transition: all .15s; text-align: center; }
+src/App.jsx:130:  .wbtn.on { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+src/App.jsx:136:  .modal-title { font-size:15px; font-weight:600; color:var(--t1); }
+src/App.jsx:137:  .modal-sub { font-size:11px; color:var(--t3); margin-top:3px; max-width:500px; line-height:1.45; }
+src/App.jsx:142:  .modal-close { background:none; border:none; color:var(--t3); font-size:20px; cursor:pointer; padding:0 4px; border-radius:6px; line-height:1; flex-shrink:0; }
+src/App.jsx:143:  .modal-close:hover { background:var(--bg4); color:var(--t1); }
+src/App.jsx:144:  .field-lbl { font-size:10px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--t3); margin-bottom:5px; display:block; }
+src/App.jsx:145:  .modal-inp { width:100%; background:var(--bg4); border:0.5px solid var(--sep); color:var(--t1); font-family:inherit; font-size:13px; padding:8px 10px; border-radius:var(--r-sm); outline:none; }
+src/App.jsx:146:  .modal-inp:focus { border-color:var(--blue); }
+src/App.jsx:147:  .modal-ta { width:100%; background:var(--bg4); border:0.5px solid var(--sep); color:var(--t1); font-family:inherit; font-size:13px; padding:8px 10px; border-radius:var(--r-sm); outline:none; resize:vertical; line-height:1.6; min-height:120px; }
+src/App.jsx:148:  .modal-ta:focus { border-color:var(--blue); }
+src/App.jsx:153:  .send-thumb-ph { width:56px; height:36px; border-radius:5px; background:var(--bg4); border:0.5px solid var(--sep); display:flex; align-items:center; justify-content:center; color:var(--t4); flex-shrink:0; font-size:18px; }
+src/App.jsx:155:  .send-name { font-size:13px; font-weight:500; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+src/App.jsx:156:  .send-detail { font-size:11px; color:var(--t3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; }
+src/App.jsx:158:  .send-st.ok { color:var(--green); } .send-st.err { color:var(--red); } .send-st.ing { color:var(--orange); }
+src/App.jsx:159:  .google-btn { display:flex; align-items:center; gap:10px; background:#fff; color:#3c4043; border:none; font-family:inherit; font-size:14px; font-weight:500; padding:10px 22px; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.25); transition:box-shadow .15s; }
+src/App.jsx:166:  .btn-p { background: linear-gradient(135deg, #1a82ff, #5b4fff); color: #fff; border: none; font-family: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: var(--r-sm); cursor: pointer; width: 100%; transition: opacity .15s, box-shadow .15s; box-shadow: 0 4px 16px rgba(26,130,255,0.25); }
+src/App.jsx:168:  .btn-p:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; opacity: 1; }
+src/App.jsx:169:  .btn-s { background: var(--bg4); color: var(--t1); border: 0.5px solid var(--sep); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap; transition: all .15s; }
+src/App.jsx:170:  .btn-s:hover { background: rgba(26,130,255,0.1); border-color: rgba(26,130,255,0.3); color: #7db8ff; }
+src/App.jsx:172:  .btn-text { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--blue); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 3px; }
+src/App.jsx:174:  .btn-text-red { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--red); cursor: pointer; padding: 0; }
+src/App.jsx:178:  .paste-area { width: 100%; height: 100px; background: var(--bg4); border: 0.5px solid var(--sep); color: var(--t1); font-size: 12px; padding: 9px 11px; border-radius: var(--r-sm); resize: none; outline: none; line-height: 1.6; font-family: "SF Mono", "Fira Code", monospace; }
+src/App.jsx:179:  .paste-area:focus { border-color: var(--blue); }
+src/App.jsx:180:  .paste-area::placeholder { color: var(--t4); }
+src/App.jsx:184:  .sym-btn { background: none; border: none; font-size: 16px; padding: 7px 0; border-radius: 8px; cursor: pointer; text-align: center; color: var(--t2); transition: background .1s; }
+src/App.jsx:185:  .sym-btn:hover { background: var(--bg4); color: var(--t1); }
+src/App.jsx:191:  .co-hd-label { font-size: 13px; color: var(--t2); }
+src/App.jsx:196:  .co-logo .ph { font-size: 12px; color: #888; font-weight: 600; }
+src/App.jsx:197:  .co-logo .spinner { width: 13px; height: 13px; border: 2px solid #ddd; border-top-color: #888; border-radius: 50%; animation: spin .7s linear infinite; }
+src/App.jsx:200:  .co-name { font-size: 13px; font-weight: 500; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+src/App.jsx:201:  .co-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+src/App.jsx:202:  .badge-ok  { font-size: 12px; color: var(--green); }
+src/App.jsx:203:  .badge-err { font-size: 12px; color: var(--red); cursor: pointer; background: none; border: none; }
+src/App.jsx:204:  .ico-rm { background: none; border: none; color: var(--t4); font-size: 16px; cursor: pointer; line-height: 1; }
+src/App.jsx:205:  .ico-rm:hover { color: var(--red); }
+src/App.jsx:206:  .ico-edit { background:none; border:none; color:var(--t4); cursor:pointer; font-size:12px; padding:2px 3px; border-radius:4px; line-height:1; flex-shrink:0; }
+src/App.jsx:207:  .ico-edit:hover { color:var(--blue); }
+src/App.jsx:208:  .domain-inp { background:var(--bg); border:0.5px solid var(--blue); color:var(--t1); font-family:"SF Mono","Fira Code",monospace; font-size:11px; padding:3px 7px; border-radius:5px; outline:none; width:100%; min-width:0; }
+src/App.jsx:215:  .zoom-btn { background: none; border: none; color: var(--t2); font-size: 16px; cursor: pointer; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: 600; }
+src/App.jsx:216:  .zoom-btn:hover { background: var(--bg4); color: var(--t1); }
+src/App.jsx:217:  .zoom-label { font-size: 11px; color: var(--t3); min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+src/App.jsx:220:  .canvas-footer { font-size: 12px; color: var(--t4); padding: 9px 20px; text-align: center; background: var(--bg2); border-top: 0.5px solid var(--sep); }
+src/App.jsx:226:  .ov-pill { position: absolute; top: -20px; left: 0; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 100px; color: #fff; pointer-events: none; white-space: nowrap; }
+src/App.jsx:231:  .empty-title { font-size: 15px; font-weight: 500; color: var(--t2); }
+src/App.jsx:232:  .empty-sub   { font-size: 13px; color: var(--t3); text-align: center; }
+src/App.jsx:235:  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg3); color: var(--t1); font-size: 13px; font-weight: 500; padding: 10px 18px; border-radius: 100px; z-index: 999; border: 0.5px solid var(--sep); box-shadow: 0 8px 32px rgba(0,0,0,.5); white-space: nowrap; animation: fadeup .2s; }
+src/App.jsx:241:  .timing-label { font-size: 11px; color: var(--t3); }
+src/App.jsx:242:  .timing-input { background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 13px; padding: 6px 9px; border-radius: var(--r-sm); outline: none; width: 100%; transition: border-color .15s; }
+src/App.jsx:243:  .timing-input:focus { border-color: var(--blue); }
+src/App.jsx:244:  .font-select { appearance: none; -webkit-appearance: none; background: var(--bg3); border: 0.5px solid var(--sep); color: var(--t1); font-family: inherit; font-size: 12px; padding: 7px 28px 7px 10px; border-radius: var(--r-sm); outline: none; cursor: pointer; width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color .15s; }
+src/App.jsx:245:  .font-select:focus { border-color: var(--blue); }
+src/App.jsx:246:  .font-select option { background: var(--bg2); color: var(--t1); }
+src/App.jsx:249:  .contact-row-name { flex: 1; font-size: 13px; color: var(--t1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+src/App.jsx:250:  .contact-row-company { font-size: 11px; color: var(--t3); }
+src/App.jsx:252:  .screenshot-placeholder { width: 40px; height: 26px; border: 1px dashed var(--sep); border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 12px; color: var(--t4); }
+src/App.jsx:253:  .open-link-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+src/App.jsx:255:  .gen-btn { background: var(--blue); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+src/App.jsx:256:  .gen-btn:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; }
+src/App.jsx:540:      style={{ color: color || "var(--t1)" }}
+src/App.jsx:732:              <span style={{ fontSize: 11, color: "var(--t3)" }}>Colour</span>
+src/App.jsx:734:                <input type="color" value={layer.color} onChange={e => onChange({ color: e.target.value })} />
+src/App.jsx:736:              <span style={{ fontSize: 11, color: "var(--t3)", fontFamily: "monospace" }}>{layer.color}</span>
+src/App.jsx:760:            <input type="range" min={1} max={1000} value={inst.size} onChange={e => onChange({ size: Number(e.target.value) })} style={{ accentColor: color }} />
+src/App.jsx:765:            <input type="range" min={10} max={100} value={inst.opacity ?? 100} onChange={e => onChange({ opacity: Number(e.target.value) })} style={{ accentColor: color }} />
+src/App.jsx:777:  color: "#ffffff",
+src/App.jsx:786:    <div className={className} style={{ ...styleProp, borderColor: over ? "var(--blue)" : undefined, background: over ? "var(--blue-dim)" : undefined }}
+src/App.jsx:967:                <div className="uz-icon" style={{ color: "var(--t3)" }}>
+src/App.jsx:1002:                    <input type="color" value={overlay.color} onChange={e => updateOverlay({ color: e.target.value })} />
+src/App.jsx:1004:                  <span style={{ fontSize: 11, color: "var(--t3)", fontFamily: "monospace" }}>{overlay.color}</span>
+src/App.jsx:1009:                <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({ bgOpacity: Number(e.target.value) })} style={{ accentColor: "#1a82ff" }} />
+src/App.jsx:1033:                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", padding: "6px 0" }}>{totalSec}s</div>
+src/App.jsx:1042:          <span style={{ fontSize: 13, color: "var(--t2)" }}>{readyCompanies.length} companies ready</span>
+src/App.jsx:1051:          <div style={{ fontSize: Math.max(overlay.fontSize * 0.35, 12), fontFamily: overlay.fontFamily, color: overlay.color, fontWeight: overlay.bold ? "bold" : "normal", background: "rgba(0,0,0,0.55)", display: "inline-block", padding: "4px 14px", borderRadius: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
+src/App.jsx:1054:          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{ color: "var(--blue)" }}>{totalSec}s</strong></span>
+src/App.jsx:1059:            <div style={{ textAlign: "center", color: "var(--t4)", fontSize: 13, paddingTop: 40 }}>Add companies in Image mode first</div>
+src/App.jsx:1242:        <span style={{ fontWeight: 400, color: "var(--t4)", marginLeft: 4 }}>(optional — adds a Watch demo button)</span>
+src/App.jsx:1252:            style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 16, padding: "0 4px", flexShrink: 0 }}>×</button>
+src/App.jsx:1275:              <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid var(--blue)", borderTopColor: "transparent", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />
+src/App.jsx:1277:                <div style={{ fontSize: 12, color: "var(--t2)", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</div>
+src/App.jsx:1282:              <span style={{ fontSize: 11, color: "var(--t3)", flexShrink: 0 }}>{progress}%</span>
+src/App.jsx:1291:                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>Upload to Google Drive</div>
+src/App.jsx:1292:                <div style={{ fontSize: 11, color: "var(--t4)" }}>MP4, MOV, WebM, GIF · drag & drop or click</div>
+src/App.jsx:1302:          <span style={{ fontSize: 11, color: "var(--t2)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{videoLink}</span>
+src/App.jsx:1303:          <a href={videoLink} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "var(--blue)", textDecoration: "none", flexShrink: 0 }}>Preview ↗</a>
+src/App.jsx:1307:      {error && <div style={{ fontSize: 11, color: "var(--red)" }}>{error}</div>}
+src/App.jsx:1586:          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22 }}>×</button>
+src/App.jsx:1592:            ? <div style={{ height: canvasH * 0.6, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t3)", fontSize: 13 }}>{t("video.loading")}</div>
+src/App.jsx:1602:            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.select_company")}</label>
+src/App.jsx:1604:              style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
+src/App.jsx:1614:            <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.animation")}</label>
+src/App.jsx:1616:              style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
+src/App.jsx:1627:          <label style={{ fontSize: 12, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("video.duration")}: {duration}s</label>
+src/App.jsx:1629:            style={{ width: "100%", accentColor: "var(--blue)" }} />
+src/App.jsx:1634:          <div style={{ marginBottom: 12, padding: "10px 14px", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 10, fontSize: 13, color: "#f87171", display: "flex", alignItems: "center", gap: 8 }}>
+src/App.jsx:1642:            <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 6 }}>{t("video.webm_note")}</div>
+src/App.jsx:1647:          <div style={{ textAlign: "center", padding: "16px 0", color: "var(--t3)", fontSize: 13 }}>{t("video.no_image")}</div>
+src/App.jsx:1654:            ? <button className="btn-s" style={{ background: "rgba(239,68,68,.12)", borderColor: "rgba(239,68,68,.3)", color: "#f87171" }} onClick={stopRecording}>■ Stop</button>
+src/App.jsx:1676:    bgColor: "#e8e4dc",
+src/App.jsx:1685:    bgColor: "#d4c5b0",
+src/App.jsx:1693:    bgColor: "#c8d4e8",
+src/App.jsx:1701:    bgColor: "#2d3748",
+src/App.jsx:1709:    bgColor: "#b8cce0",
+src/App.jsx:1717:    bgColor: "#f5e6c8",
+src/App.jsx:1725:    bgColor: "#1a2540",
+src/App.jsx:1733:    bgColor: "#e8d5b0",
+src/App.jsx:1741:    bgColor: "#2c2c2c",
+src/App.jsx:1749:    bgColor: "#111827",
+src/App.jsx:2121:          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22 }}>×</button>
+src/App.jsx:2135:                  color: templateId === tmpl.id ? "#60a5fa" : "var(--t3)", cursor: "pointer", fontFamily: "inherit",
+src/App.jsx:2153:                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.5)", color: "var(--t3)", fontSize: 13 }}>
+src/App.jsx:2158:            <div style={{ fontSize: 11, color: "var(--t4)", marginTop: 6, textAlign: "center" }}>
+src/App.jsx:2168:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.company")}</label>
+src/App.jsx:2170:                style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
+src/App.jsx:2180:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.upload_bg")}</label>
+src/App.jsx:2181:              <label style={{ display: "block", cursor: "pointer", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", fontSize: 12, color: "var(--t3)", textAlign: "center" }}>
+src/App.jsx:2186:                <button onClick={() => setBgImg(null)} style={{ marginTop: 4, fontSize: 11, color: "var(--t3)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>✕ Remove photo</button>
+src/App.jsx:2192:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
+src/App.jsx:2197:                  <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Cols</div>
+src/App.jsx:2198:                  <input type="range" min={2} max={12} value={meshCols} onChange={e => setMeshCols(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--blue)" }} />
+src/App.jsx:2201:                  <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Rows</div>
+src/App.jsx:2202:                  <input type="range" min={2} max={10} value={meshRows} onChange={e => setMeshRows(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--blue)" }} />
+src/App.jsx:2206:                <button onClick={resetMesh} style={{ fontSize: 11, color: "var(--t3)", background: "none", border: "0.5px solid var(--sep)", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontFamily: "inherit" }}>↺ {t("mockup.reset_mesh")}</button>
+src/App.jsx:2207:                <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--t3)", cursor: "pointer" }}>
+src/App.jsx:2208:                  <input type="checkbox" checked={showMesh} onChange={e => setShowMesh(e.target.checked)} style={{ accentColor: "var(--blue)" }} />
+src/App.jsx:2216:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
+src/App.jsx:2221:                style={{ width: "100%", accentColor: "var(--yellow)" }} />
+src/App.jsx:2226:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>
+src/App.jsx:2231:                style={{ width: "100%", accentColor: "var(--blue)" }} />
+src/App.jsx:2236:              <label style={{ fontSize: 11, fontWeight: 600, color: "var(--t3)", display: "block", marginBottom: 5 }}>{t("mockup.blend")}</label>
+src/App.jsx:2238:                style={{ width: "100%", background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "8px 10px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", outline: "none" }}>
+src/App.jsx:2335:          ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#1a82ff;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
+src/App.jsx:2338:          ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#1a82ff;text-decoration:none;font-weight:600">Logoplacers</a></div>`
+src/App.jsx:2340:        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
+src/App.jsx:2398:              <div style={{ fontSize: 17, fontWeight: 600, color: "var(--t1)" }}>Connect Gmail</div>
+src/App.jsx:2399:              <div style={{ fontSize: 13, color: "var(--t3)", maxWidth: 340, lineHeight: 1.55 }}>
+src/App.jsx:2403:                <div style={{ fontSize: 13, color: "var(--orange)", padding: "10px 16px", background: "hsla(31,92%,58%,.1)", borderRadius: 8 }}>
+src/App.jsx:2408:                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{withEmail.length} contacts with email ready</div>
+src/App.jsx:2420:              <div style={{ fontSize: 13, color: "var(--green)", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+src/App.jsx:2440:                <p style={{ fontSize: 11, color: "var(--t3)" }}>📎 Personalised image attached automatically as .png per recipient.</p>
+src/App.jsx:2450:                        style={{ accentColor: "#1a82ff", width: 14, height: 14, flexShrink: 0 }} />
+src/App.jsx:2452:                        {c.logoDataUrl ? <img src={c.logoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", padding: 2 }} /> : <span style={{ fontSize: 11, color: "#888" }}>{c.companyName[0]}</span>}
+src/App.jsx:2455:                        <div style={{ fontSize: 13, fontWeight: 500, color: "var(--t1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.personName || c.companyName}</div>
+src/App.jsx:2456:                        <div style={{ fontSize: 11, color: "var(--t3)" }}>{c.email}</div>
+src/App.jsx:2467:              <p style={{ fontSize: 13, color: "var(--t2)" }}>Each person gets their personalised image attached. Review below:</p>
+src/App.jsx:2474:                    <div className="send-detail" style={{ color: "var(--t2)" }}><strong>{resolveStr(subject, c)}</strong></div>
+src/App.jsx:2486:                  <span style={{ fontSize: 13, color: "var(--orange)" }}>Waiting {countdown}s before next send — anti-spam protection</span>
+src/App.jsx:2494:                    {!results[c.id] && <span style={{ color: "var(--t4)" }}>waiting</span>}
+src/App.jsx:2504:                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", marginTop: 6 }}>{doneOk} of {selectedContacts.length} sent</div>
+src/App.jsx:2505:                  {doneErr > 0 && sendErrMsg && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{sendErrMsg}</div>}
+src/App.jsx:2506:                  {doneErr > 0 && !sendErrMsg && <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 4 }}>{doneErr} failed</div>}
+src/App.jsx:2534:              <div style={{ fontSize: 12, color: "var(--red)", flex: 1 }}>Gmail session expired. Reconnect and try again.</div>
+src/App.jsx:2561:          color: lang === l ? "#60a5fa" : "var(--t3)",
+src/App.jsx:2590:      color: Math.random() > 0.8 ? "rgba(91,79,255," : Math.random() > 0.5 ? "rgba(26,130,255," : "rgba(180,210,255,",
+src/App.jsx:2596:      color: Math.random() > 0.5 ? "26,130,255" : "91,79,255", alpha: 0.025 + Math.random() * 0.035,
+src/App.jsx:2644:            <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>LogoPlacer</div>
+src/App.jsx:2645:            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 3, letterSpacing: "1px", textTransform: "uppercase" }}>Personalised demos</div>
+src/App.jsx:2650:            <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 8 }}>Sign in</div>
+src/App.jsx:2651:            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>Use your Google account to<br />access the app.</div>
+src/App.jsx:2657:              style={{ marginTop: 2, accentColor: "#1a82ff", flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
+src/App.jsx:2658:            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", lineHeight: 1.6 }}>
+src/App.jsx:2660:              Läs vår <a href="#privacy" style={{ color: "rgba(100,180,255,0.7)", textDecoration: "underline" }}>integritetspolicy</a>.
+src/App.jsx:2665:            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s" }}>
+src/App.jsx:2669:          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center", marginTop: -10 }}>
+src/App.jsx:2816:    color: c.brandColor || null,
+src/App.jsx:2835:    brandColor: r.color,
+src/App.jsx:2872:const defaultText = () => ({ id: uid(), enabled: true, template: "", fontSize: 32, fontFamily: "Inter", color: "#ffffff", bold: false, italic: false, pos: { x: 50, y: 180 } });
+src/App.jsx:3030:        <span style={{ fontSize: 12, fontWeight: 600, color: low ? "#ef4444" : "#7db8ff", fontVariantNumeric: "tabular-nums" }}>
+src/App.jsx:3033:        <span style={{ fontSize: 10, color: "var(--t4)" }}>/ {plan.label}</span>
+src/App.jsx:3037:          background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
+src/App.jsx:3100:                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: p.highlight ? "#5ba4ff" : "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>{p.label}</div>
+src/App.jsx:3101:                <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", lineHeight: 1 }}>
+src/App.jsx:3102:                  {p.price}<span style={{ fontSize: 12, color: "var(--t3)", fontWeight: 400 }}>{p.period}</span>
+src/App.jsx:3107:                      <span style={{ color: p.highlight ? "#5ba4ff" : "var(--t3)", fontSize: 11, marginTop: 1 }}>✓</span>
+src/App.jsx:3108:                      <span style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.45 }}>{f}</span>
+src/App.jsx:3117:                    color: p.current ? "var(--t4)" : "#fff",
+src/App.jsx:3136:            }} style={{ background: "none", border: "none", color: "var(--t3)", fontSize: 13, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
+src/App.jsx:3268:  const [canvasBg, setCanvasBg] = useState({ enabled: false, color: "#1a1a2e" });
+src/App.jsx:3399:    setSymbols(s => [...s, { id: uid(), char, size: 60, color: "#ffffff", pos: { x: Math.floor(w / 2) - 20, y: Math.floor(h / 2) - 30 } }]);
+src/App.jsx:3550:      const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null }, true /* watermark */);
+src/App.jsx:3642:                <span style={{ fontSize: 12, color: "var(--t3)" }}>{sessionUser.name?.split(" ")[0]}</span>
+src/App.jsx:3647:            {saving && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>{t("app.saving")}</span>}
+src/App.jsx:3648:            {!saving && sessionLoaded && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>{t("app.saved")}</span>}
+src/App.jsx:3649:            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>?</button>
+src/App.jsx:3650:            <button onClick={() => setShowFeedback(true)} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "0 10px", height: 30, display: "flex", alignItems: "center", gap: 5, cursor: "pointer", color: "var(--t2)", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>
+src/App.jsx:3671:              {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "var(--blue)", color: "#fff", borderRadius: "100px", padding: "1px 5px" }}>{companies.filter(c => c.email).length}</span>}
+src/App.jsx:3687:                <button onClick={() => setShowManual(false)} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
+src/App.jsx:3698:                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--blue-dim)", border: "1px solid rgba(26,130,255,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--blue)", flexShrink: 0 }}>{s.step}</div>
+src/App.jsx:3700:                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t1)", marginBottom: 4 }}>{t(`${s.tkey}.title`)}</div>
+src/App.jsx:3701:                    <div style={{ fontSize: 13, color: "var(--t3)", lineHeight: 1.6 }}>{t(`${s.tkey}.body`)}</div>
+src/App.jsx:3705:              <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(26,130,255,.06)", border: "1px solid rgba(26,130,255,.15)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
+src/App.jsx:3718:                <button onClick={() => { setShowFeedback(false); setFeedbackSent(false); }} style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
+src/App.jsx:3723:                  <div style={{ fontSize: 15, fontWeight: 700, color: "var(--t1)", marginBottom: 6 }}>{t("feedback.sent_title")}</div>
+src/App.jsx:3724:                  <div style={{ fontSize: 13, color: "var(--t3)" }}>{t("feedback.sent_body")}</div>
+src/App.jsx:3729:                  style={{ width: "100%", minHeight: 120, background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 10, padding: "12px 14px", color: "var(--t1)", fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+src/App.jsx:3731:                  <label style={{ fontSize: 12, color: "var(--t3)", display: "block", marginBottom: 6 }}>{t("feedback.attach")}</label>
+src/App.jsx:3733:                    style={{ fontSize: 12, color: "var(--t3)" }} />
+src/App.jsx:3747:                }} style={{ width: "100%", padding: "11px 0", background: "var(--blue)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: feedbackText.trim() ? 1 : 0.4 }}>
+src/App.jsx:3773:                  <div className="uz-icon" style={{ color: "var(--t3)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
+src/App.jsx:3787:                }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{t("app.remove_image")}</button>
+src/App.jsx:3793:                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>{t("app.background_color")}</span>
+src/App.jsx:3801:                  <input type="color" value={canvasBg.color} onChange={e => setCanvasBg(bg => ({ ...bg, color: e.target.value }))}
+src/App.jsx:3803:                  <span style={{ fontSize: 12, color: "var(--t3)", fontFamily: "monospace" }}>{canvasBg.color}</span>
+src/App.jsx:3811:                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--t2)" }}>{t("app.match_brand")}</span>
+src/App.jsx:3812:                  <div style={{ fontSize: 10, color: "var(--t3)", marginTop: 2 }}>{t("app.match_brand_sub")}</div>
+src/App.jsx:3823:                  <div style={{ fontSize: 11, color: "var(--t3)", flexShrink: 0 }}>Replace:</div>
+src/App.jsx:3838:                  <div style={{ fontSize: 10, color: "var(--t4)", fontFamily: "monospace" }}>{colorToReplace}</div>
+src/App.jsx:3839:                  {eyedropperActive && <div style={{ fontSize: 10, color: "var(--blue)", fontWeight: 600 }}>Click image to pick</div>}
+src/App.jsx:3878:                style={{ flex: 1, background: "var(--bg3)", border: "0.5px solid var(--sep)", borderRadius: 7, padding: "7px 10px", color: "var(--t1)", fontSize: 12, fontFamily: "inherit", outline: "none" }} />
+src/App.jsx:3886:                      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--t1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tpl.name}</div>
+src/App.jsx:3887:                      <div style={{ fontSize: 10, color: "var(--t4)" }}>{new Date(tpl.savedAt).toLocaleDateString()}</div>
+src/App.jsx:3889:                    <button onClick={() => loadTemplate(tpl)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "none", background: "var(--blue)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Load</button>
+src/App.jsx:3890:                    <button onClick={() => { const u = templates.filter(t => t.id !== tpl.id); setTemplates(u); localStorage.setItem("lp_templates", JSON.stringify(u)); sbDeleteTemplate(tpl.id).catch(() => { }); }} style={{ fontSize: 11, padding: "4px 7px", borderRadius: 6, border: "0.5px solid var(--sep)", background: "none", color: "var(--t3)", cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+src/App.jsx:3908:                          <input type="range" min={10} max={300} value={sym.size} onChange={e => updateSymbol(sym.id, { size: Number(e.target.value) })} style={{ flex: 1, accentColor: "#fbbf24" }} />
+src/App.jsx:3909:                          <span style={{ fontSize: 11, color: "var(--yellow)", minWidth: 28 }}>{sym.size}px</span>
+src/App.jsx:3910:                          <div className="color-swatch" style={{ background: sym.color }}><input type="color" value={sym.color} onChange={e => updateSymbol(sym.id, { color: e.target.value })} /></div>
+src/App.jsx:3925:                <p style={{ fontSize: 12, color: "var(--t3)" }}>{t("app.add_manually")}</p>
+src/App.jsx:3940:                <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} companies · {readyCount} ready</span>
+src/App.jsx:3954:                          {c.personName && <span style={{ fontWeight: 400, color: "var(--t3)", marginLeft: 5, fontSize: 12 }}>· {c.personName}</span>}
+src/App.jsx:3970:                      {c.email && <span title={c.email} style={{ fontSize: 11, color: "var(--green)", flexShrink: 0 }}>@</span>}
+src/App.jsx:3983:                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.name_label")}</div>
+src/App.jsx:3987:                            <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>{t("contact.email_label")}</div>
+src/App.jsx:4025:                              style={{ left: inst.pos.x, top: inst.pos.y, width: inst.size, height: inst.size, borderColor: color, background: `${color}11`, borderRadius: Math.min(inst.size * 0.15, 12) }}>
+src/App.jsx:4032:                          <div className="overlay-box" style={{ left: myLogoPos.x, top: myLogoPos.y, width: myLogoSize, height: myLogoSize, borderColor: "#a78bfa", background: "rgba(167,139,250,0.07)", borderRadius: Math.min(myLogoSize * 0.15, 12) }}>
+src/App.jsx:4034:                            <span style={{ fontSize: 10, color: "var(--purple)", pointerEvents: "none" }}>▣</span>
+src/App.jsx:4042:                              style={{ left: layer.pos.x, top: layer.pos.y, borderColor: color, background: `${color}11`, fontSize: layer.fontSize, fontFamily: layer.fontFamily, color: layer.color, fontWeight: layer.fontWeight ?? (layer.bold ? "bold" : "normal"), fontStyle: layer.italic ? "italic" : "normal", lineHeight: 1.4 }}>
+src/App.jsx:4050:                            style={{ left: sym.pos.x, top: sym.pos.y, width: sym.size, height: sym.size, borderColor: "#fbbf24", background: "rgba(251,191,36,0.07)", fontSize: sym.size * 0.75, color: sym.color, fontWeight: "bold" }}>
+src/App.jsx:4051:                            <div className="ov-pill" style={{ background: "var(--yellow)", color: "#000" }}>Symbol</div>
+src/App.jsx:4052:                            <span style={{ fontSize: sym.size * 0.7, color: sym.color, pointerEvents: "none" }}>{sym.char}</span>
+src/App.jsx:4082:                <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{allPreviews[previewIdx]?.name}</span>
+src/App.jsx:4083:                {allPreviews.length > 1 && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{previewIdx + 1} / {allPreviews.length}</span>}
+src/App.jsx:4282:          <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 6 }}>Admin</div>
+src/App.jsx:4283:          <div style={{ fontSize: 13, color: "rgba(255,255,255,.3)", lineHeight: 1.6 }}>Sign in with your Google account.<br />Access is restricted to admins.</div>
+src/App.jsx:4285:        {denied && <div style={{ fontSize: 12, color: "#ef4444", padding: "8px 14px", background: "rgba(239,68,68,.1)", borderRadius: 8, width: "100%" }}>Access denied — your account is not an admin.</div>}
+src/App.jsx:4287:          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "12px 20px", borderRadius: 12, border: "none", background: loading ? "rgba(255,255,255,.7)" : "rgba(255,255,255,.93)", color: "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: loading ? "default" : "pointer", transition: "all .15s" }}>
+src/App.jsx:4291:        <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(255,255,255,.25)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.back")}</button>
+src/App.jsx:4298:    <div style={{ minHeight: "100vh", background: "#070b12", color: "#fff", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", padding: "40px 32px" }}>
+src/App.jsx:4307:              <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>{adminUser.email}</div>
+src/App.jsx:4311:            <button onClick={addUser} style={{ padding: "8px 16px", background: "rgba(26,130,255,.15)", border: "1px solid rgba(26,130,255,.3)", color: "#5ba4ff", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>+ Add user</button>
+src/App.jsx:4313:              style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Sign out</button>
+src/App.jsx:4314:            <button onClick={onBack} style={{ padding: "8px 14px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.4)", borderRadius: 10, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← App</button>
+src/App.jsx:4328:              <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 2 }}>{label}</div>
+src/App.jsx:4335:          style={{ width: "100%", padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,.08)", background: "rgba(255,255,255,.04)", color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
+src/App.jsx:4345:                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}>
+src/App.jsx:4349:                    style={{ width: 88, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 13, fontFamily: "inherit" }}
+src/App.jsx:4352:                    style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.06)", color: editing.trial_until ? "#fff" : "rgba(255,255,255,.3)", fontSize: 13, fontFamily: "inherit" }}
+src/App.jsx:4354:                  <button onClick={saveEdit} style={{ padding: "6px 16px", background: "#1a82ff", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+src/App.jsx:4355:                  <button onClick={() => setEditing(null)} style={{ padding: "6px 12px", background: "rgba(255,255,255,.06)", color: "rgba(255,255,255,.5)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>{t("modal.cancel")}</button>
+src/App.jsx:4363:                    color: u.plan === "free" || !u.plan ? "rgba(255,255,255,.4)" : u.plan === "sdr" ? "#5ba4ff" : u.plan === "pro" ? "#a78bfa" : "#34d399"
+src/App.jsx:4379:                        <span style={{ fontSize: 12, color: "rgba(255,255,255,.5)", fontVariantNumeric: "tabular-nums", minWidth: 70 }}>
+src/App.jsx:4385:                  {u.trial_until && new Date(u.trial_until) > new Date() && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: "rgba(251,191,36,.1)", color: "#fbbf24" }}>trial until {u.trial_until}</span>}
+src/App.jsx:4386:                  {saved === u.email && <span style={{ fontSize: 11, color: "#34d399", fontWeight: 600 }}>✓ Saved</span>}
+src/App.jsx:4388:                    style={{ padding: "5px 13px", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "rgba(255,255,255,.45)", borderRadius: 8, fontSize: 12, cursor: "pointer", fontFamily: "inherit", marginLeft: "auto" }}>
+src/App.jsx:4395:          {filtered.length === 0 && <div style={{ textAlign: "center", color: "rgba(255,255,255,.2)", padding: "48px 0", fontSize: 13 }}>No users found</div>}
+src/App.jsx:4398:        <div style={{ marginTop: 28, padding: "14px 18px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)", borderRadius: 10, fontSize: 11, color: "rgba(255,255,255,.2)", lineHeight: 1.7 }}>
+src/App.jsx:4455:      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5, flex: 1 }}>
+src/App.jsx:4457:        {" "}<a href="#privacy" style={{ color: "rgba(100,180,255,0.7)" }}>Integritetspolicy</a>
+src/App.jsx:4460:        background: "linear-gradient(135deg,#1a82ff,#5b4fff)", color: "#fff", border: "none",
