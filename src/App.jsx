@@ -2818,7 +2818,8 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
-        const blob = await getImageBlob(c);
+        const imgScale = emailSize === "compact" ? 0.6 : emailSize === "spacious" ? 2 : 1;
+        const blob = await getImageBlob(c, imgScale);
         const subj = resolveStr(subject, c);
         const videoBtn = videoLink.trim()
           ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
@@ -2908,7 +2909,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((address))")}>+ address</button>
                 </div>
-                <p style={{ fontSize: 11, color: "var(--t3)" }}>📎 Personalised image attached automatically as .png per recipient.</p>
+                <p style={{ fontSize: 11, color: "var(--t3)" }}>Personalised image attached automatically as .png per recipient.</p>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">{lang === "sv" ? "Mejlstorlek" : "Email size"}</label>
@@ -4484,7 +4485,7 @@ function App() {
     setZipping(false); showToast(`${ready.length} images saved`);
   };
 
-  const getImageBlob = async (company) => {
+  const getImageBlob = async (company, scale = 1) => {
     if (!baseImageRef.current) throw new Error("no base image");
     const { w, h } = canvasSizeRef.current;
     const off = renderComposite(
@@ -4494,10 +4495,20 @@ function App() {
       { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null },
       false, company.address || ""
     );
+    // Scale output canvas if needed (compact = smaller, spacious = high-res 2x)
+    const exportCanvas = (() => {
+      if (scale === 1) return off;
+      const scaled = document.createElement("canvas");
+      scaled.width = Math.round(off.width * scale);
+      scaled.height = Math.round(off.height * scale);
+      const sctx = scaled.getContext("2d");
+      sctx.drawImage(off, 0, 0, scaled.width, scaled.height);
+      return scaled;
+    })();
     // Use PNG for lossless quality — no compression artifacts
     return new Promise((res, rej) => {
       const timeout = setTimeout(() => rej(new Error("Image render timed out")), 10000);
-      off.toBlob(blob => {
+      exportCanvas.toBlob(blob => {
         clearTimeout(timeout);
         if (!blob) rej(new Error("Failed to render image"));
         else res(blob);
@@ -5679,10 +5690,10 @@ function AdminPanel({ onBack }) {
 
 function getViewFromPath(pathname) {
   if (pathname === "/app") return "app";
-  if (pathname.startsWith("/blog") || pathname.startsWith("/blogg") || pathname.startsWith("/sv/blogg") || pathname.startsWith("/en/blog")) return "blog";
+  if (pathname.startsWith("/blog") || pathname.startsWith("/blogg")) return "blog";
   if (pathname === "/admin") return "admin";
-  if (pathname === "/privacy" || pathname === "/en/privacy" || pathname === "/sv/privacy") return "privacy";
-  if (pathname === "/terms" || pathname === "/en/terms" || pathname === "/sv/terms") return "terms";
+  if (pathname === "/privacy") return "privacy";
+  if (pathname === "/terms") return "terms";
   if (pathname === "/en" || pathname === "/sv") return "landing";
   // Legacy hash support — if someone arrives with #app etc. redirect cleanly
   const hash = window.location.hash;
@@ -5723,7 +5734,7 @@ function AppRouterInner() {
     setView("app");
   };
   const goToBlog = () => {
-    window.history.pushState({}, "", lang === "sv" ? "/sv/blogg" : "/en/blog");
+    window.history.pushState({}, "", "/blog");
     setView("blog");
   };
   const goHome = () => {
