@@ -3212,11 +3212,8 @@ const GOOGLE_CLIENT_ID = "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.go
 // ─────────────────────────────────────────────
 // SUPABASE
 // ─────────────────────────────────────────────
-const SB_URL = "https://mnfrswuslktkrzgydvkg.supabase.co";
-// SECURITY NOTE: SB_KEY is the public anon key — safe to expose in frontend
-// IMPORTANT: RLS (Row Level Security) must be enabled on all Supabase tables
-// to prevent unauthorized data access. Verify at: Supabase → Authentication → Policies
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZnJzd3VzbGt0a3J6Z3lkdmtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTkxMDUsImV4cCI6MjA4ODYzNTEwNX0.WUVjrEnWp4VVi6Yx9TfYKK9Fke85EwiaNw_ozHddK9Q";
+const SB_URL = import.meta.env.VITE_SUPABASE_URL;
+const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 async function sbFetch(path, opts = {}) {
   const res = await fetch(SB_URL + path, {
