@@ -3447,11 +3447,11 @@ function useCredits() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // ── Also poll Supabase every 30s to catch changes from other devices ──
+  // ── Also poll Supabase every 15s to catch changes from other devices ──
   useEffect(() => {
     const email = (() => { try { return JSON.parse(sessionStorage.getItem("lp_user") || "{}").email; } catch { return null; } })();
     if (!email) return;
-    const interval = setInterval(async () => {
+    const syncFromSupabase = async () => {
       try {
         const row = await sbGetUser(email);
         if (!row) return;
@@ -3473,7 +3473,8 @@ function useCredits() {
           setCredits(updated);
         }
       } catch { /* silent */ }
-    }, 30000); // every 30 seconds
+    };
+    const interval = setInterval(syncFromSupabase, 15000); // every 15 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -3504,6 +3505,8 @@ function useCredits() {
     saveCredits(updated);
     setCredits(updated);
   };
+
+  const refresh = () => setCredits(getOrInitCredits());
 
   return { credits, spend, canBulk, topUp, refresh, plan: PLANS[credits.plan] };
 }
@@ -4082,7 +4085,7 @@ function App() {
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackImg, setFeedbackImg] = useState(null);
   const [feedbackSent, setFeedbackSent] = useState(false);
-  const { credits, spend, canBulk, topUp, plan: currentPlan } = useCredits();
+  const { credits, spend, canBulk, topUp, refresh: refreshCredits, plan: currentPlan } = useCredits();
   const [projectId, setProjectId] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -4097,6 +4100,38 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ priceId: pendingPrice, email: sessionUser.email }),
     }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
+  }, []);
+
+  // ── Handle return from Stripe checkout (upgrade=success) ─────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") !== "success") return;
+    // Clean up the URL immediately
+    window.history.replaceState({}, "", "/app");
+    // Wait 4s for Stripe webhook → Supabase to complete, then sync credits
+    const timer = setTimeout(async () => {
+      try {
+        const email = sessionUser.email;
+        if (!email) return;
+        const row = await sbGetUser(email);
+        if (!row) return;
+        const effectivePlan = row.plan || "free";
+        sessionStorage.setItem("lp_verified_plan", effectivePlan);
+        const planInfo = PLANS[effectivePlan] || PLANS["free"];
+        const newBalance = typeof row.balance === "number"
+          ? row.balance
+          : (planInfo.monthly ?? planInfo.creditsPerDay ?? 4);
+        const nextReset = new Date();
+        nextReset.setMonth(nextReset.getMonth() + 1);
+        nextReset.setDate(1);
+        nextReset.setHours(0, 0, 0, 0);
+        const newCredits = { plan: effectivePlan, balance: newBalance, resetAt: nextReset.toISOString() };
+        saveCredits(newCredits);
+        refreshCredits();
+        showToast("🎉 Plan upgraded! Credits updated.");
+      } catch (e) { console.error("upgrade sync error", e); }
+    }, 4000);
+    return () => clearTimeout(timer);
   }, []);
 
   const canvasRef = useRef(null);
@@ -5602,7 +5637,7 @@ function AdminPanel({ onBack }) {
           {[["Total users", users.length],
           ["Free", users.filter(u => u.plan === "free" || !u.plan).length],
           ["SDR", users.filter(u => u.plan === "sdr").length],
-          ["Pro", users.filter(u => u.plan === "pro").length],
+          ["Sales Pro", users.filter(u => u.plan === "salespro").length],
           ["Team", users.filter(u => u.plan === "team").length],
           ].map(([label, val]) => (
             <div key={label} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 12, padding: "14px 16px" }}>
@@ -5647,9 +5682,9 @@ function AdminPanel({ onBack }) {
                   {/* Credits live bar */}
                   {(() => {
                     const plan = u.plan || "free";
-                    const limits = { free: 4, sdr: 300, pro: 2000, team: 10000 };
+                    const limits = { free: 4, sdr: 300, salespro: 2000, team: 10000 };
                     const total = limits[plan] || 4;
-                    const bal = u.balance ?? 0;
+                    const bal = u.balance != null ? u.balance : total;
                     const used = Math.max(0, total - bal);
                     const pct = Math.min(100, (used / total) * 100);
                     const barColor = pct > 90 ? "rgba(255,100,100,0.8)" : pct > 60 ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.75)";
