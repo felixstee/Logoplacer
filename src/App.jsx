@@ -289,7 +289,7 @@ const style = `
   .domain-inp { background:var(--bg); border:1px solid var(--brand-border); color:var(--t1); font-family:"SF Mono","Fira Code",monospace; font-size:11px; padding:3px 7px; border-radius:5px; outline:none; width:100%; min-width:0; }
 
   /* ── Canvas area ─────────────────────────────────────── */
-  .canvas-area { display: flex; flex-direction: column; overflow: hidden; }
+  .canvas-area { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
   .canvas-toolbar { padding: 10px 18px; border-bottom: 1px solid var(--sep); background: var(--bg2); display: flex; align-items: center; gap: 10px; }
   .canvas-wrapper { flex: 1; overflow: auto; padding: 40px; background: #050505; background-image: radial-gradient(circle at 1px 1px, #161616 1px, transparent 0); background-size: 24px 24px; position: relative; }
   .canvas-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -298,7 +298,7 @@ const style = `
   .zoom-btn { background: none; border: none; color: var(--t2); font-size: 16px; cursor: pointer; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: 600; transition: color .1s, background .1s; }
   .zoom-btn:hover { background: var(--bg4); color: var(--t1); }
   .zoom-label { font-size: 11px; color: var(--t3); min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
-  .canvas-container { position: relative; border-radius: var(--r-lg); overflow: hidden; user-select: none; box-shadow: 0 32px 100px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,0.06); }
+  .canvas-container { position: relative; border-radius: var(--r-lg); overflow: visible; user-select: none; box-shadow: 0 32px 100px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,0.06); }
   .canvas-container canvas { display: block; }
   .canvas-footer { font-size: 12px; color: var(--t4); padding: 9px 20px; text-align: center; background: var(--bg2); border-top: 1px solid var(--sep); }
 
@@ -395,6 +395,18 @@ const style = `
 
   /* ── CD Shimmer ── */
   @keyframes cdShimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+  @keyframes borderShimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+  /* cd-shimmer-box: plain black with white border */
+  .cd-shimmer-box {
+    background: #000;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
 
   /* Checkbox shimmer outline on hover + checked */
   input[type="checkbox"] {
@@ -478,9 +490,8 @@ const style = `
     filter: drop-shadow(0 0 6px rgba(255,255,255,0.85));
   }
 
-  /* Zoom controls appear on canvas hover */
-  .canvas-wrapper:hover .zoom-controls { opacity: 1; }
-  .zoom-controls { opacity: 0.4; transition: opacity .2s; }
+  /* Zoom controls — always visible */
+  .zoom-controls { opacity: 1; }
 
   /* Tag btn press */
   .tag-btn:active { transform: scale(.94); }
@@ -620,6 +631,29 @@ function looksLikeCompany(line) {
   return true;
 }
 
+
+// Extracts contacts from a plain list of email addresses.
+// "firstname.lastname@company.com" → name="Firstname Lastname", company="Company", domain="company.com"
+function extractContactsFromEmailList(text) {
+  const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+  const results = []; const seen = new Set();
+  const emails = text.match(EMAIL_RE) || [];
+  for (const raw of emails) {
+    const email = raw.toLowerCase();
+    if (seen.has(email)) continue;
+    seen.add(email);
+    const [localPart, domainFull] = email.split("@");
+    // Domain: strip TLD to get company name, e.g. "acme.com" → "Acme", "my.company.co.uk" → "Company"
+    const domainParts = domainFull.split(".");
+    const companyRaw = domainParts.length >= 2 ? domainParts[domainParts.length - 2] : domainParts[0];
+    const companyName = companyRaw.charAt(0).toUpperCase() + companyRaw.slice(1);
+    // Name: local part may be "firstname.lastname" or "flastname" etc
+    const nameParts = localPart.replace(/[._\-+]/g, " ").split(" ").filter(Boolean);
+    const personName = nameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+    results.push({ personName, companyName, email, address: "" });
+  }
+  return results;
+}
 
 function extractContactsFromCSV(text) {
   const results = []; const seen = new Set();
@@ -1233,7 +1267,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   };
 
   const previewC = readyCompanies[0];
-  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Alex", previewC?.companyName || "Acme Corp");
+  const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Demo", previewC?.companyName || "Exempelbolaget AB");
   const totalSec = timings.demoImg + timings.screenshot;
 
   const generateVideo = async (company) => {
@@ -1470,7 +1504,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           <div style={{ fontSize: Math.max(overlay.fontSize * 0.35, 12), fontFamily: overlay.fontFamily, color: overlay.color, fontWeight: overlay.bold ? "bold" : "normal", background: "rgba(0,0,0,0.55)", display: "inline-block", padding: "4px 14px", borderRadius: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
             {previewText}
           </div>
-          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{ color: "var(--blue)" }}>{totalSec}s</strong></span>
+          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{ color: "rgba(255,255,255,0.7)" }}>{totalSec}s</strong></span>
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
@@ -2696,18 +2730,28 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
 
 function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
   const t = useT();
+  const { lang } = useLang();
   const [step, setStep] = useState("compose");
   const [token, setToken] = useState(sharedToken || sessionStorage.getItem("lp_gtoken"));
   const [sendErrMsg, setSendErrMsg] = useState("");
-  const [subject, setSubject] = useState("A personal demo for ((company))");
-  const [bodyText, setBodyText] = useState("Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards");
+  const [subject, setSubject] = useState(() => {
+    try { return localStorage.getItem("lp_email_subject") || "A personal demo for ((company))"; } catch { return "A personal demo for ((company))"; }
+  });
+  const [bodyText, setBodyText] = useState(() => {
+    try { return localStorage.getItem("lp_email_body") || "Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards"; } catch { return "Hi ((name)),\n\nHere's a personalised demo we put together for ((company)).\n\nLet us know what you think!\n\nBest regards"; }
+  });
   const [videoLink, setVideoLink] = useState("");
+  const [emailSize, setEmailSize] = useState("normal");
   const [selected, setSelected] = useState(null);
   const [previews, setPreviews] = useState({});
   const [results, setResults] = useState({});
   const [countdown, setCountdown] = useState(null);
+  const [sendDelayMin, setSendDelayMin] = useState(15);
+  const [sendDelayMax, setSendDelayMax] = useState(45);
+  const [expandedEmail, setExpandedEmail] = useState(null);
   const subjectRef = useRef(null);
   const bodyRef = useRef(null);
+  const cancelledRef = useRef(false);
 
   const withEmail = companies.filter(c => c.email);
 
@@ -2745,11 +2789,11 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     }
     // Credit check: 1 credit per send
     if (selectedContacts.length === 0) {
-      setSendErrMsg("No recipients selected — make sure contacts have email addresses.");
+      setSendErrMsg(lang === "sv" ? "Inga mottagare valda — se till att kontakter har e-postadresser." : "No recipients selected — make sure contacts have email addresses.");
       return;
     }
     if (!token) {
-      setSendErrMsg("Gmail not connected — go back and connect Gmail first.");
+      setSendErrMsg(lang === "sv" ? "Gmail ej ansluten — gå tillbaka och anslut Gmail först." : "Gmail not connected — go back and connect Gmail first.");
       return;
     }
     if (spendCredits && !spendCredits(selectedContacts.length)) {
@@ -2757,14 +2801,20 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       return;
     }
     setSendErrMsg("");
+    cancelledRef.current = false;
     setStep("sending");
     let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
+      if (cancelledRef.current) break;
       const c = selectedContacts[si];
       if (si > 0) {
-        const delay = Math.floor(Math.random() * 31) + 15;
-        for (let s = delay; s > 0; s--) { setCountdown(s); await new Promise(r => setTimeout(r, 1000)); }
+        const delay = Math.floor(Math.random() * (sendDelayMax - sendDelayMin + 1)) + sendDelayMin;
+        for (let s = delay; s > 0; s--) {
+          if (cancelledRef.current) { setCountdown(null); break; }
+          setCountdown(s); await new Promise(r => setTimeout(r, 1000));
+        }
         setCountdown(null);
+        if (cancelledRef.current) break;
       }
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
@@ -2776,7 +2826,10 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const viralFooter = isFreePlan
           ? `<div style="margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;font-family:sans-serif">Sent with <a href="https://www.logoplacers.com" style="color:#555;text-decoration:none;font-weight:600">Logoplacers</a></div>`
           : "";
-        const html = `<div style="font-family:sans-serif;font-size:15px;line-height:1.7;color:#1a1a1a;max-width:560px">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
+        const emailMaxWidth = emailSize === "compact" ? "480px" : emailSize === "spacious" ? "640px" : "560px";
+        const emailFontSize = emailSize === "compact" ? "13px" : emailSize === "spacious" ? "16px" : "15px";
+        const emailLineHeight = emailSize === "spacious" ? "1.85" : "1.7";
+        const html = `<div style="font-family:sans-serif;font-size:${emailFontSize};line-height:${emailLineHeight};color:#1a1a1a;max-width:${emailMaxWidth}">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
         const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
         const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
@@ -2802,7 +2855,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       if (tokenExpired) break;
     }
     setCountdown(null);
-    if (tokenExpired) {
+    if (cancelledRef.current) {
+      setStep("done");
+    } else if (tokenExpired) {
       setStep("reauth");
     } else {
       setStep("done");
@@ -2819,7 +2874,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           <div>
             <div className="modal-title">
               {step === "compose" && t("send.compose")}
-              {step === "approve" && `Approve — ${selectedContacts.length} recipients`}
+              {step === "approve" && (lang === "sv" ? `Godkänn — ${selectedContacts.length} mottagare` : `Approve — ${selectedContacts.length} recipients`)}
               {step === "sending" && t("send.sending")}{step === "done" && t("send.done")}
             </div>
             <div className="modal-sub">
@@ -2838,7 +2893,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">Subject</label>
-                <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)} />
+                <input className="modal-inp" ref={subjectRef} value={subject} onChange={e => { setSubject(e.target.value); try { localStorage.setItem("lp_email_subject", e.target.value); } catch {} }} />
                 <div className="tag-btns">
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((name))")}>+ name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(subjectRef, setSubject, "((company))")}>+ company</button>
@@ -2846,7 +2901,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <label className="field-lbl">Message body</label>
-                <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => setBodyText(e.target.value)} />
+                <textarea className="modal-ta" ref={bodyRef} value={bodyText} onChange={e => { setBodyText(e.target.value); try { localStorage.setItem("lp_email_body", e.target.value); } catch {} }} />
                 <div className="tag-btns">
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((name))")}>+ name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
@@ -2854,6 +2909,22 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((address))")}>+ address</button>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--t3)" }}>📎 Personalised image attached automatically as .png per recipient.</p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <label className="field-lbl">{lang === "sv" ? "Mejlstorlek" : "Email size"}</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {(lang === "sv"
+                    ? [["compact","Liten"],["normal","Normal"],["spacious","Luftig"]]
+                    : [["compact","Compact"],["normal","Normal"],["spacious","Spacious"]]
+                  ).map(([val, label]) => (
+                    <button key={val} onClick={() => setEmailSize(val)} style={{
+                      flex: 1, padding: "6px 0", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "inherit", borderRadius: 8, border: emailSize === val ? "1px solid rgba(255,255,255,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                      background: emailSize === val ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.04)",
+                      color: emailSize === val ? "var(--t1)" : "var(--t3)", transition: "all .15s",
+                    }}>{label}</button>
+                  ))}
+                </div>
               </div>
               <DriveUploadField token={token} videoLink={videoLink} setVideoLink={setVideoLink} />
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -2880,14 +2951,48 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 
           {step === "approve" && (
             <>
-              <p style={{ fontSize: 13, color: "var(--t2)" }}>Each person gets their personalised image attached. Review below:</p>
+              <p style={{ fontSize: 13, color: "var(--t2)" }}>{lang === "sv" ? "Varje person får sin personaliserade bild bifogad. Granska nedan:" : "Each person gets their personalised image attached. Review below:"}</p>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, color: "var(--t3)", fontWeight: 500 }}>{lang === "sv" ? "Sändintervall" : "Send interval"}</span>
+                  <span style={{ fontSize: 12, color: "var(--t2)", fontWeight: 600 }}>{sendDelayMin}–{sendDelayMax}s {lang === "sv" ? "mellan mejl" : "between emails"}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24 }}>{lang === "sv" ? "Min" : "Min"}</span>
+                  <input type="range" min={5} max={sendDelayMax - 5} step={5} value={sendDelayMin}
+                    onChange={e => setSendDelayMin(+e.target.value)}
+                    style={{ flex: 1, accentColor: "var(--blue)" }} />
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 28, textAlign: "right" }}>{sendDelayMin}s</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24 }}>Max</span>
+                  <input type="range" min={sendDelayMin + 5} max={120} step={5} value={sendDelayMax}
+                    onChange={e => setSendDelayMax(+e.target.value)}
+                    style={{ flex: 1, accentColor: "var(--blue)" }} />
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 28, textAlign: "right" }}>{sendDelayMax}s</span>
+                </div>
+                <p style={{ fontSize: 11, color: "var(--t4)", margin: "8px 0 0", lineHeight: 1.5 }}>{lang === "sv" ? "Längre intervall minskar spamrisk. Rekommenderat: 15–45s för varma konton, 30–60s för nya konton." : "Longer intervals reduce spam risk. Recommended: 15–45s for warm accounts, 30–60s for new accounts."}</p>
+              </div>
               {selectedContacts.map(c => (
                 <div key={c.id} className="send-row">
-                  {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
-                  <div className="send-info">
+                  {previews[c.id]
+                    ? <img className="send-thumb" src={previews[c.id]} alt="" style={{ cursor: "zoom-in" }}
+                        onClick={() => { const w = window.open("", "_blank", "width=900,height=700"); w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${previews[c.id]}" style="max-width:100%;max-height:100vh;object-fit:contain"></body></html>`); }}
+                      />
+                    : <div className="send-thumb-ph">🖼</div>}
+                  <div className="send-info" style={{ flex: 1 }}>
                     <div className="send-name">{c.personName || c.companyName}</div>
                     <div className="send-detail">{c.email}</div>
                     <div className="send-detail" style={{ color: "var(--t2)" }}><strong>{resolveStr(subject, c)}</strong></div>
+                    <div className="send-detail" style={{ color: "var(--t3)", fontStyle: "italic", whiteSpace: "pre-wrap" }}>
+                      {expandedEmail === c.id
+                        ? resolveStr(bodyText, c)
+                        : resolveStr(bodyText, c).split("\n").slice(0, 2).join("\n")}
+                    </div>
+                    <button onClick={() => setExpandedEmail(expandedEmail === c.id ? null : c.id)}
+                      style={{ background: "none", border: "none", color: "var(--blue)", fontSize: 11, cursor: "pointer", fontFamily: "inherit", padding: "2px 0", marginTop: 2 }}>
+                      {expandedEmail === c.id ? (lang === "sv" ? "↑ Minimera" : "↑ Collapse") : (lang === "sv" ? "↓ Visa hela mejlet" : "↓ Show full email")}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -2899,7 +3004,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               {step === "sending" && countdown !== null && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "hsla(31,92%,58%,.1)", border: "0.5px solid hsla(31,92%,58%,.35)", borderRadius: "var(--r-sm)" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                  <span style={{ fontSize: 13, color: "var(--orange)" }}>Waiting {countdown}s before next send — anti-spam protection</span>
+                  <span style={{ fontSize: 13, color: "var(--orange)" }}>{lang === "sv" ? `Väntar ${countdown}s innan nästa utskick — spamskydd` : `Waiting ${countdown}s before next send — anti-spam protection`}</span>
                 </div>
               )}
               {selectedContacts.map(c => (
@@ -2907,8 +3012,8 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   {previews[c.id] ? <img className="send-thumb" src={previews[c.id]} alt="" /> : <div className="send-thumb-ph">🖼</div>}
                   <div className="send-info"><div className="send-name">{c.personName || c.companyName}</div><div className="send-detail">{c.email}</div></div>
                   <div className={`send-st ${results[c.id] || ""}`}>
-                    {!results[c.id] && <span style={{ color: "var(--t4)" }}>waiting</span>}
-                    {results[c.id] === "ing" && "sending…"}
+                    {!results[c.id] && <span style={{ color: "var(--t4)" }}>{lang === "sv" ? "väntar" : "waiting"}</span>}
+                    {results[c.id] === "ing" && (lang === "sv" ? "skickar…" : "sending…")}
                     {results[c.id] === "ok" && "✓ Sent"}
                     {results[c.id] === "err" && "✕ Error"}
                   </div>
@@ -2917,9 +3022,9 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               {step === "done" && (
                 <div style={{ textAlign: "center", padding: "12px 0" }}>
                   <div style={{ fontSize: 28 }}>{doneErr === 0 ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>}</div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", marginTop: 6 }}>{doneOk} of {selectedContacts.length} sent</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", marginTop: 6 }}>{lang === "sv" ? `${doneOk} av ${selectedContacts.length} skickade` : `${doneOk} of ${selectedContacts.length} sent`}</div>
                   {doneErr > 0 && sendErrMsg && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{sendErrMsg}</div>}
-                  {doneErr > 0 && !sendErrMsg && <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 4 }}>{doneErr} failed</div>}
+                  {doneErr > 0 && !sendErrMsg && <div style={{ fontSize: 12, color: "var(--t3)", marginTop: 4 }}>{lang === "sv" ? `${doneErr} misslyckades` : `${doneErr} failed`}</div>}
                 </div>
               )}
             </>
@@ -2932,7 +3037,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
               <button className="btn-s" onClick={onClose}>{t("modal.cancel")}</button>
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }}
                 disabled={!selectedContacts.length} onClick={() => setStep("approve")}>
-                Preview ({selectedContacts.length}) →
+                {lang === "sv" ? `Förhandsgranska (${selectedContacts.length}) →` : `Preview (${selectedContacts.length}) →`}
               </button>
             </>
           )}
@@ -2940,24 +3045,24 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             <>
               <button className="btn-s" onClick={() => setStep("compose")}>{t("modal.back")}</button>
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={sendAll}>
-                ✓ Send {selectedContacts.length} email{selectedContacts.length !== 1 ? "s" : ""}
+                {lang === "sv" ? `✓ Skicka ${selectedContacts.length} mejl` : `✓ Send ${selectedContacts.length} email${selectedContacts.length !== 1 ? "s" : ""}`}
               </button>
             </>
           )}
           {step === "done" && <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={onClose}>Close</button>}
           {step === "reauth" && (
             <>
-              <div style={{ fontSize: 12, color: "var(--red)", flex: 1 }}>Gmail session expired. Reconnect and try again.</div>
+              <div style={{ fontSize: 12, color: "var(--red)", flex: 1 }}>{lang === "sv" ? "Gmail-session har gått ut. Återanslut och försök igen." : "Gmail session expired. Reconnect and try again."}</div>
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={() => {
                 window.google?.accounts?.oauth2?.initTokenClient({
                   client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
                   scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
                   callback: (r) => { if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("approve"); setSendErrMsg(""); setResults({}); } },
                 }).requestAccessToken({ prompt: "" });
-              }}>Reconnect Gmail →</button>
+              }}>{lang === "sv" ? "Återanslut Gmail →" : "Reconnect Gmail →"}</button>
             </>
           )}
-          {step === "sending" && <button className="btn-s" disabled onClick={onClose}>{t("modal.cancel")}</button>}
+          {step === "sending" && <button className="btn-s" onClick={() => { cancelledRef.current = true; }}>{t("modal.cancel")}</button>}
         </div>
       </div>
     </div>
@@ -2968,16 +3073,16 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
 function LangToggle() {
   const { lang, setLang } = useLang();
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "rgba(255,255,255,.05)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: 2, flexShrink: 0 }}>
-      {["en", "sv"].map(l => (
+    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "#000", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: 2, flexShrink: 0 }}>
+      {[["en", "English"], ["sv", "Svenska"]].map(([l, label]) => (
         <button key={l} onClick={() => setLang(l)} style={{
-          background: lang === l ? "rgba(26,130,255,.25)" : "none",
-          border: "none", borderRadius: 6, padding: "3px 8px",
-          color: lang === l ? "#fff" : "var(--t3)",
+          background: lang === l ? "rgba(255,255,255,0.1)" : "none",
+          border: "none", borderRadius: 6, padding: "3px 9px",
+          color: lang === l ? "rgba(255,255,255,0.95)" : "var(--t3)",
           fontSize: 11, fontWeight: 700, cursor: "pointer",
-          fontFamily: "inherit", textTransform: "uppercase", letterSpacing: "0.5px",
-          transition: "all .15s",
-        }}>{l}</button>
+          fontFamily: "inherit", transition: "all .15s",
+          boxShadow: lang === l ? "0 0 8px rgba(255,255,255,0.08)" : "none",
+        }}>{label}</button>
       ))}
     </div>
   );
@@ -3381,6 +3486,11 @@ function useCredits() {
     const updated = { ...current, balance: current.balance - amount };
     saveCredits(updated);
     setCredits(updated);
+    // Sync new balance to Supabase so admin panel + other devices see it immediately
+    try {
+      const email = JSON.parse(sessionStorage.getItem("lp_user") || "{}").email;
+      if (email) sbUpsertUser(email, { balance: updated.balance }).catch(() => {});
+    } catch {}
     return true;
   };
 
@@ -3420,14 +3530,15 @@ function CreditBadge({ credits, onUpgrade }) {
       onClick={low ? onUpgrade : undefined}
       title={`${credits.balance} credits remaining`} style={{ transition: "transform .1s", transform: pulse ? "scale(1.15)" : "scale(1)" }}>
       <div style={{
-        background: low ? "rgba(239,68,68,0.12)" : "rgba(26,130,255,0.1)",
-        border: `0.5px solid ${low ? "rgba(239,68,68,0.35)" : "rgba(26,130,255,0.25)"}`,
+        background: low ? "rgba(239,68,68,0.12)" : "#000",
+        border: `1px solid ${low ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.2)"}`,
         borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6,
+        boxShadow: low ? "none" : "0 0 10px rgba(255,255,255,0.05)",
       }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low ? "rgba(255,100,100,0.9)" : "rgba(255,255,255,0.75)"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
-        <span style={{ fontSize: 12, fontWeight: 600, color: low ? "rgba(255,100,100,0.9)" : "rgba(255,255,255,0.75)", fontVariantNumeric: "tabular-nums" }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: low ? "rgba(255,100,100,0.9)" : "rgba(255,255,255,0.9)", fontVariantNumeric: "tabular-nums" }}>
           {credits.balance.toLocaleString()}
         </span>
         <span style={{ fontSize: 10, color: "var(--t4)" }}>/ {plan.label}</span>
@@ -3815,6 +3926,7 @@ function ImportTableModal({ rows, onConfirm, onClose }) {
 
 function App() {
   const t = useT();
+  const { lang } = useLang();
   const [appDark, setAppDark] = useState(true);
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
@@ -3869,9 +3981,12 @@ function App() {
                   }
                 }).catch(() => { });
                 setAuthed(true);
-                // Small delay so React re-renders before hash change (prevents white screen)
+                // Small delay so React re-renders before navigation (prevents white screen)
                 setTimeout(() => {
-                  if (window.location.hash !== "#app") window.location.hash = "app";
+                  if (window.location.pathname !== "/app") {
+                    window.history.pushState({}, "", "/app");
+                    window.dispatchEvent(new PopStateEvent("popstate"));
+                  }
                 }, 50);
                 resolve();
               })
@@ -3949,6 +4064,7 @@ function App() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [canvasZoom, setCanvasZoom] = useState(1);
+  const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
   const [previewUrl, setPreviewUrl] = useState(null);
   const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
@@ -3956,10 +4072,14 @@ function App() {
   const [showMacBookModal, setShowMacBookModal] = useState(false);
   const [showMockupModal, setShowMockupModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
+  const [gmailWasConnected, setGmailWasConnected] = useState(() => !!sessionStorage.getItem("lp_gtoken"));
   const [editingDomain, setEditingDomain] = useState({});
   const [editingContact, setEditingContact] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showManual, setShowManual] = useState(false);
+  const [showSymbols, setShowSymbols] = useState(false);
+  const [importMode, setImportMode] = useState("manual"); // "manual" | "email" | "columns" | "csv"
+  const [emailOnlyText, setEmailOnlyText] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackImg, setFeedbackImg] = useState(null);
@@ -3983,7 +4103,9 @@ function App() {
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const canvasWrapperRef = useRef(null);
   const baseImageRef = useRef(null);
+  const baseImageInputRef = useRef(null);
   const canvasSizeRef = useRef({ w: 0, h: 0 });
   const pendingLoadImgRef = useRef(null); // base image waiting for canvas to mount
 
@@ -3991,6 +4113,24 @@ function App() {
     try { localStorage.setItem(companiesKey, JSON.stringify(companies.map(({ logoEl, ...rest }) => rest))); } catch { }
     if (sessionLoaded) triggerSave();
   }, [companies]);
+
+  // Non-passive wheel listener so preventDefault() works for Ctrl+scroll zoom
+  const canvasZoomRef = useRef(canvasZoom);
+  useEffect(() => { canvasZoomRef.current = canvasZoom; }, [canvasZoom]);
+  useEffect(() => {
+    const el = canvasWrapperRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const cur = canvasZoomRef.current;
+        const next = Math.min(4, Math.max(0.2, +(cur - e.deltaY * 0.005).toFixed(3)));
+        setCanvasZoom(next);
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  });
 
   useEffect(() => {
     if (sessionLoaded) triggerSave();
@@ -4095,6 +4235,7 @@ function App() {
     if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
     if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
     canvasSizeRef.current = { w, h }; baseImageRef.current = img;
+    setCanvasSize({ w, h });
     if (canvasRef.current) {
       canvasRef.current.width = w; canvasRef.current.height = h;
       canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
@@ -4233,12 +4374,18 @@ function App() {
     const name = file.name.toLowerCase();
     e.target.value = "";
     try {
-      if (name.endsWith(".csv")) {
+      if (name.endsWith(".csv") || name.endsWith(".txt")) {
         const text = await file.text();
-        const contacts = extractContactsFromCSV(text);
-        if (!contacts.length) { showToast("No contacts found in CSV"); return; }
-        contacts.filter(c => c.companyName && c.companyName.trim()).forEach(({ personName, companyName, email, address }) => addContact(personName, companyName, email, address || ""));
-        showToast(`${contacts.length} contacts imported from CSV`);
+        const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+        const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
+        // If every non-empty line is just an email address → email-only mode
+        const isEmailOnly = lines.length > 0 && lines.every(l => EMAIL_RE.test(l) && l.split(",").length === 1 && !l.includes("\t"));
+        const contacts = isEmailOnly ? extractContactsFromEmailList(text) : extractContactsFromCSV(text);
+        if (!contacts.length) { showToast(lang === "sv" ? "Inga kontakter hittades" : "No contacts found in CSV"); return; }
+        contacts.forEach(({ personName, companyName, email, address }) => {
+          if (companyName && companyName.trim()) addContact(personName, companyName, email, address || "");
+        });
+        showToast(lang === "sv" ? `${contacts.length} kontakter importerades` : `${contacts.length} contacts imported`);
         return;
       }
       if (name.endsWith(".numbers")) {
@@ -4362,7 +4509,7 @@ function App() {
     if (!baseImageRef.current) return;
     const { w, h } = canvasSizeRef.current;
     const ready = companies.filter(c => c.status === "ok");
-    const targets = ready.length > 0 ? ready : [{ personName: "Alex", companyName: "Acme Corp", logoEl: null }];
+    const targets = ready.length > 0 ? ready : [{ personName: "Demo", companyName: "Exempelbolaget AB", logoEl: null }];
     const previews = []; let done = 0;
     targets.forEach((comp, i) => {
       const off = renderComposite(baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, comp.personName, comp.companyName, comp.logoEl || null, { ...canvasBg, personalisedColors, colorToReplace, brandColor: comp.brandColor || null }, true /* watermark */, comp.address || "");
@@ -4450,10 +4597,11 @@ function App() {
     else if (dragging.target === "symbol") updateSymbol(dragging.id, { pos: { x: clamp(mx - dragging.ox, w - 20), y: clamp(my - dragging.oy, h - 20) } });
   };
 
-  const { w: cw, h: ch } = canvasSizeRef.current;
+  const cw = canvasSize.w;
+  const ch = canvasSize.h;
   const readyCount = companies.filter(c => c.status === "ok").length;
-  const previewPerson = companies[0]?.personName || "Alex";
-  const previewCompany = companies[0]?.companyName || "Acme Corp";
+  const previewPerson = companies[0]?.personName || "Demo";
+  const previewCompany = companies[0]?.companyName || "Exempelbolaget AB";
   const companyLogoEl = companies.find(c => c.status === "ok")?.logoEl || null;
 
   if (!authed) return <LoginPage
@@ -4491,14 +4639,15 @@ function App() {
                       sessionStorage.clear();
                       localStorage.clear();
                       setAuthed(false);
-                      window.location.hash = "";
+                      window.history.pushState({}, "", "/");
+                      window.dispatchEvent(new PopStateEvent("popstate"));
                     }).catch(() => {
                       window.alert("Kontakta hello@logoplacers.com för att radera ditt konto.");
                     });
                   }
                 }}
                 t={t}
-                tokenExpired={!gmailToken}
+                tokenExpired={gmailWasConnected && !gmailToken}
               />
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
@@ -4597,6 +4746,52 @@ function App() {
               <div style={{ marginTop: 8, padding: "14px 18px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 13, color: "var(--t2)", lineHeight: 1.7 }}>
                 {t("app.credits_info")}
               </div>
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t1)", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  {lang === "sv" ? "Vanliga frågor" : "Common questions"}
+                </div>
+                {[
+                  {
+                    q: lang === "sv" ? "Varför försvinner min basbild när jag laddar om?" : "Why does my base image disappear on reload?",
+                    a: lang === "sv" ? "Bilder lagras inte på server av säkerhetsskäl. Men dina logo- och textplaceringar sparas automatiskt i din template — ladda in samma bild igen så dyker allt upp." : "Images are not stored server-side for privacy reasons. But your logo and text positions are saved automatically in your template — re-upload the same image and everything reappears."
+                  },
+                  {
+                    q: lang === "sv" ? "Hur lägger jag till kontakter?" : "How do I add contacts?",
+                    a: lang === "sv" ? "Tre sätt: (1) Klistra in kolumner från Excel/Numbers, (2) Ladda upp en CSV- eller TXT-fil med mejladresser, (3) Lägg till manuellt rad för rad. Logotyper hämtas automatiskt för varje bolag." : "Three ways: (1) Paste columns from Excel/Numbers, (2) Upload a CSV or TXT file with email addresses, (3) Add manually one by one. Logos are fetched automatically per company."
+                  },
+                  {
+                    q: lang === "sv" ? "Kan jag ladda upp bara mejladresser?" : "Can I upload just email addresses?",
+                    a: lang === "sv" ? "Ja! Ladda upp en TXT- eller CSV-fil med en mejladress per rad. Verktyget plockar automatiskt ut namn (från adressen före @) och bolagsnamn (domänen efter @)." : "Yes! Upload a TXT or CSV file with one email per line. The tool automatically extracts the name (from the part before @) and company name (from the domain after @)."
+                  },
+                  {
+                    q: lang === "sv" ? "Försvinner min mejltext om jag stänger fönstret?" : "Does my email text disappear if I close the window?",
+                    a: lang === "sv" ? "Nej — ämnesrad och mejltext sparas automatiskt och finns kvar nästa gång du öppnar Skicka." : "No — subject and email body are saved automatically and will be there next time you open Send."
+                  },
+                  {
+                    q: lang === "sv" ? "Hur fungerar krediterna?" : "How do credits work?",
+                    a: lang === "sv" ? "En kredit dras per bild som genereras eller mejl som skickas. Gratisflödet ger 4 krediter/dag. Betalplaner fylls på den 1:a varje månad." : "One credit is spent per image generated or email sent. The free plan gives 4 credits/day. Paid plans refill on the 1st of each month."
+                  },
+                ].map(({ q, a }, i) => (
+                  <details key={i} style={{ marginBottom: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, padding: "10px 14px" }}>
+                    <summary style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)", cursor: "pointer", listStyle: "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      {q}
+                      <span style={{ color: "var(--t3)", fontSize: 16, marginLeft: 8, flexShrink: 0 }}>+</span>
+                    </summary>
+                    <p style={{ fontSize: 12, color: "var(--t3)", lineHeight: 1.7, margin: "8px 0 0" }}>{a}</p>
+                  </details>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, padding: "14px 18px", background: "#000", border: "1px solid rgba(205,180,219,0.3)", borderRadius: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(205,180,219,0.9)", marginBottom: 6 }}>
+                  {lang === "sv" ? "Viktigt att veta" : "Good to know"}
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.8 }}>
+                  <li>{lang === "sv" ? "Om du laddar om sidan försvinner basbilden — men logotyp- och textplaceringar sparas i din template automatiskt." : "Reloading the page removes the base image — but logo and text positions are saved in your template automatically."}</li>
+                  <li>{lang === "sv" ? "Ladda in samma bild igen och dina placeringar dyker upp direkt." : "Re-upload the same image and your positions reappear instantly."}</li>
+                  <li>{lang === "sv" ? "Kontakter läggs till i höger panel — klistra in företagsnamn, lägg till manuellt, eller importera CSV-fil." : "Add contacts in the right panel — paste company names, add manually, or import a CSV file."}</li>
+                  <li>{lang === "sv" ? "Mejltext och ämnesrad sparas automatiskt — de finns kvar nästa gång du öppnar Skicka." : "Email subject and body are saved automatically — they reappear next time you open Send."}</li>
+                </ul>
+              </div>
             </div>
           </div>
         )}
@@ -4657,11 +4852,11 @@ function App() {
 
         {mode === "image" && <div className="workspace">
           <div className="sidebar">
-            <span className="s-label">{t("app.base_image")}</span>
+            <span className="s-label">{t("app.base_image")} <span style={{ fontSize: 10, fontWeight: 700, background: "#000", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.85)", borderRadius: 4, padding: "1px 6px", marginLeft: 4 }}>{lang === "sv" ? "Steg 1" : "Step 1"}</span></span>
             <div className="card"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => handleFileUpload({ target: { files: [file] } })} className="upload-zone" style={{}}>
                 <label style={{ cursor: "pointer", display: "block", textAlign: "center" }}>
-                  <input type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
+                  <input ref={baseImageInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
                   <div className="uz-icon" style={{ color: "var(--t3)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
                   {converting && <p className="uz-active">Converting...</p>}
                   {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
@@ -4734,7 +4929,7 @@ function App() {
             </div>
 
             <div className="s-row">
-              <span className="s-label">{t("app.recipient_logo")}</span>
+              <span className="s-label">{t("app.recipient_logo")} <span style={{ fontSize: 10, fontWeight: 700, background: "#000", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.85)", borderRadius: 4, padding: "1px 6px", marginLeft: 4 }}>{lang === "sv" ? "Steg 2" : "Step 2"}</span></span>
               <button className="btn-text" onClick={addLogoInst}>+ New</button>
             </div>
             <div style={{ padding: "0 10px" }}>
@@ -4785,8 +4980,11 @@ function App() {
               </div>
             )}
 
-            <span className="s-label">{t("app.symbols")}</span>
-            <div className="card">
+            <div style={{ margin: "0 10px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span className="s-label" style={{ padding: 0 }}>{t("app.symbols")}</span>
+              <button className="btn-text" onClick={() => setShowSymbols(v => !v)} style={{ fontSize: 11 }}>{showSymbols ? "▲ Hide" : "▼ Show"}</button>
+            </div>
+            {showSymbols && <div className="card">
               <div className="sym-grid">
                 {SYMBOL_OPTIONS.map(char => <button key={char} className="sym-btn" onClick={() => addSymbol(char)}>{char}</button>)}
               </div>
@@ -4807,81 +5005,133 @@ function App() {
                   ))}
                 </div>
               )}
-            </div>
+            </div>}
 
             <span className="s-label">{t("app.contacts")}</span>
             <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-
-              {/* ── Four-column paste import ── */}
-              <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>Kopiera en hel kolumn från Numbers och klistra in:</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Förnamn</label>
-                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
-                    placeholder={"Carl\nJordan\nSofia"} value={colNames} onChange={e => setColNames(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Bolagsnamn</label>
-                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
-                    placeholder={"Flowlife\nAcme Corp\nKlarna"} value={colCompanies} onChange={e => setColCompanies(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>Bolagsdomän</label>
-                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
-                    placeholder={"flowlife.se\nacmecorp.com\nklarna.com"} value={colDomains} onChange={e => setColDomains(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>E-postadress</label>
-                  <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
-                    placeholder={"carl@flowlife.se\njordan@acme.com\nsofia@klarna.com"} value={colEmails} onChange={e => setColEmails(e.target.value)} />
-                </div>
+              {/* Step hint */}
+              <div className="cd-shimmer-box">
+                {lang === "sv"
+                  ? <><strong>Steg 3:</strong> Lägg till dina prospekter nedan. Logotyper hämtas automatiskt. Lägg till e-post för att skicka via Gmail.</>
+                  : <><strong>Step 3:</strong> Add your prospects below. Logos are auto-fetched. Add email addresses to send via Gmail.</>}
               </div>
-              <button className="btn-p" onClick={() => {
-                const split = (t) => t.split(/\n/).map(l => l.trim());
-                const names = split(colNames);
-                const comps = split(colCompanies);
-                const doms  = split(colDomains);
-                const mails = split(colEmails);
-                const len = Math.max(names.length, comps.length, doms.length, mails.length);
-                if (len === 0) { showToast("Klistra in minst en kolumn"); return; }
-                const rows = [];
-                for (let i = 0; i < len; i++) {
-                  rows.push({
-                    id: uid(),
-                    personName: names[i] || "",
-                    companyName: comps[i] || "",
-                    domain: doms[i] || "",
-                    email: mails[i] || "",
-                  });
-                }
-                setImportRows(rows);
-                setShowImportTable(true);
-              }}>
-                Granska &amp; importera →
-              </button>
 
-              <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
-                <button className="btn-s" style={{ fontSize: 12, padding: "7px 12px" }}
-                  onClick={() => spreadsheetRef.current?.click()}>
-                  Import .csv / .numbers
+              {/* ── Import mode selector ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 5 }}>
+                {[
+                { key: "manual", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, label: lang === "sv" ? "Manuellt" : "Manual" },
+                { key: "email",  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>, label: lang === "sv" ? "Bara e-post" : "Email only" },
+                { key: "columns", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>, label: lang === "sv" ? "Kolumner" : "Columns" },
+                { key: "csv",    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>, label: "CSV" },
+              ].map(m => (
+                <button key={m.key} onClick={() => setImportMode(m.key)}
+                  style={{
+                    background: importMode === m.key ? "#000" : "var(--bg3)",
+                    border: `1px solid ${importMode === m.key ? "rgba(255,255,255,0.35)" : "var(--sep)"}`,
+                    boxShadow: importMode === m.key ? "0 0 8px rgba(255,255,255,0.08)" : "none",
+                    color: importMode === m.key ? "#fff" : "var(--t3)",
+                    borderRadius: 8, padding: "7px 4px",
+                    cursor: "pointer", fontFamily: "inherit", fontSize: 11, fontWeight: 600,
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+                    transition: "all .15s",
+                  }}>
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 16 }}>{m.icon}</span>
+                  <span>{m.label}</span>
                 </button>
-                <span style={{ fontSize: 11, color: "var(--t3)" }}>fil-import</span>
-                <input ref={spreadsheetRef} type="file" accept=".csv,.numbers,.xlsx"
-                  style={{ display: "none" }} onChange={handleSpreadsheetFile} />
+              ))}
               </div>
 
-              <div style={{ borderTop: "0.5px solid var(--sep)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                <p style={{ fontSize: 12, color: "var(--t3)" }}>{t("app.add_manually")}</p>
-                <input className="inp sm shimmer-focus" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
-                <input className="inp sm" placeholder={t("app.email_placeholder")} value={singleEmail} onChange={e => setSingleEmail(e.target.value)} />
-                <div style={{ display: "flex", gap: 7 }}>
-                  <input className="inp sm" style={{ flex: 1 }} placeholder={t("app.company_placeholder")} value={singleCompany}
-                    onChange={e => setSingleCompany(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); } }} />
-                  <button className="btn-s" disabled={!singleCompany.trim()}
-                    onClick={() => { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); }}>+</button>
+              {/* ── Manual mode ── */}
+              {importMode === "manual" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>{lang === "sv" ? "Fyll i förnamn, e-post och bolagsnamn:" : "Fill in name, email and company name:"}</p>
+                  <input className="inp sm" placeholder={t("app.person_name")} value={singlePerson} onChange={e => setSinglePerson(e.target.value)} />
+                  <input className="inp sm" placeholder={t("app.email_placeholder")} value={singleEmail} onChange={e => setSingleEmail(e.target.value)} />
+                  <div style={{ display: "flex", gap: 7 }}>
+                    <input className="inp sm" style={{ flex: 1 }} placeholder={t("app.company_placeholder")} value={singleCompany}
+                      onChange={e => setSingleCompany(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); } }} />
+                    <button className="btn-s" disabled={!singleCompany.trim()}
+                      onClick={() => { addContact(singlePerson, singleCompany, singleEmail); setSingleCompany(""); setSinglePerson(""); setSingleEmail(""); }}>+</button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* ── Email-only mode ── */}
+              {importMode === "email" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>
+                    {lang === "sv" ? "Klistra in e-postadresser, en per rad:" : "Paste email addresses, one per line:"}
+                  </p>
+                  <textarea className="inp sm" rows={6} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                    placeholder={"carl@flowlife.se\njordan@acme.com\nsofia@klarna.com"}
+                    value={emailOnlyText} onChange={e => setEmailOnlyText(e.target.value)} />
+                  <button className="btn-p" disabled={!emailOnlyText.trim()}
+                    onClick={() => {
+                      const contacts = extractContactsFromEmailList(emailOnlyText);
+                      if (contacts.length === 0) { showToast("Inga e-postadresser hittades"); return; }
+                      contacts.forEach(({ personName, companyName, email }) => addContact(personName, companyName, email));
+                      showToast(`${contacts.length} ${lang === "sv" ? "kontakter tillagda" : "contacts added"}`);
+                      setEmailOnlyText("");
+                    }}>
+                    {lang === "sv" ? `Importera →` : `Import →`}
+                  </button>
+                </div>
+              )}
+
+              {/* ── Columns mode ── */}
+              {importMode === "columns" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>{lang === "sv" ? "Kopiera en hel kolumn från Numbers/Excel och klistra in:" : "Copy a full column from Numbers/Excel and paste:"}</p>
+                  {[
+                    { label: lang === "sv" ? "Förnamn" : "First name", ph: "Carl\nJordan\nSofia", val: colNames, set: setColNames },
+                    { label: lang === "sv" ? "Bolagsnamn" : "Company name", ph: "Techbolaget AB\nExempelföretag\nDemobolag", val: colCompanies, set: setColCompanies },
+                    { label: lang === "sv" ? "Bolagsdomän" : "Domain", ph: "flowlife.se\nacmecorp.com\nklarna.com", val: colDomains, set: setColDomains },
+                    { label: lang === "sv" ? "E-postadress" : "Email", ph: "carl@flowlife.se\njordan@acme.com\nsofia@klarna.com", val: colEmails, set: setColEmails },
+                  ].map(col => (
+                    <div key={col.label}>
+                      <label style={{ fontSize: 10, fontWeight: 700, color: "var(--t4)", letterSpacing: "0.8px", textTransform: "uppercase", display: "block", marginBottom: 3 }}>{col.label}</label>
+                      <textarea className="inp sm" rows={3} style={{ resize: "vertical", fontFamily: "monospace", fontSize: 11 }}
+                        placeholder={col.ph} value={col.val} onChange={e => col.set(e.target.value)} />
+                    </div>
+                  ))}
+                  <button className="btn-p" onClick={() => {
+                    const split = (t) => t.split(/\n/).map(l => l.trim());
+                    const names = split(colNames);
+                    const comps = split(colCompanies);
+                    const doms  = split(colDomains);
+                    const mails = split(colEmails);
+                    const len = Math.max(names.length, comps.length, doms.length, mails.length);
+                    if (len === 0) { showToast("Klistra in minst en kolumn"); return; }
+                    const rows = [];
+                    for (let i = 0; i < len; i++) {
+                      rows.push({ id: uid(), personName: names[i] || "", companyName: comps[i] || "", domain: doms[i] || "", email: mails[i] || "" });
+                    }
+                    setImportRows(rows);
+                    setShowImportTable(true);
+                  }}>
+                    {lang === "sv" ? "Granska & importera →" : "Review & import →"}
+                  </button>
+                </div>
+              )}
+
+              {/* ── CSV mode ── */}
+              {importMode === "csv" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <p style={{ fontSize: 11, color: "var(--t3)", margin: 0 }}>
+                    {lang === "sv" ? "Importera en .csv-, .xlsx- eller .numbers-fil med kolumnerna: name, company, email" : "Import a .csv, .xlsx or .numbers file with columns: name, company, email"}
+                  </p>
+                  <button className="btn-s" style={{ fontSize: 12, padding: "9px 14px" }}
+                    onClick={() => spreadsheetRef.current?.click()}>
+                    {lang === "sv" ? "Välj fil…" : "Choose file…"}
+                  </button>
+                  <input ref={spreadsheetRef} type="file" accept=".csv,.txt,.numbers,.xlsx"
+                    style={{ display: "none" }} onChange={handleSpreadsheetFile} />
+                  <p style={{ fontSize: 10, color: "var(--t4)", margin: 0 }}>
+                    {lang === "sv" ? "Stöder CSV, XLSX och Numbers-format." : "Supports CSV, XLSX and Numbers format."}
+                  </p>
+                </div>
+              )}
             </div></div>
 
             {companies.length > 0 && (<>
@@ -4987,12 +5237,12 @@ function App() {
                             <div>
                               <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Bolagsnamn</div>
                               <input className="domain-inp" style={{ width: "100%" }} value={editingContact.companyName}
-                                placeholder="Acme Corp" onChange={e => setEditingContact(ec => ({ ...ec, companyName: e.target.value }))} />
+                                placeholder="Exempelbolaget AB" onChange={e => setEditingContact(ec => ({ ...ec, companyName: e.target.value }))} />
                             </div>
                             <div>
                               <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Förnamn / kontakt</div>
                               <input className="domain-inp" style={{ width: "100%" }} value={editingContact.name}
-                                placeholder="Johan Andersson" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
+                                placeholder="Demo Testsson" onChange={e => setEditingContact(ec => ({ ...ec, name: e.target.value }))} />
                             </div>
                             <div>
                               <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>E-post</div>
@@ -5042,22 +5292,17 @@ function App() {
           </div>
 
           <div className="canvas-area">
-            <div className="canvas-wrapper" onWheel={e => {
-              if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                setCanvasZoom(z => Math.min(4, Math.max(0.2, +(z - e.deltaY * 0.005).toFixed(3))));
-              }
-            }}>
+            <div className="canvas-wrapper" ref={canvasWrapperRef}>
               {!hasImage ? (
-                <div className="empty-state">
+                <div className="empty-state" onClick={() => baseImageInputRef.current?.click()} style={{ cursor: "pointer" }}>
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
                   <p className="empty-title">No image selected</p>
-                  <p className="empty-sub">Upload a base image on the left</p>
+                  <p className="empty-sub">Click here or upload on the left</p>
                 </div>
               ) : (
-                <div style={{ width: Math.round((cw || 0) * canvasZoom), height: Math.round((ch || 0) * canvasZoom), position: "relative", flexShrink: 0 }}>
+                <div style={{ display: "inline-block" }}>
                   <div className="canvas-container" ref={containerRef} onMouseDown={onMouseDown}
-                    style={{ width: cw || "auto", height: ch || "auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", transform: `scale(${canvasZoom})`, transformOrigin: "top left", position: "absolute", top: 0, left: 0 }}>
+                    style={{ width: cw || "auto", height: ch || "auto", cursor: eyedropperActive ? "crosshair" : dragging ? "grabbing" : "default", zoom: canvasZoom, transformOrigin: "top left" }}>
                     <canvas ref={canvasRef} />
                     {cw > 0 && (
                       <>
@@ -5153,7 +5398,7 @@ function App() {
             companies={companies}
             getImageBlob={getImageBlob}
             sharedToken={gmailToken}
-            onTokenAcquired={t => { setGmailToken(t); sessionStorage.setItem("lp_gtoken", t); }}
+            onTokenAcquired={t => { setGmailToken(t); setGmailWasConnected(true); sessionStorage.setItem("lp_gtoken", t); }}
             onClose={() => setShowSendModal(false)}
             spendCredits={spend}
             creditsBalance={credits.balance}
@@ -5432,34 +5677,59 @@ function AdminPanel({ onBack }) {
   );
 }
 
+function getViewFromPath(pathname) {
+  if (pathname === "/app") return "app";
+  if (pathname.startsWith("/blog") || pathname.startsWith("/blogg")) return "blog";
+  if (pathname === "/admin") return "admin";
+  if (pathname === "/privacy") return "privacy";
+  if (pathname === "/terms") return "terms";
+  if (pathname === "/en" || pathname === "/sv") return "landing";
+  // Legacy hash support — if someone arrives with #app etc. redirect cleanly
+  const hash = window.location.hash;
+  if (hash === "#app") return "app";
+  if (hash === "#blog") return "blog";
+  if (hash === "#admin") return "admin";
+  if (hash === "#privacy") return "privacy";
+  if (hash === "#terms") return "terms";
+  return "landing";
+}
+
 function AppRouterInner() {
-  const [view, setView] = useState(() => {
-    const hash = window.location.hash;
-    if (hash === "#app") return "app";
-    if (hash === "#blog") return "blog";
-    if (hash === "#admin") return "admin";
-    if (hash === "#privacy") return "privacy";
-    if (hash === "#terms") return "terms";
-    return "landing";
-  });
+  const [view, setView] = useState(() => getViewFromPath(window.location.pathname));
+  const { lang } = useLang();
+
+  // Listen for pushState navigation (Blog.jsx uses pushState internally)
   useEffect(() => {
-    const APP_HASHES = ["#app", "#blog", "#admin", "#privacy", "#terms", "", "#"];
-    const onHash = () => {
-      const hash = window.location.hash;
-      if (hash === "#app") setView("app");
-      else if (hash === "#blog") setView("blog");
-      else if (hash === "#admin") setView("admin");
-      else if (hash === "#privacy") setView("privacy");
-      else if (hash === "#terms") setView("terms");
-      else if (APP_HASHES.includes(hash)) setView("landing");
-      // Otherwise: blog post slug or other sub-hash — don't change view
-    };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const onPop = () => setView(getViewFromPath(window.location.pathname));
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
-  const goToApp = () => { window.location.hash = "app"; setView("app"); };
-  const goToBlog = () => { window.location.hash = "blog"; setView("blog"); };
-  const goHome = () => { window.location.hash = ""; setView("landing"); };
+
+  // Update URL to /en or /sv when language changes on landing
+  useEffect(() => {
+    if (view === "landing") {
+      const current = window.location.pathname;
+      const target = "/" + lang;
+      if (current !== target && current !== "/") {
+        window.history.replaceState({}, "", target);
+      } else if (current === "/") {
+        window.history.replaceState({}, "", target);
+      }
+    }
+  }, [lang, view]);
+
+  const goToApp = () => {
+    window.history.pushState({}, "", "/app");
+    setView("app");
+  };
+  const goToBlog = () => {
+    window.history.pushState({}, "", "/blog");
+    setView("blog");
+  };
+  const goHome = () => {
+    window.history.pushState({}, "", "/" + lang);
+    setView("landing");
+  };
 
   if (view === "app") return <App />;
   if (view === "blog") return <Blog onEnterApp={goToApp} onBack={goHome} />;

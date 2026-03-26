@@ -11,6 +11,565 @@ function Logo({ size = 32 }) {
   );
 }
 
+// ─────────────────────────────────────────────
+// BLOG ILLUSTRATIONS — unique SVG per theme
+// ─────────────────────────────────────────────
+const ILLUS_MAP = {
+  // reply-rate / personal journey
+  "personalised-demos-reply-rate": "replyrate",
+  "personaliserade-demos-svarsprocent": "replyrate",
+  "increase-reply-rates-cold-outreach": "replyrate",
+  "oka-svarsfrekvens-kall-outreach": "replyrate",
+  "cold-email-metrics-benchmarks": "replyrate",
+  "from-3-to-12-percent-reply-rate": "journey",
+  "fran-3-till-12-procent-svarsfrekvens": "journey",
+  // cold email / templates
+  "cold-email-personalisation-sdrs": "coldemail",
+  "kall-e-post-tips-sdr": "coldemail",
+  "write-cold-email-that-gets-replies": "coldemail",
+  "skriva-ett-bra-saljmejl": "coldemail",
+  "sales-email-templates-b2b": "templates",
+  "kall-e-post-mallar-sv": "templates",
+  "cold-email-examples-2025": "templates",
+  "email-subject-lines-that-work": "templates",
+  "50-cold-email-subject-lines": "templates",
+  "follow-up-email-sequence": "followup",
+  "outreach-uppfoljning-sv": "followup",
+  "detailing-cold-email-anatomy": "anatomy",
+  // visual / demo
+  "visual-demos-b2b-outreach": "visual",
+  "logo-personalisation-saas-sales": "visual",
+  "video-vs-image-cold-email": "visual",
+  "visuell-outreach-guide": "visual",
+  "visuell-saljstrategi-sv": "visual",
+  "personalisation-at-scale-tactics": "visual",
+  "how-to-use-logoplacers": "product",
+  "hur-man-anvander-logoplacers": "product",
+  "what-is-logoplacers": "product",
+  // gmail / send
+  "gmail-bulk-send-personalised": "gmail",
+  "best-time-to-send-cold-email": "timing",
+  "outreach-timing-sv": "timing",
+  "email-open-rate-improvement": "timing",
+  "ab-testing-cold-email": "abtesting",
+  // deliverability
+  "deliverability-cold-email-2025": "deliverability",
+  "kall-e-post-leveransbarhet-sv": "deliverability",
+  "email-warming-guide": "deliverability",
+  // comparison / tools
+  "figma-alternative-sales-demos": "comparison",
+  "outreach-tool-comparison": "comparison",
+  "personalization-email-tools": "comparison",
+  "linkedin-outreach-vs-cold-email": "comparison",
+  "cold-calling-vs-cold-email": "comparison",
+  "video-vs-image-cold-email": "comparison",
+  "best-sales-tool-2025": "tools",
+  "basta-saljverktyget-2025": "tools",
+  "sales-tech-stack-guide": "tools",
+  // strategy / growth
+  "seo-for-saas-sales-tools": "seo",
+  "seo-for-saaslager-sv": "seo",
+  "b2b-content-marketing-leads": "seo",
+  "saas-go-to-market-guide": "gtm",
+  "startup-outbound-first-100-customers": "gtm",
+  "growth-hacking-b2b-saas": "gtm",
+  "outbound-vs-inbound-leads": "funnel",
+  "saljare-vs-reklam": "funnel",
+  "saas-outbound-playbook": "funnel",
+  "outbound-playbook-b2b-sv": "funnel",
+  "pipeline-velocity": "funnel",
+  "icp-definition-saas": "funnel",
+  // SDR / team
+  "outbound-sales-team-structure": "team",
+  "hiring-first-sdrs": "team",
+  "sdr-coaching-framework": "team",
+  "account-executive-skills": "team",
+  // psychology / mindset
+  "psychology-cold-email": "psychology",
+  "email-personalisation-psychology": "psychology",
+  "storytelling-b2b-sales": "psychology",
+  "morning-routine-top-sdr": "routine",
+  // ROI / calculator
+  "cold-email-personalisation-calculator": "roi",
+  "personalisation-roi-calculator": "roi",
+  "saas-trial-conversion": "roi",
+  "saas-pricing-strategy": "roi",
+  "saas-churn-prevention": "roi",
+  "customer-success-expansion-revenue": "roi",
+};
+function getBlogIllusType(slug, cat) {
+  if (ILLUS_MAP[slug]) return ILLUS_MAP[slug];
+  if (cat === "Playbook" || cat === "Spelbok") return "templates";
+  if (cat === "Tutorial" || cat === "Guide") return "product";
+  if (cat === "Comparison") return "comparison";
+  if (cat === "Industry" || cat === "Bransch") return "tools";
+  return "coldemail";
+}
+
+function BlogIllustration({ slug, cat, accent }) {
+  const type = getBlogIllusType(slug, cat);
+  const c = accent || "rgba(220,190,255,0.85)";
+  const c2 = accent ? accent.replace("0.85", "0.4").replace("0.8","0.35") : "rgba(180,160,255,0.4)";
+
+  // shared shimmer animation id
+  const id = slug.replace(/-/g, "").slice(0, 8);
+
+  if (type === "journey") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs>
+        <linearGradient id={`jg${id}`} x1="0" y1="1" x2="1" y2="0"><stop stopColor={c2}/><stop offset="1" stopColor={c}/></linearGradient>
+        <linearGradient id={`jga${id}`} x1="0" y1="0" x2="0" y2="1"><stop stopColor={c} stopOpacity="0.18"/><stop offset="1" stopColor={c} stopOpacity="0"/></linearGradient>
+        <filter id={`glow${id}`}><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      {/* Grid lines */}
+      {[0,1,2,3].map(i => <line key={i} x1="60" y1={40+i*38} x2="520" y2={40+i*38} stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>)}
+      {/* Y labels */}
+      {["12%","9%","6%","3%","0%"].map((l,i) => <text key={i} x="52" y={44+i*38} textAnchor="end" fontSize="9" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">{l}</text>)}
+      {/* Area fill */}
+      <path d="M60,152 L120,148 L180,138 L240,118 L290,98 L340,72 L400,54 L460,44 L520,40 L520,190 L60,190 Z" fill={`url(#jga${id})`}/>
+      {/* Line */}
+      <polyline points="60,152 120,148 180,138 240,118 290,98 340,72 400,54 460,44 520,40" fill="none" stroke={`url(#jg${id})`} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter={`url(#glow${id})`}/>
+      {/* Dots */}
+      {[[60,152],[180,138],[290,98],[400,54],[520,40]].map(([x,y],i) => <circle key={i} cx={x} cy={y} r={i===4?5:3} fill={i===4?c:"rgba(255,255,255,0.4)"} filter={i===4?`url(#glow${id})`:"none"}/>)}
+      {/* Labels */}
+      <text x="62" y="168" fontSize="9" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">Week 1 — 3%</text>
+      <text x="480" y="36" fontSize="9" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Week 4 — 12%</text>
+      {/* Arrow up */}
+      <text x="270" y="20" fontSize="11" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="800" textAnchor="middle">↑ 4× improvement</text>
+    </svg>
+  );
+
+  if (type === "replyrate") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><linearGradient id={`rg${id}`} x1="0" y1="0" x2="0" y2="1"><stop stopColor={c} stopOpacity="0.8"/><stop offset="1" stopColor={c} stopOpacity="0.1"/></linearGradient></defs>
+      {/* Bars */}
+      {[{x:80,h:30,l:"Generic",dim:true},{x:160,h:45,l:"+copy",dim:true},{x:240,h:62,l:"+timing",dim:true},{x:320,h:88,l:"+trigger",dim:false},{x:400,h:130,l:"+visual",dim:false},{x:480,h:165,l:"+logo",highlight:true}].map((b,i)=>(
+        <g key={i}>
+          <rect x={b.x-20} y={175-b.h} width="40" height={b.h} rx="4" fill={b.highlight ? c : b.dim ? "rgba(255,255,255,0.08)" : `${c}55`}/>
+          <text x={b.x} y={180} textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">{b.l}</text>
+          {b.highlight && <text x={b.x} y={175-b.h-6} textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">34%</text>}
+        </g>
+      ))}
+      <text x="280" y="22" textAnchor="middle" fontSize="12" fill="rgba(255,255,255,0.5)" fontFamily="DM Sans,sans-serif" fontWeight="700">Reply rate by personalisation layer</text>
+    </svg>
+  );
+
+  if (type === "coldemail") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><filter id={`ce${id}`}><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      {/* Inbox rows */}
+      {[{y:42,op:0.06,w:260},{y:68,op:0.08,w:320},{y:94,op:0.12,w:200},{y:120,op:1,highlight:true,w:340},{y:148,op:0.06,w:280}].map((r,i)=>(
+        <g key={i}>
+          <rect x="60" y={r.y} width={r.w||300} height="22" rx="6" fill={r.highlight ? `${c}20` : "rgba(255,255,255,0.03)"} stroke={r.highlight ? `${c}50` : "rgba(255,255,255,0.05)"} strokeWidth="1"/>
+          {r.highlight && <>
+            <circle cx="76" cy={r.y+11} r="5" fill={c} filter={`url(#ce${id})`}/>
+            <rect x="88" y={r.y+7} width="80" height="8" rx="3" fill={`${c}60`}/>
+            <rect x="176" y={r.y+7} width="120" height="8" rx="3" fill="rgba(255,255,255,0.2)"/>
+            <text x="390" y={r.y+15} fontSize="9" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Opened ✓</text>
+          </>}
+          {!r.highlight && <>
+            <circle cx="76" cy={r.y+11} r="5" fill="rgba(255,255,255,0.08)"/>
+            <rect x="88" y={r.y+7} width="60" height="8" rx="3" fill="rgba(255,255,255,0.07)"/>
+            <rect x="156" y={r.y+7} width={r.w-100||160} height="8" rx="3" fill="rgba(255,255,255,0.04)"/>
+          </>}
+        </g>
+      ))}
+      {/* Lightning bolt */}
+      <text x="480" y="115" fontSize="36" opacity="0.15">⚡</text>
+      <text x="280" y="186" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif">Personalised email stands out in the inbox</text>
+    </svg>
+  );
+
+  if (type === "templates") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Two email cards side by side */}
+      {[{x:60,label:"Template A",sub:"Visual hook"},{x:300,label:"Template B",sub:"Trigger-based"}].map((card,ci)=>(
+        <g key={ci}>
+          <rect x={card.x} y="30" width="200" height="140" rx="12" fill="rgba(255,255,255,0.03)" stroke={ci===0?`${c}50`:"rgba(255,255,255,0.07)"} strokeWidth="1"/>
+          <text x={card.x+16} y="52" fontSize="10" fill={ci===0?c:"rgba(255,255,255,0.35)"} fontFamily="DM Sans,sans-serif" fontWeight="700">{card.label}</text>
+          <text x={card.x+16} y="65" fontSize="8" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">{card.sub}</text>
+          {[0,1,2,3,4].map(j=><rect key={j} x={card.x+16} y={76+j*16} width={[140,100,120,80,60][j]} height="7" rx="3" fill={ci===0?"rgba(220,190,255,0.15)":"rgba(255,255,255,0.06)"}/>)}
+          {ci===0 && <rect x={card.x+16} y={76+5*16} width="140" height="22" rx="6" fill={`${c}25`} stroke={`${c}50`} strokeWidth="1"/>}
+          {ci===0 && <text x={card.x+86} y={76+5*16+15} textAnchor="middle" fontSize="9" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Worth 15 min? →</text>}
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "visual") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><filter id={`vf${id}`}><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      {/* Screenshot mockup */}
+      <rect x="80" y="20" width="400" height="160" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+      <rect x="80" y="20" width="400" height="28" rx="12" fill="rgba(255,255,255,0.05)"/>
+      {[0,1,2].map(i=><circle key={i} cx={96+i*14} cy="34" r="4" fill={["rgba(255,95,87,0.5)","rgba(255,189,46,0.5)","rgba(40,201,64,0.5)"][i]}/>)}
+      {/* UI skeleton */}
+      {[0,1,2].map(i=><rect key={i} x="110" y={66+i*22} width={[180,140,200][i]} height="10" rx="4" fill="rgba(255,255,255,0.05)"/>)}
+      {/* Logo placement - glowing */}
+      <rect x="340" y="62" width="110" height="64" rx="10" fill={`${c}10`} stroke={`${c}60`} strokeWidth="1.5" strokeDasharray="4,3"/>
+      <text x="395" y="94" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Your Logo</text>
+      <text x="395" y="108" textAnchor="middle" fontSize="8" fill={`${c}80`} fontFamily="DM Sans,sans-serif">auto-placed</text>
+      {/* Glow */}
+      <ellipse cx="395" cy="94" rx="50" ry="30" fill={c} opacity="0.04" filter={`url(#vf${id})`}/>
+      <text x="280" y="196" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">Prospect's logo placed automatically on your demo</text>
+    </svg>
+  );
+
+  if (type === "gmail") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><filter id={`gf${id}`}><feGaussianBlur stdDeviation="6"/></filter></defs>
+      {/* Send trail */}
+      {[0,1,2,3,4,5,6,7].map(i=>(
+        <g key={i} opacity={0.15+i*0.1}>
+          <rect x={80+i*52} y={85+Math.sin(i*0.8)*15} width="36" height="26" rx="6" fill="rgba(255,255,255,0.05)" stroke={`${c}${Math.round(30+i*10).toString(16)}`} strokeWidth="1"/>
+          <path d={`M${80+i*52},${87+Math.sin(i*0.8)*15} L${98+i*52},${98+Math.sin(i*0.8)*15} L${116+i*52},${87+Math.sin(i*0.8)*15}`} fill="none" stroke={`${c}40`} strokeWidth="1"/>
+        </g>
+      ))}
+      <circle cx="480" cy="100" r="22" fill={`${c}20`} filter={`url(#gf${id})`}/>
+      <text x="480" y="105" textAnchor="middle" fontSize="16">✓</text>
+      <text x="280" y="170" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif">100 personalised emails sent in under 10 minutes</text>
+    </svg>
+  );
+
+  if (type === "product") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Step flow */}
+      {[
+        {x:60,label:"Upload",icon:"↑"},
+        {x:175,label:"Paste list",icon:"≡"},
+        {x:290,label:"Place logo",icon:"⊕"},
+        {x:405,label:"Send",icon:"→"},
+      ].map((s,i)=>(
+        <g key={i}>
+          <circle cx={s.x+30} cy="90" r="28" fill={i===3?`${c}25`:"rgba(255,255,255,0.04)"} stroke={i===3?`${c}70`:"rgba(255,255,255,0.10)"} strokeWidth="1.5"/>
+          <text x={s.x+30} y="95" textAnchor="middle" fontSize="16" fill={i===3?c:"rgba(255,255,255,0.4)"} fontFamily="DM Sans,sans-serif">{s.icon}</text>
+          <text x={s.x+30} y="136" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">{s.label}</text>
+          {i<3 && <path d={`M${s.x+62},90 L${s.x+85},90`} stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeDasharray="3,2"/>}
+        </g>
+      ))}
+      <text x="280" y="170" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">From upload to sent in under 10 minutes</text>
+    </svg>
+  );
+
+  if (type === "comparison") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Two columns */}
+      <text x="168" y="36" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif" fontWeight="700">Others</text>
+      <text x="392" y="36" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Logoplacers</text>
+      {[
+        ["Manual logos","Auto-fetch"],
+        ["1 demo / 30 min","100 demos / 8 min"],
+        ["No Gmail send","Gmail integrated"],
+        ["Design skills needed","No skills needed"],
+      ].map(([a,b],i)=>(
+        <g key={i}>
+          <rect x="60" y={50+i*34} width="216" height="26" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+          <text x="76" y={50+i*34+17} fontSize="10" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">✗ {a}</text>
+          <rect x="284" y={50+i*34} width="216" height="26" rx="7" fill={`${c}10`} stroke={`${c}40`} strokeWidth="1"/>
+          <text x="300" y={50+i*34+17} fontSize="10" fill={c} fontFamily="DM Sans,sans-serif">✓ {b}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "timing") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Heatmap-style grid */}
+      {["Mon","Tue","Wed","Thu","Fri"].map((day,di)=>(
+        <g key={di}>
+          <text x={100+di*80} y="44" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">{day}</text>
+          {["8am","10am","12pm","2pm","4pm"].map((hr,hi)=>{
+            const heat = [[0.1,0.3,0.15,0.1,0.05],[0.4,0.9,0.3,0.7,0.25],[0.5,1,0.35,0.8,0.2],[0.45,0.85,0.3,0.65,0.15],[0.15,0.25,0.1,0.1,0.05]][hi][di];
+            return (
+              <g key={hi}>
+                {di===0 && <text x="82" y={62+hi*26} textAnchor="end" fontSize="8" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">{hr}</text>}
+                <rect x={88+di*80} y={52+hi*26} width="56" height="20" rx="5" fill={heat>0.7?c:heat>0.4?`${c}60`:heat>0.2?`${c}25`:"rgba(255,255,255,0.03)"} opacity={0.3+heat*0.7}/>
+              </g>
+            );
+          })}
+        </g>
+      ))}
+      <text x="280" y="192" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">Best send times — Tue/Wed 8-10am</text>
+    </svg>
+  );
+
+  if (type === "followup") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {x:60,day:"Day 1",label:"Initial + visual hook",pct:"+0",fill:true},
+        {x:178,day:"Day 4",label:"Short follow-up",pct:"+20%",fill:true},
+        {x:296,day:"Day 8",label:"New angle",pct:"+28%",fill:true},
+        {x:414,day:"Day 14",label:"Break-up email",pct:"+35%",fill:true},
+      ].map((s,i)=>(
+        <g key={i}>
+          <rect x={s.x} y="50" width="100" height="90" rx="10" fill={`${c}${i===0?"20":"10"}`} stroke={`${c}${i===0?"60":"30"}`} strokeWidth="1"/>
+          <text x={s.x+50} y="72" textAnchor="middle" fontSize="9" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">{s.day}</text>
+          <text x={s.x+50} y="90" textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.35)" fontFamily="DM Sans,sans-serif" style={{maxWidth:80}}>{s.label.split(" ").slice(0,2).join(" ")}</text>
+          <text x={s.x+50} y="104" textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif">{s.label.split(" ").slice(2).join(" ")}</text>
+          <text x={s.x+50} y="128" textAnchor="middle" fontSize="11" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">{s.pct}</text>
+          {i<3 && <path d={`M${s.x+104},95 L${s.x+118},95`} stroke={`${c}50`} strokeWidth="1.5" strokeDasharray="3,2"/>}
+        </g>
+      ))}
+      <text x="280" y="175" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">Cumulative reply rate increase over sequence</text>
+    </svg>
+  );
+
+  if (type === "tools") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {x:80,y:60,label:"Prospecting",tools:["Apollo","Clay"],col:"rgba(255,200,100,0.7)"},
+        {x:230,y:60,label:"Personalisation",tools:["Logoplacers"],col:c},
+        {x:380,y:60,label:"Sequencing",tools:["Reply.io","Outreach"],col:"rgba(180,240,180,0.7)"},
+      ].map((cat2,ci)=>(
+        <g key={ci}>
+          <rect x={cat2.x} y={cat2.y} width="130" height="90" rx="12" fill="rgba(255,255,255,0.03)" stroke={`${cat2.col}40`} strokeWidth="1"/>
+          <text x={cat2.x+65} y={cat2.y+18} textAnchor="middle" fontSize="9" fill={cat2.col} fontFamily="DM Sans,sans-serif" fontWeight="700">{cat2.label}</text>
+          {cat2.tools.map((t,ti)=>(
+            <rect key={ti} x={cat2.x+14} y={cat2.y+26+ti*28} width="102" height="20" rx="6" fill={`${cat2.col}12`} stroke={`${cat2.col}30`} strokeWidth="1">
+              <title>{t}</title>
+            </rect>
+          ))}
+          {cat2.tools.map((t,ti)=>(
+            <text key={ti} x={cat2.x+65} y={cat2.y+40+ti*28} textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.5)" fontFamily="DM Sans,sans-serif">{t}</text>
+          ))}
+          {ci<2 && <path d={`M${cat2.x+134},105 L${cat2.x+148},105`} stroke="rgba(255,255,255,0.1)" strokeWidth="1.5"/>}
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "funnel") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {w:380,label:"Sent",val:"500",y:25},
+        {w:280,label:"Opened",val:"220",y:68},
+        {w:180,label:"Replied",val:"68",y:111},
+        {w:100,label:"Meetings",val:"22",y:154},
+      ].map((f,i)=>(
+        <g key={i}>
+          <rect x={(560-f.w)/2} y={f.y} width={f.w} height="32" rx="7" fill={i===0?"rgba(255,255,255,0.05)":i===3?`${c}25`:`${c}${(12+i*8).toString(16)}`} stroke={i===3?`${c}60`:`${c}30`} strokeWidth="1"/>
+          <text x="100" y={f.y+21} textAnchor="start" fontSize="10" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">{f.label}</text>
+          <text x="460" y={f.y+21} textAnchor="end" fontSize="10" fill={i===3?c:"rgba(255,255,255,0.5)"} fontFamily="DM Sans,sans-serif" fontWeight="700">{f.val}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "psychology") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><filter id={`pf${id}`}><feGaussianBlur stdDeviation="8"/></filter></defs>
+      <ellipse cx="280" cy="95" rx="200" ry="80" fill={`${c}04`} filter={`url(#pf${id})`}/>
+      {[
+        {x:140,y:55,label:"Reciprocity",desc:"Show effort first"},
+        {x:370,y:55,label:"Logo recognition",desc:"Instant familiarity"},
+        {x:100,y:130,label:"Pattern break",desc:"Stand out visually"},
+        {x:350,y:130,label:"Low friction CTA",desc:"Easy yes/no ask"},
+      ].map((p2,i)=>(
+        <g key={i}>
+          <rect x={p2.x-50} y={p2.y-16} width="130" height="36" rx="8" fill={`${c}10`} stroke={`${c}35`} strokeWidth="1"/>
+          <text x={p2.x+15} y={p2.y} textAnchor="middle" fontSize="9" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">{p2.label}</text>
+          <text x={p2.x+15} y={p2.y+13} textAnchor="middle" fontSize="8" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif">{p2.desc}</text>
+        </g>
+      ))}
+      <circle cx="280" cy="95" r="24" fill="rgba(255,255,255,0.03)" stroke={`${c}40`} strokeWidth="1.5"/>
+      <text x="280" y="99" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Reply</text>
+    </svg>
+  );
+
+  if (type === "seo") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Search results mockup */}
+      {[
+        {y:28,pos:1,title:"How to personalise cold email at scale",url:"logoplacers.com/blog/...",highlight:true},
+        {y:82,pos:2,title:"Best Figma alternative for sales demos",url:"logoplacers.com/blog/...",highlight:true},
+        {y:136,pos:3,title:"Cold email deliverability 2025 guide",url:"logoplacers.com/blog/...",highlight:false},
+      ].map((r,i)=>(
+        <g key={i}>
+          <rect x="60" y={r.y} width="440" height="46" rx="8" fill={r.highlight?"rgba(220,190,255,0.06)":"rgba(255,255,255,0.02)"} stroke={r.highlight?`${c}40`:"rgba(255,255,255,0.05)"} strokeWidth="1"/>
+          <text x="80" y={r.y+17} fontSize="8" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">#{r.pos}</text>
+          <text x="100" y={r.y+17} fontSize="10" fill={r.highlight?c:"rgba(255,255,255,0.4)"} fontFamily="DM Sans,sans-serif" fontWeight={r.highlight?"700":"400"}>{r.title}</text>
+          <text x="100" y={r.y+34} fontSize="8" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">{r.url}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "roi") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <defs><linearGradient id={`roig${id}`} x1="0" y1="1" x2="0" y2="0"><stop stopColor={c} stopOpacity="0.05"/><stop offset="1" stopColor={c} stopOpacity="0.25"/></linearGradient></defs>
+      {/* Before / after */}
+      <text x="170" y="26" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.25)" fontFamily="DM Sans,sans-serif">Before</text>
+      <text x="390" y="26" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">After</text>
+      {[
+        {label:"Reply rate",before:"2%",after:"12%"},
+        {label:"Meetings/mo",before:"4",after:"18"},
+        {label:"Revenue",before:"$40k",after:"$180k"},
+        {label:"Time/prospect",before:"35min",after:"30sec"},
+      ].map((row,i)=>(
+        <g key={i}>
+          <text x="60" y={52+i*34} fontSize="9" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif">{row.label}</text>
+          <rect x="140" y={38+i*34} width="80" height="22" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <text x="180" y={53+i*34} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.4)" fontFamily="DM Sans,sans-serif">{row.before}</text>
+          <text x="268" y={53+i*34} textAnchor="middle" fontSize="14" fill="rgba(255,255,255,0.15)">→</text>
+          <rect x="290" y={38+i*34} width="100" height="22" rx="6" fill={`url(#roig${id})`} stroke={`${c}50`} strokeWidth="1"/>
+          <text x="340" y={53+i*34} textAnchor="middle" fontSize="11" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">{row.after}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "deliverability") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Domain health gauge */}
+      <text x="280" y="28" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.35)" fontFamily="DM Sans,sans-serif" fontWeight="700">Sender Reputation</text>
+      {/* Arc */}
+      <path d="M110,140 A170,130 0 0,1 450,140" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="18" strokeLinecap="round"/>
+      <path d="M110,140 A170,130 0 0,1 450,140" fill="none" stroke={c} strokeWidth="18" strokeLinecap="round" strokeDasharray="530" strokeDashoffset="180" opacity="0.7"/>
+      <text x="280" y="130" textAnchor="middle" fontSize="32" fill="#fff" fontFamily="DM Sans,sans-serif" fontWeight="800">87</text>
+      <text x="280" y="152" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif">Good standing</text>
+      {[{x:80,l:"SPF ✓"},{x:200,l:"DKIM ✓"},{x:320,l:"DMARC ✓"},{x:440,l:"Warmed ✓"}].map((b,i)=>(
+        <g key={i}><rect x={b.x-28} y="168" width="72" height="18" rx="5" fill={`${c}15`} stroke={`${c}30`} strokeWidth="1"/><text x={b.x+8} y="181" textAnchor="middle" fontSize="8" fill={c} fontFamily="DM Sans,sans-serif">{b.l}</text></g>
+      ))}
+    </svg>
+  );
+
+  if (type === "abtesting") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <text x="200" y="30" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.3)" fontFamily="DM Sans,sans-serif" fontWeight="700">Variant A</text>
+      <text x="380" y="30" textAnchor="middle" fontSize="11" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Variant B</text>
+      {/* Bar A */}
+      <rect x="140" y="160" width="60" height={-80} rx="5" fill="rgba(255,255,255,0.1)"/>
+      <text x="170" y="72" textAnchor="middle" fontSize="14" fill="rgba(255,255,255,0.4)" fontFamily="DM Sans,sans-serif" fontWeight="700">22%</text>
+      {/* Bar B */}
+      <rect x="320" y="160" width="60" height={-130} rx="5" fill={`${c}50`}/>
+      <text x="350" y="22" textAnchor="middle" fontSize="14" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">37%</text>
+      <rect x="140" y="160" width="240" height="2" rx="1" fill="rgba(255,255,255,0.1)"/>
+      <text x="280" y="185" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">Visual hook +68% open rate vs text-only</text>
+    </svg>
+  );
+
+  if (type === "anatomy") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {y:18,label:"Subject line",w:260,note:"Under 40 chars",hi:false},
+        {y:46,label:"Opening",w:340,note:"Start with them",hi:false},
+        {y:74,label:"Visual hook",w:300,note:"← Logo image",hi:true},
+        {y:102,label:"Value prop",w:220,note:"One sentence",hi:false},
+        {y:130,label:"Social proof",w:280,note:"Specific number",hi:false},
+        {y:158,label:"CTA",w:160,note:"Yes/no question",hi:true},
+      ].map((r,i)=>(
+        <g key={i}>
+          <rect x="60" y={r.y} width={r.w} height="22" rx="5" fill={r.hi?`${c}15`:"rgba(255,255,255,0.04)"} stroke={r.hi?`${c}50`:"rgba(255,255,255,0.06)"} strokeWidth="1"/>
+          <text x="72" y={r.y+15} fontSize="9" fill={r.hi?c:"rgba(255,255,255,0.35)"} fontFamily="DM Sans,sans-serif">{r.label}</text>
+          <text x={60+r.w+10} y={r.y+15} fontSize="8" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">{r.note}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "routine") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {t:"7:45",a:"Review pipeline",done:true},
+        {t:"8:00",a:"Build personalised demos",done:true},
+        {t:"8:30",a:"Send sequence",done:true},
+        {t:"9:00",a:"Call warm prospects",done:false},
+        {t:"10:30",a:"LinkedIn engagement",done:false},
+      ].map((item,i)=>(
+        <g key={i}>
+          <text x="70" y={38+i*32} fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">{item.t}</text>
+          <rect x="112" y={22+i*32} width={290} height="22" rx="6" fill={item.done?`${c}12`:"rgba(255,255,255,0.03)"} stroke={item.done?`${c}40`:"rgba(255,255,255,0.05)"} strokeWidth="1"/>
+          <text x="124" y={37+i*32} fontSize="9" fill={item.done?c:"rgba(255,255,255,0.3)"} fontFamily="DM Sans,sans-serif">{item.done?"✓":""} {item.a}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "gtm") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {[
+        {x:60,label:"Phase 1",desc:"Define ICP",col:"rgba(255,255,255,0.3)"},
+        {x:165,label:"Phase 2",desc:"Build list",col:"rgba(255,200,100,0.7)"},
+        {x:270,label:"Phase 3",desc:"First sequence",col:c},
+        {x:375,label:"Phase 4",desc:"10 customers",col:`${c}cc`},
+        {x:468,label:"Scale",desc:"Repeat",col:c},
+      ].map((p2,i)=>(
+        <g key={i}>
+          <rect x={p2.x} y="60" width="88" height="80" rx="10" fill={`${p2.col.slice(0,-1).replace("0.","0.0")}}`} stroke={`${p2.col}50`} strokeWidth="1" style={{fill:"rgba(255,255,255,0.02)"}}/>
+          <rect x={p2.x} y="60" width="88" height="80" rx="10" fill="none" stroke={`${p2.col.replace("rgba(","").replace(")","")}`.split(",").length>3 ? p2.col.replace(/[\d.]+\)$/,"0.2)") : "rgba(255,255,255,0.1)"} strokeWidth="1"/>
+          <text x={p2.x+44} y="80" textAnchor="middle" fontSize="8" fill={p2.col} fontFamily="DM Sans,sans-serif" fontWeight="700">{p2.label}</text>
+          <text x={p2.x+44} y="105" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.4)" fontFamily="DM Sans,sans-serif">{p2.desc}</text>
+          {i<4 && <path d={`M${p2.x+92},100 L${p2.x+101},100`} stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>}
+        </g>
+      ))}
+    </svg>
+  );
+
+  if (type === "team") return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      {/* Org chart */}
+      <rect x="220" y="20" width="120" height="36" rx="8" fill={`${c}20`} stroke={`${c}60`} strokeWidth="1"/>
+      <text x="280" y="43" textAnchor="middle" fontSize="10" fill={c} fontFamily="DM Sans,sans-serif" fontWeight="700">Sales Manager</text>
+      <line x1="280" y1="56" x2="280" y2="76" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+      <line x1="140" y1="76" x2="420" y2="76" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+      {[{x:80,label:"SDR 1"},{x:215,label:"SDR 2"},{x:345,label:"AE 1"},{x:420,label:"AE 2"}].map((p2,i)=>(
+        <g key={i}>
+          <line x1={p2.x+40} y1="76" x2={p2.x+40} y2="96" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+          <rect x={p2.x} y="96" width="80" height="34" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+          <text x={p2.x+40} y="118" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.4)" fontFamily="DM Sans,sans-serif">{p2.label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+
+  // Default fallback
+  return (
+    <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style={{width:"100%",height:"100%",display:"block"}}>
+      <rect x="100" y="50" width="360" height="100" rx="16" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+      <text x="280" y="105" textAnchor="middle" fontSize="12" fill="rgba(255,255,255,0.2)" fontFamily="DM Sans,sans-serif">Logoplacers</text>
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────
+// RELATED POSTS
+// ─────────────────────────────────────────────
+function RelatedPosts({ current, all, onPost }) {
+  const related = all
+    .filter(p => p.slug !== current.slug && p.lang === current.lang)
+    .map(p => ({ p, score: p.tags.filter(t => current.tags.includes(t)).length + (p.cat === current.cat ? 1 : 0) }))
+    .sort((a,b) => b.score - a.score)
+    .slice(0,3)
+    .map(x => x.p);
+  if (!related.length) return null;
+  const c = CAT_COLORS[current.cat] || "rgba(220,190,255,0.85)";
+  return (
+    <div style={{ marginTop: 60, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", marginBottom: 20 }}>Related reading</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {related.map(p => {
+          const rc = CAT_COLORS[p.cat] || "rgba(220,190,255,0.85)";
+          return (
+            <button key={p.slug} onClick={() => onPost(p)}
+              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "14px 18px", cursor: "pointer", fontFamily: "inherit", textAlign: "left", display: "flex", alignItems: "center", gap: 14, transition: "all .2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor=`${c}40`; }}
+              onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.025)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.06)"; }}>
+              <div style={{ width: 80, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <BlogIllustration slug={p.slug} cat={p.cat} accent={rc} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: rc, marginBottom: 4 }}>{p.cat}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.75)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{p.title}</div>
+              </div>
+              <span style={{ fontSize: 11, color: rc, flexShrink: 0 }}>→</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function CDShimmerText({ children, style = {}, dark = true }) {
   const lightGrad = "linear-gradient(105deg, #000 0%, #3a1a5e 18%, #1a3a5e 30%, #3a1a3a 42%, #1a2a3a 54%, #2a1a3a 66%, #1a1a00 78%, #000 88%, #3a1a5e 100%)";
   const darkGrad = "linear-gradient(105deg, #fff 0%, #e8c8ff 18%, #b8e8ff 30%, #ffe8f8 42%, #c8f8ff 54%, #f8c8ff 66%, #fff8e8 78%, #fff 88%, #e8c8ff 100%)";
@@ -31,27 +590,27 @@ function CDShimmerText({ children, style = {}, dark = true }) {
 
 const POSTS = [
   // ENGLISH
-  { slug: "personalised-demos-reply-rate", lang: "en", title: "How Personalised Sales Demos Increase Reply Rates by 3x", excerpt: "Visual personalisation outperforms text-only cold outreach in every study. Here is the data and how to do it at scale.", cat: "Strategy", rt: "5 min", date: "Mar 2025", tags: ["personalisation", "cold email", "reply rate"], body: "Personalised outreach is not new. What is new is doing it visually and at scale. When a prospect opens än email and sees their own company logo placed perfectly on your product screenshot, something clicks. It signals effort. It signals relevance. And it converts.\n\nStudies consistently show that visual personalisation outperforms text-only approaches. Reply rates of 15 to 30% are achievable för teams that implement logo-based demo personalisation versus the industry average of 2 to 5% för generic cold email.\n\nThe core mechanic is simple: upload your product screenshot once, auto-fetch your prospect's logo, and send a tailored image that looks like you spent än hour on it. You spent 20 seconds.\n\nThis is not about manipulation. It is about showing your prospect that you understand their world. A logo is the most recognisable visual asset a company has. When yours appears on someone's tool in context, it creates immediate rapport.\n\nScale is the key advantage. Doing this manually in Figma för one prospect might take 30 minutes. Doing it för 50 prospects with Logoplacers takes 8 minutes total." },
-  { slug: "cold-email-personalisation-sdrs", lang: "en", title: "Cold Email Personalisation at Scale: A Practical Guide för SDRs", excerpt: "Most SDRs spend 70% of their time on manual research. Here is how to cut that to under 5% without sacrificing quality.", cat: "Playbook", rt: "7 min", date: "Mar 2025", tags: ["SDR", "cold email", "automation"], body: "The average SDR spends 3.5 hours per day on research and personalisation. That is time not spent on calls, not spent closing. And most of that personalisation is basic: first name, company name, maybe a LinkedIn detail. Prospects see through it immediately.\n\nThe shift to visual personalisation changes the economics. Instead of writing a unique opening line för every prospect, you create one great visual asset and let automation do the personalisation layer.\n\nHere is the workflow: build your demo screenshot in Logoplacers once. Add text layers with placeholders like name and company. Then paste your prospect list and let the tool generate 50 unique personalised images in under 2 minutes.\n\nEach image gets sent directly from your Gmail with a 15 to 30 second anti-spam delay between sends. The prospect receives än email that looks like you hand-crafted a custom demo specifically för them.\n\nThe SDRs who adopt this report 4 to 6x increases in positive reply rates within the first two weeks." },
-  { slug: "visual-demos-b2b-outreach", lang: "en", title: "Why Visual Demos Work Better Than Text in B2B Outreach", excerpt: "The human brain processes images 60,000x faster than text. Here is why that matters för your sales pipeline.", cat: "Strategy", rt: "4 min", date: "Feb 2025", tags: ["visual demos", "B2B", "sales"], body: "The brain processes visual information 60,000 times faster than text. In cold outreach, you have approximately 3 seconds to capture attention before your email is archived. A personalised visual demo is your strongest tool för those 3 seconds.\n\nText-only cold emails rely on the prospect reading får enough to understand your value proposition. Most do not. A well-designed visual demo communicates the core value instantly before a single word is read.\n\nThe psychology is straightforward. When a B2B buyer sees their company logo placed on a product screenshot, several things happen simultaneously. They recognise their brand and get immediate attention. They see it in context with your tool and get instant product comprehension. They feel that this email was prepared specifically för them.\n\nNone of this requires expensive video production. A single high-quality screenshot with a well-placed logo achieves the same psychological effect at 1% of the cost and time." },
-  { slug: "gmail-bulk-send-personalised", lang: "en", title: "How to Send 100 Personalised Emails from Gmail in Under 10 Minutes", excerpt: "A step-by-step workflow för bulk personalised outreach from Gmail without getting flagged as spam.", cat: "Tutorial", rt: "6 min", date: "Feb 2025", tags: ["Gmail", "bulk send", "tutorial"], body: "Sending personalised bulk email from Gmail requires three things: unique content per recipient, natural send timing, and a good sender reputation.\n\nLogoplacers handles the first two automatically. Each recipient gets a genuinely unique personalised image attached. Sends are spaced 15 to 30 seconds apart to mimic natural human sending behaviour.\n\nThe workflow: upload your screenshot, arrange logo placement and text layers, paste your prospect list, write your email with name and company placeholders, connect Gmail via OAuth, and hit send.\n\nImportant note on warm sending: new Gmail accounts should ramp up slowly. Start with 20 to 30 sends per day för the first two weeks before scaling. Use a custom domain rather than a personal Gmail address för B2B outreach. A Google Workspace account is significantly better than personal Gmail för deliverability." },
-  { slug: "logo-personalisation-saas-sales", lang: "en", title: "Logo Personalisation: The Easiest Win in SaaS Sales Outreach", excerpt: "One change to your outreach strategy that takes 20 minutes to implement and immediately improves every metric.", cat: "Strategy", rt: "4 min", date: "Feb 2025", tags: ["SaaS", "logo", "personalisation"], body: "If you work in SaaS sales, you are competing against dozens of other tools för the same buyer's attention. Your product might be genuinely better. But your outreach looks exactly like everyone else's.\n\nLogo personalisation is the lowest-effort, highest-impact change you can make right now. It takes one afternoon to set up and immediately differentiates every email you send.\n\nHere is the simple version: take a screenshot of your product with a company's logo already placed on it. Send that as part of your cold email. The prospect sees their brand in your UI. Conversion begins.\n\nThe more scalable version: use Logoplacers to automate this för your entire prospect list. One upload, 100 personalised demos, all sent from Gmail. The conversion lift pays för the tool in the first week." },
-  { slug: "write-cold-email-that-gets-replies", lang: "en", title: "How to Write a Cold Email That Actually Gets Replies in 2025", excerpt: "The anatomy of a high-converting cold email: subject line, opening, value prop, CTA. With real examples.", cat: "Playbook", rt: "8 min", date: "Mar 2025", tags: ["cold email", "copywriting", "reply rate"], body: "Most cold emails fail för one of three reasons: they are too long, too generic, or they ask för too much too soon.\n\nHere is the anatomy of a cold email that consistently gets replies.\n\nSubject line: 3 to 6 words. Specific beats clever. 'Question about your sales process' outperforms 'Revolutionise your pipeline with AI'. The goal is a curious open, not a click-bait promise.\n\nOpening line: Never start with 'I'. Start with them. 'Noticed you recently launched X' or 'Your team is scaling fast in Y' shows research and earns attention.\n\nValue proposition: One sentence. What do you do and why does it matter to this specific person? Not a feature list. A single concrete outcome.\n\nVisual hook: Include a personalised demo image. A screenshot with their logo placed on it communicates more than three paragraphs of copy. It is the fastest way to make the abstract concrete.\n\nCall to action: Ask för something tiny. 'Worth a 15-minute call?' or 'Would this be useful för your team?' A yes/no question converts better than 'Book a demo on my Calendly'.\n\nLength: Under 100 words för the text. The image does the heavy lifting." },
-  { slug: "sales-email-templates-b2b", lang: "en", title: "5 Sales Email Templates That Generate Meetings (Copy-Paste)", excerpt: "Battle-tested cold email templates för SaaS, agencies, and B2B services. Personalise and send today.", cat: "Playbook", rt: "6 min", date: "Mar 2025", tags: ["templates", "cold email", "B2B"], body: "Here are five cold email templates with above-average reply rates. Use them as starting points and personalise the details.\n\nTemplate 1 — The Visual Hook\nSubject: [Company] on [Your Tool]\nBody: Hi [Name], built a quick mockup of what [Company]'s logo would look like inside [Your Product]. [Attach personalised image.] Happy to show you the live version — worth 15 minutes?\n\nTemplate 2 — The Trigger\nSubject: Congrats on the funding\nBody: Hi [Name], saw [Company] just closed [round]. Teams at that stage usually hit the same bottleneck: [specific problem you solve]. We fixed this för [similar company]. Quick call this week?\n\nTemplate 3 — The Comparison\nSubject: How [Competitor Customer] handled this\nBody: Hi [Name], [Similar company] was dealing with [problem] before switching. Now they [result]. Would the same apply to [Company]?\n\nTemplate 4 — The Direct Ask\nSubject: [Problem] at [Company]?\nBody: Hi [Name], do you still handle [specific task] manually at [Company]? We built something that cuts that to minutes. One slide that explains it — want me to send it over?\n\nTemplate 5 — The Referral\nSubject: [Mutual contact] suggested I reach out\nBody: Hi [Name], [Name] mentioned you're the right person to speak with about [topic]. We help [type of company] with [outcome]. Would a quick intro call make sense?" },
-  { slug: "best-sales-tool-2025", lang: "en", title: "The Best Sales Tools in 2025: What Actually Works", excerpt: "A practical guide to the sales stack that high-performing teams are using right now, and what is overhyped.", cat: "Industry", rt: "7 min", date: "Mar 2025", tags: ["sales tools", "2025", "stack"], body: "The modern sales stack has exploded. There are hundreds of tools promising to 10x your pipeline. Most of them do not work as advertised. Here is what actually moves the needle.\n\nProspecting: Sales Navigator and Apollo are the standards. Clay is becoming popular för data enrichment at scale. The key is list quality över list size.\n\nPersonalisation: This is where most teams underinvest. Generic AI-written emails are immediately detectable. Visual personalisation — embedding the prospect's brand into a demo image — is both harder to automate generically and more effective.\n\nSequencing: Outreach and Salesloft för enterprise. Reply.io and Lemlist för SMB. The tool matters less than the sequence design.\n\nCRM: Salesforce för enterprise, HubSpot för growth stage, Pipedrive för simplicity. The best CRM is the one your team actually updates.\n\nMeetings: Calendly is the default. Chili Piper för routing complex teams.\n\nThe one underused tactic in 2025: visual demo personalisation. Teams that add a personalised screenshot to the first touchpoint consistently see 2 to 4x lift in positive replies across all other tools in their stack." },
-  { slug: "how-to-use-logoplacers", lang: "en", title: "How to Use Logoplacers: Complete Guide from Setup to First Send", excerpt: "Step-by-step walkthrough of Logoplacers — from uploading your first screenshot to sending personalised demos at scale.", cat: "Tutorial", rt: "8 min", date: "Feb 2025", tags: ["tutorial", "getting started", "guide"], body: "This guide walks you through the complete Logoplacers workflow from your first login to sending personalised demos to 50 prospects.\n\nStep 1 — Upload your base image\nThis is the screenshot you want to personalise. Ideally your product UI or a compelling visual that represents your value proposition. Drag it into the upload zone or click to browse. HEIC from iPhone is supported and converts automatically.\n\nStep 2 — Position the logo placeholder\nThe logo placeholder shows where each prospect's logo will appear. Drag it to a natural position on your image — inside a dashboard, on a header, or anywhere that looks intentional rather than pasted.\n\nStep 3 — Add text layers\nText layers let you add personalised text like the prospect's name or company. Use the sidebar to add layers and drag them to position.\n\nStep 4 — Add prospects\nPaste a list of companies in the text area on the right. Logoplacers guesses the domain and fetches the logo automatically. You can also add name, company, and email separated by commas för full personalisation.\n\nStep 5 — Preview\nClick Preview to cycle through your prospects and see exactly what each personalised image looks like before sending.\n\nStep 6 — Send or download\nConnect Gmail with one click. Write your email template using {name} and {company} placeholders. Hit send. Emails go out with natural delays to protect your deliverability. Or download a ZIP of all images to use in your own email tool." },
-  { slug: "increase-reply-rates-cold-outreach", lang: "en", title: "How to Get Higher Reply Rates on Cold Outreach (Proven Tactics)", excerpt: "Every tactic that has a measurable impact on cold email reply rates, ranked from highest to lowest impact.", cat: "Strategy", rt: "7 min", date: "Jan 2025", tags: ["reply rate", "cold outreach", "tactics"], body: "Getting higher reply rates on cold outreach is not about finding a magic phrase. It is about stacking marginal gains across every element of your outreach.\n\nHighest impact: Relevance. Reaching the right person at the right time with the right message. Signal-based outreach — targeting people who have just changed jobs, raised funding, or launched a product — outperforms list-based spray-and-pray by 5 to 10x.\n\nHigh impact: Visual personalisation. Attaching a personalised demo image with the prospect's logo increases reply rates more than any copy optimisation. The image communicates relevance faster than words.\n\nMedium impact: Subject line. Under 50 characters. Specific and curious beats clever and hypey. Test multiple versions.\n\nMedium impact: Send time. Tuesday to Thursday morning in the prospect's timezone. Avoid Monday morning and Friday afternoon.\n\nLower impact but still meaningful: Follow-up sequence. One follow-up adds 20 to 30% more replies. More than three follow-ups shows diminishing returns and risks deliverability.\n\nLowest impact that people overinvest in: The exact wording of the body copy. Once you have the right targeting and visual hook, the body copy matters much less than most people think." },
-  { slug: "what-is-logoplacers", lang: "en", title: "What Is Logoplacers? The Personalised Demo Tool Explained", excerpt: "A complete overview of how Logoplacers works, who it is for, and why sales teams are switching from Figma and Loom.", cat: "Product", rt: "5 min", date: "Jan 2025", tags: ["product", "overview", "getting started"], body: "Logoplacers is a browser-based tool that lets sales teams create personalised product demos at scale. You upload one product screenshot, and the tool generates unique versions för every prospect on your list, each with their own company logo automatically placed.\n\nThe core workflow has three steps. First, upload your screenshot and use the drag-and-drop editor to position where logos and text should appear. Second, paste your prospect list. Logoplacers automatically fetches each company's logo. Third, connect Gmail and send.\n\nWhat makes Logoplacers different: Loom requires recording per prospect. Figma requires design skills and manual work per person. Logoplacers does in 8 minutes what Figma takes 3 hours.\n\nIt is designed specifically för SDRs, AEs, and sales managers who send outreach at volume but want each touchpoint to feel personal." },
-  { slug: "figma-alternative-sales-demos", lang: "en", title: "The Best Figma Alternative för Sales Demo Personalisation", excerpt: "Figma is powerful but it was not built för sales. Here is a faster workflow that requires zero design skills.", cat: "Comparison", rt: "5 min", date: "Jan 2025", tags: ["Figma", "alternative", "comparison"], body: "Figma is än excellent design tool. It was built för product designers who need pixel-perfect control. It was not built för account executives who need to personalise 50 demo images before their 9am stand-up.\n\nThe problems with using Figma för sales demo personalisation are well-known. It requires a design background. Each personalisation is a manual process of copying a file, replacing a logo, and exporting. There is no bulk workflow. It does not connect to your email client.\n\nLogoplacers was built specifically to solve these problems. No design skills needed. Bulk personalisation is the core feature. Gmail integration means you go from personalised image to sent email without leaving the tool.\n\nThe typical switch reduces time per personalised demo from 25 to 40 minutes to under 30 seconds. För a team sending 50 demos per week, that is 20 or more hours saved every single week." },
-  { slug: "seo-for-saas-sales-tools", lang: "en", title: "SEO för SaaS Sales Tools: How to Get Organic Leads in 2025", excerpt: "The SEO playbook för sales tools: which keywords convert, how to build authority, and what to publish first.", cat: "Strategy", rt: "6 min", date: "Dec 2024", tags: ["SEO", "SaaS", "inbound"], body: "Organic search is the most scalable lead channel för SaaS tools. Here is the SEO strategy that works för sales tools specifically.\n\nKeywords that convert: Problem-aware searches ('how to personalise cold email at scale', 'figma alternative för sales') convert better than awareness-stage searches. Start with these.\n\nComparison pages: 'Logoplacers vs Lemlist', 'best alternative to Vidyard för cold email' — these capture high-intent searchers already evaluating tools.\n\nTutorial content: 'How to send 100 personalised emails from Gmail' attracts exactly the people who need your tool. Tutorial searchers have the highest trial conversion rates.\n\nBuild domain authority: Guest posts on sales blogs, being listed in tool directories like Product Hunt, G2, Capterra, and industry newsletters.\n\nTechnical fundamentals: Fast load times, proper schema markup för blog posts, canonical URLs, and a clean sitemap submitted to Google Search Console.\n\nThe compounding effect: SEO takes 6 to 12 months to show results. Start now. Publish two to three high-quality posts per month. By the time you are ready to scale paid acquisition, organic will already be generating leads." },
+  { slug: "personalised-demos-reply-rate", lang: "en", title: "How Personalised Sales Demos Increase Reply Rates by 3x", excerpt: "Visual personalisation outperforms text-only cold outreach in every study. Here is the data and how to do it at scale.", cat: "Strategy", rt: "5 min", date: "Mar 2025", tags: ["personalisation", "cold email", "reply rate"], body: "Personalised outreach is not new. What is new is doing it visually and at scale. When a prospect opens an email and sees their own company logo placed perfectly on your product screenshot, something clicks. It signals effort. It signals relevance. And it converts.\n\n## Why visual beats text\n\nStudies consistently show that visual personalisation outperforms text-only approaches. Reply rates of 15 to 30% are achievable for teams that implement logo-based demo personalisation versus the industry average of 2 to 5% for generic cold email.\n\n## The core mechanic\n\nUpload your product screenshot once, auto-fetch your prospect's logo, and send a tailored image that looks like you spent an hour on it. You spent 20 seconds.\n\nThis is not about manipulation. It is about showing your prospect that you understand their world. A logo is the most recognisable visual asset a company has. When it appears on your product screenshot, it creates immediate rapport.\n\n## Scale is the real advantage\n\nDoing this manually in Figma for one prospect might take 30 minutes. Doing it for 50 prospects with Logoplacers takes 8 minutes total.\n\n- Upload one base screenshot\n- Paste your prospect list — logos auto-fetch\n- Send 100 personalised emails from Gmail in under 10 minutes" },
+  { slug: "cold-email-personalisation-sdrs", lang: "en", title: "Cold Email Personalisation at Scale: A Practical Guide for SDRs", excerpt: "Most SDRs spend 70% of their time on manual research. Here is how to cut that to under 5% without sacrificing quality.", cat: "Playbook", rt: "7 min", date: "Mar 2025", tags: ["SDR", "cold email", "automation"], body: "The average SDR spends 3.5 hours per day on research and personalisation. That is time not spent on calls, not spent closing. And most of that personalisation is basic: first name, company name, maybe a LinkedIn detail. Prospects see through it immediately.\n\n## The shift to visual personalisation\n\nInstead of writing a unique opening line for every prospect, you create one great visual asset and let automation do the personalisation layer.\n\n## The workflow\n\n- Build your demo screenshot in Logoplacers once\n- Add text layers with placeholders like name and company\n- Paste your prospect list — 50 logos fetched in under 2 minutes\n- Each email goes out with a 15 to 30 second anti-spam delay\n\nThe prospect receives an email that looks like you hand-crafted a custom demo specifically for them.\n\n## Results\n\nThe SDRs who adopt this report 4 to 6x increases in positive reply rates within the first two weeks. The tool pays for itself on the first deal." },
+  { slug: "visual-demos-b2b-outreach", lang: "en", title: "Why Visual Demos Work Better Than Text in B2B Outreach", excerpt: "The human brain processes images 60,000x faster than text. Here is why that matters for your sales pipeline.", cat: "Strategy", rt: "4 min", date: "Feb 2025", tags: ["visual demos", "B2B", "sales"], body: "The brain processes visual information 60,000 times faster than text. In cold outreach, you have approximately 3 seconds to capture attention before your email is archived. A personalised visual demo is your strongest tool for those 3 seconds.\n\n## Why text-only fails\n\nText-only cold emails rely on the prospect reading far enough to understand your value proposition. Most do not. A well-designed visual demo communicates the core value instantly before a single word is read.\n\n## The psychology of logo personalisation\n\nWhen a B2B buyer sees their company logo placed on a product screenshot, several things happen simultaneously:\n\n- They recognise their brand — immediate attention\n- They see it in context with your tool — instant product comprehension\n- They feel the email was prepared specifically for them — trust and relevance\n\nNone of this requires expensive video production. A single high-quality screenshot with a well-placed logo achieves the same psychological effect at 1% of the cost and time." },
+  { slug: "gmail-bulk-send-personalised", lang: "en", title: "How to Send 100 Personalised Emails from Gmail in Under 10 Minutes", excerpt: "A step-by-step workflow for bulk personalised outreach from Gmail without getting flagged as spam.", cat: "Tutorial", rt: "6 min", date: "Feb 2025", tags: ["Gmail", "bulk send", "tutorial"], body: "Sending personalised bulk email from Gmail requires three things: unique content per recipient, natural send timing, and a good sender reputation.\n\nLogoplacers handles the first two automatically. Each recipient gets a genuinely unique personalised image. Sends are spaced 15 to 30 seconds apart to mimic natural human sending behaviour.\n\n## Step-by-step workflow\n\n- Upload your screenshot and set logo and text layer positions\n- Paste your prospect list — logos auto-fetch\n- Write your email with {name} and {company} placeholders\n- Connect Gmail via one-click OAuth\n- Hit send — emails go out with natural anti-spam delays\n\n## Important: warm sending\n\nNew Gmail accounts should ramp up slowly. Start with 20 to 30 sends per day for the first two weeks before scaling. Use a custom domain rather than a personal Gmail for B2B outreach. A Google Workspace account delivers significantly better results than personal Gmail." },
+  { slug: "logo-personalisation-saas-sales", lang: "en", title: "Logo Personalisation: The Easiest Win in SaaS Sales Outreach", excerpt: "One change to your outreach strategy that takes 20 minutes to implement and immediately improves every metric.", cat: "Strategy", rt: "4 min", date: "Feb 2025", tags: ["SaaS", "logo", "personalisation"], body: "If you work in SaaS sales, you are competing against dozens of other tools for the same buyer's attention. Your product might be genuinely better. But your outreach looks exactly like everyone else's.\n\n## The simple version\n\nTake a screenshot of your product with a prospect's logo already placed on it. Send that as part of your cold email. The prospect sees their brand in your UI. Conversion begins.\n\n## The scalable version\n\nUse Logoplacers to automate this for your entire prospect list:\n\n- One upload, 100 personalised demos generated automatically\n- All sent from Gmail with anti-spam delays\n- The conversion lift pays for the tool in the first week\n\nLogo personalisation is the lowest-effort, highest-impact change you can make right now. It takes one afternoon to set up and immediately differentiates every email you send." },
+  { slug: "write-cold-email-that-gets-replies", lang: "en", title: "How to Write a Cold Email That Actually Gets Replies in 2025", excerpt: "The anatomy of a high-converting cold email: subject line, opening, value prop, CTA. With real examples.", cat: "Playbook", rt: "8 min", date: "Mar 2025", tags: ["cold email", "copywriting", "reply rate"], body: "Most cold emails fail for one of three reasons: too long, too generic, or asking for too much too soon. Here is the anatomy that consistently gets replies.\n\n## Subject line\n\n3 to 6 words. Specific beats clever every time. 'Question about your sales process' outperforms 'Revolutionise your pipeline with AI'. The goal is a curious open, not a clickbait promise.\n\n## Opening line\n\nNever start with 'I'. Start with them. 'Noticed you recently launched X' or 'Your team is scaling fast in Y' shows research and earns attention in the first second.\n\n## Value proposition\n\nOne sentence. What do you do and why does it matter to this specific person? Not a feature list — a single concrete outcome they care about.\n\n## Visual hook\n\nInclude a personalised demo image. A screenshot with their logo placed on your product communicates more than three paragraphs of copy. It is the fastest way to make the abstract concrete.\n\n## Call to action\n\nAsk for something tiny:\n\n- 'Worth a 15-minute call?'\n- 'Would this be useful for your team?'\n- 'Can I send you a one-pager?'\n\nA yes/no question converts better than 'Book a demo on my Calendly'. Reduce friction at every step.\n\n## Length\n\nUnder 100 words for the text. The personalised image does the heavy lifting." },
+  { slug: "sales-email-templates-b2b", lang: "en", title: "5 Sales Email Templates That Generate Meetings (Copy-Paste)", excerpt: "Battle-tested cold email templates for SaaS, agencies, and B2B services. Personalise and send today.", cat: "Playbook", rt: "6 min", date: "Mar 2025", tags: ["templates", "cold email", "B2B"], body: "Five cold email templates with above-average reply rates. Use them as starting points and personalise the details.\n\n## Template 1 — The Visual Hook\n\n**Subject:** [Company] on [Your Tool]\n\n**Body:** Hi [Name], built a quick mockup of what [Company]'s logo would look like inside [Your Product]. [Attach personalised image.] Happy to show you the live version — worth 15 minutes?\n\n## Template 2 — The Trigger\n\n**Subject:** Congrats on the funding\n\n**Body:** Hi [Name], saw [Company] just closed [round]. Teams at that stage usually hit the same bottleneck: [specific problem you solve]. We fixed this for [similar company]. Quick call this week?\n\n## Template 3 — The Comparison\n\n**Subject:** How [Competitor Customer] handled this\n\n**Body:** Hi [Name], [Similar company] was dealing with [problem] before switching. Now they [result]. Would the same apply to [Company]?\n\n## Template 4 — The Direct Ask\n\n**Subject:** [Problem] at [Company]?\n\n**Body:** Hi [Name], do you still handle [specific task] manually? We built something that cuts that to minutes. Want me to send a one-pager?\n\n## Template 5 — The Referral\n\n**Subject:** [Mutual contact] suggested I reach out\n\n**Body:** Hi [Name], [Mutual contact] mentioned you're the right person to speak with about [topic]. We help [type of company] with [outcome]. Would a quick intro call make sense?" },
+  { slug: "best-sales-tool-2025", lang: "en", title: "The Best Sales Tools in 2025: What Actually Works", excerpt: "A practical guide to the sales stack that high-performing teams are using right now, and what is overhyped.", cat: "Industry", rt: "7 min", date: "Mar 2025", tags: ["sales tools", "2025", "stack"], body: "The modern sales stack has exploded. There are hundreds of tools promising to 10x your pipeline. Most do not deliver. Here is what actually moves the needle in 2025.\n\n## Prospecting\n\nSales Navigator and Apollo are the standards. Clay is becoming popular for data enrichment at scale. The key principle: **list quality over list size**. 50 well-targeted prospects outperform 500 generic ones every time.\n\n## Personalisation\n\nThis is where most teams underinvest. Generic AI-written emails are immediately detectable. Visual personalisation — embedding the prospect's brand into a demo image — is both harder to automate generically and significantly more effective.\n\n## Sequencing\n\n- **Enterprise:** Outreach, Salesloft\n- **SMB:** Reply.io, Lemlist\n- The tool matters less than the sequence design\n\n## CRM\n\nSalesforce for enterprise, HubSpot for growth stage, Pipedrive for simplicity. The best CRM is the one your team actually updates.\n\n## The one underused tactic in 2025\n\nVisual demo personalisation. Teams that add a personalised screenshot to the first touchpoint consistently see 2 to 4x lift in positive replies — across all other tools in their stack. It is the highest-ROI change you can make today." },
+  { slug: "how-to-use-logoplacers", lang: "en", title: "How to Use Logoplacers: Complete Guide from Setup to First Send", excerpt: "Step-by-step walkthrough of Logoplacers — from uploading your first screenshot to sending personalised demos at scale.", cat: "Tutorial", rt: "8 min", date: "Feb 2025", tags: ["tutorial", "getting started", "guide"], body: "This guide walks you through the complete Logoplacers workflow from your first login to sending personalised demos to 50 prospects.\n\n## Step 1 — Upload your base image\n\nThis is the screenshot you want to personalise. Ideally your product UI or a compelling visual that represents your value proposition. Drag it into the upload zone or click to browse. HEIC from iPhone is supported and converts automatically.\n\n## Step 2 — Position the logo placeholder\n\nThe logo placeholder shows where each prospect's logo will appear. Drag it to a natural position — inside a dashboard, on a header, or anywhere that looks intentional rather than pasted on top.\n\n## Step 3 — Add text layers\n\nText layers let you add personalised text like the prospect's name or company. Use the sidebar to add layers and drag them to position. Use `((name))` and `((company))` as placeholders.\n\n## Step 4 — Add prospects\n\nPaste a list of companies in the text area. Logoplacers guesses the domain and fetches each logo automatically. Add name, company, and email separated by commas for full personalisation.\n\n## Step 5 — Preview\n\nClick Preview to cycle through your prospects and see exactly what each personalised image looks like before sending. This is your quality check.\n\n## Step 6 — Send or download\n\nConnect Gmail with one click. Write your email template with `{name}` and `{company}` placeholders. Hit send. Emails go out with natural delays to protect deliverability. Or download a ZIP of all images to use in your own email tool." },
+  { slug: "increase-reply-rates-cold-outreach", lang: "en", title: "How to Get Higher Reply Rates on Cold Outreach (Proven Tactics)", excerpt: "Every tactic that has a measurable impact on cold email reply rates, ranked from highest to lowest impact.", cat: "Strategy", rt: "7 min", date: "Jan 2025", tags: ["reply rate", "cold outreach", "tactics"], body: "Getting higher reply rates is not about finding a magic phrase. It is about stacking marginal gains across every element. Here they are ranked by impact.\n\n## Highest impact: relevance\n\nReaching the right person at the right time with the right message. Signal-based outreach — targeting people who have just changed jobs, raised funding, or launched a product — outperforms list-based spray-and-pray by 5 to 10x.\n\n## High impact: visual personalisation\n\nAttaching a personalised demo image with the prospect's logo increases reply rates more than any copy optimisation. The image communicates relevance faster than words — before a single sentence is read.\n\n## Medium impact\n\n- **Subject line:** under 50 characters, specific and curious beats clever\n- **Send time:** Tuesday to Thursday morning in the prospect's timezone\n- **Follow-up:** one follow-up adds 20 to 30% more replies; beyond three, diminishing returns\n\n## Lower impact (but people overinvest here)\n\nThe exact wording of the body copy. Once you have the right targeting and a strong visual hook, copy quality matters far less than most teams think. Fix targeting and visual first — then optimise copy." },
+  { slug: "what-is-logoplacers", lang: "en", title: "What Is Logoplacers? The Personalised Demo Tool Explained", excerpt: "A complete overview of how Logoplacers works, who it is for, and why sales teams are switching from Figma and Loom.", cat: "Product", rt: "5 min", date: "Jan 2025", tags: ["product", "overview", "getting started"], body: "Logoplacers is a browser-based tool that lets sales teams create personalised product demos at scale. You upload one product screenshot, and the tool generates unique versions for every prospect on your list — each with their own company logo automatically placed.\n\n## How it works\n\nThe core workflow has three steps:\n\n- Upload your screenshot and use the drag-and-drop editor to position where logos and text should appear\n- Paste your prospect list — Logoplacers automatically fetches each company's logo\n- Connect Gmail and send — 100 personalised emails in under 10 minutes\n\n## Why teams switch from Figma and Loom\n\n**Loom** requires recording a separate video per prospect — or sending the same generic video to everyone.\n\n**Figma** requires design skills, manual work per person, and has no email sending capability.\n\n**Logoplacers** does in 8 minutes what Figma takes 3 hours. No design skills needed. Built specifically for SDRs, AEs, and sales managers who send at volume but want every touchpoint to feel personal." },
+  { slug: "figma-alternative-sales-demos", lang: "en", title: "The Best Figma Alternative for Sales Demo Personalisation", excerpt: "Figma is powerful but it was not built for sales. Here is a faster workflow that requires zero design skills.", cat: "Comparison", rt: "5 min", date: "Jan 2025", tags: ["Figma", "alternative", "comparison"], body: "Figma is an excellent design tool. It was built for product designers who need pixel-perfect control. It was not built for account executives who need to personalise 50 demo images before their 9am stand-up.\n\n## The problems with Figma for sales\n\n- Requires a design background to use properly\n- Each personalisation is a manual process: copy file, replace logo, export\n- No bulk workflow — one at a time, always\n- No connection to your email client\n- Time per demo: 25 to 40 minutes\n\n## How Logoplacers solves each one\n\n- No design skills needed — drag and drop\n- Bulk personalisation is the core feature, not an afterthought\n- Gmail integration: go from personalised image to sent email without leaving the tool\n- Time per demo: under 30 seconds\n\n## The numbers\n\nFor a team sending 50 demos per week, switching from Figma to Logoplacers saves 20+ hours every single week. That is time back on calls, follow-ups, and closing." },
+  { slug: "seo-for-saas-sales-tools", lang: "en", title: "SEO for SaaS Sales Tools: How to Get Organic Leads in 2025", excerpt: "The SEO playbook for sales tools: which keywords convert, how to build authority, and what to publish first.", cat: "Strategy", rt: "6 min", date: "Dec 2024", tags: ["SEO", "SaaS", "inbound"], body: "Organic search is the most scalable lead channel for SaaS tools. Here is the strategy that works for sales tools specifically.\n\n## Keywords that convert\n\nProblem-aware searches convert better than awareness-stage searches:\n\n- 'how to personalise cold email at scale'\n- 'figma alternative for sales'\n- 'send personalised emails from Gmail'\n\nStart here before targeting broader awareness keywords.\n\n## Comparison pages\n\n'Logoplacers vs Lemlist', 'best alternative to Vidyard for cold email' — these capture high-intent searchers already evaluating tools. Comparison pages typically convert 3 to 5x better than general landing pages.\n\n## Tutorial content\n\n'How to send 100 personalised emails from Gmail' attracts exactly the people who need your tool. Tutorial searchers have the highest trial conversion rates of any content type.\n\n## Building domain authority\n\n- Guest posts on sales blogs (Revenue Collective, Sales Hacker)\n- Listings on Product Hunt, G2, Capterra\n- Industry newsletter sponsorships and features\n\n## The compounding effect\n\nSEO takes 6 to 12 months to show results. Start now. Publish two to three high-quality posts per month. By the time you scale paid acquisition, organic will already be generating leads — and reducing your blended CAC significantly." },
 
   // SWEDISH
-  { slug: "personaliserade-demos-svarsprocent", lang: "sv", title: "Hur personaliserade säljdemos ökar svarsfrekvensen med 3x", excerpt: "Visuell personalisering slår textbaserad kall outreach i alla studier. Här är datan och hur du gör det i skala.", cat: "Strategi", rt: "5 min", date: "Mar 2025", tags: ["personalisering", "kall e-post", "svarsfrekvens"], body: "Personaliserad outreach är inte nytt. Det som är nytt är att göra det visuellt och i stor skala. När en prospekt öppnar ett mejl och ser sitt eget företagslogotyp placerat perfekt på din produktskärmbild händer något. Det signalerar ansträngning. Det signalerar relevans. Och det konverterar.\n\nStudier visar konsekvent att visuell personalisering slår textbaserade metoder. Svarsfrekvenser på 15 till 30% är uppnåeliga för team som implementerar logotypbaserad demopersonalisering, jämfört med branschsnittet på 2 till 5% för generisk kall e-post.\n\nKärnmekaniken är enkel: ladda upp din produktskärmbild en gång, hämta automatiskt prospektets logotyp och skicka en skräddarsydd bild som ser ut som om du lade en timme på den. Du lade 20 sekunder.\n\nDetta handlar inte om manipulation. Det handlar om att visa din prospekt att du förstår deras värld. En logotyp är den mest igenkännliga visuella tillgången ett företag har. När den visas i rätt kontext skapas omedelbar kontakt.\n\nSkala är den viktigaste fördelen. Att göra detta manuellt i Figma för en prospekt kan ta 30 minuter. Att göra det för 50 prospekter med Logoplacers tar 8 minuter totalt." },
-  { slug: "kall-e-post-tips-sdr", lang: "sv", title: "Kall e-post i skala: En praktisk guide för SDR:er", excerpt: "De flesta SDR:er spenderar 70% av sin tid på manuell research. Här är hur du klipper ner det till under 5% utan att offra kvalitet.", cat: "Spelbok", rt: "7 min", date: "Mar 2025", tags: ["SDR", "kall e-post", "automatisering"], body: "Den genomsnittliga SDR:en spenderar 3,5 timmar per dag på research och personalisering. Det är tid som inte läggs på samtal, inte på att stänga affärer. Och det mesta av den personaliseringen är grundläggande: förnamn, företagsnamn, kanske en LinkedIn-detalj. Prospekter genomskådar det omedelbart.\n\nSkiftet till visuell personalisering ändrar ekonomin. Istället för att skriva en unik inledningsrad för varje prospekt skapar du en utmärkt visuell tillgång och låter automatiseringen hantera personaliseringslagret.\n\nHär är arbetsflödet: bygg din demoskärmbild i Logoplacers en gång. Lägg till textlager med platshållare som namn och företag. Klistra sedan in din prospektlista och låt verktyget generera 50 unika personaliserade bilder på under 2 minuter.\n\nVarje bild skickas direkt från din Gmail med en 15 till 30 sekunders antispam-fördröjning mellan utskick. Prospekten tar emot ett mejl som ser ut som om du handgjorde en anpassad demo specifikt för dem.\n\nSDR:erna som anammar detta rapporterar 4 till 6 gånger högre positiva svarsfrekvenser inom de första två veckorna." },
-  { slug: "hur-man-anvander-logoplacers", lang: "sv", title: "Hur man använder Logoplacers: Komplett guide från installation till första utskick", excerpt: "Steg-för-steg genomgång av Logoplacers — från att ladda upp din första skärmbild till att skicka personaliserade demos till 50 prospekter.", cat: "Guide", rt: "8 min", date: "Feb 2025", tags: ["guide", "komma igång", "tutorial"], body: "Den här guiden tar dig igenom hela Logoplacers-arbetsflödet från din första inloggning till att skicka personaliserade demos till 50 prospekter.\n\nSteg 1 — Ladda upp din basbild\nDetta är skärmbilden du vill personalisera. Idealt ditt produktgränssnitt eller en stark bild som representerar ditt värdeerbjudande. Dra den till uppladdningszonen eller klicka för att bläddra. HEIC från iPhone stöds och konverteras automatiskt.\n\nSteg 2 — Positionera logotypplatshållaren\nLogotypplatshållaren visar var varje prospekts logotyp kommer att visas. Dra den till en naturlig position på din bild — inuti en instrumentpanel, på ett header, eller var som helst som ser avsiktligt ut snarare än inklistrat.\n\nSteg 3 — Lägg till textlager\nTextlager låter dig lägga till personaliserad text som prospektets namn eller företag. Använd sidofältet för att lägga till lager och dra dem till position.\n\nSteg 4 — Lägg till prospekter\nKlistra in en lista över företag i textområdet till höger. Logoplacers gissar domänen och hämtar logotypen automatiskt.\n\nSteg 5 — Förhandsgranska\nKlicka på Förhandsgranska för att se exakt hur varje personaliserad bild ser ut innan du skickar.\n\nSteg 6 — Skicka eller ladda ner\nAnslut Gmail med ett klick. Skriv din mejlmall med {name} och {company} platshållare. Tryck på skicka." },
-  { slug: "basta-saljverktyget-2025", lang: "sv", title: "Bästa säljverktyget 2025: Vad som faktiskt fungerar", excerpt: "En praktisk guide till säljstacken som högpresterande team använder just nu, och vad som är överhypat.", cat: "Bransch", rt: "6 min", date: "Mar 2025", tags: ["saljverktyg", "2025", "stack"], body: "Den moderna säljstacken har exploderat. Det finns hundratals verktyg som lovar att 10x:a din pipeline. De flesta lever inte upp till löftet. Här är vad som faktiskt gör skillnad.\n\nProspektering: Sales Navigator och Apollo är standarden. Clay blir populärt för databerikande i skala. Nyckeln är listkvalitet över liststorlek.\n\nPersonalisering: Det här är där de flesta team underinvesterar. Generiska AI-skrivna mejl är omedelbart identifierbara. Visuell personalisering — att bädda in prospektets varumärke i en demobild — är både svarare att automatisera generiskt och mer effektivt.\n\nCRM: Salesforce för enterprise, HubSpot för tillväxtfas, Pipedrive för enkelhet. Det bästa CRM:et är det ditt team faktiskt uppdaterar.\n\nDen en underutnyttjad taktiken 2025: visuell demopersonalisering. Team som lägger till en personaliserad skärmbild i den första kontakten ser konsekvent 2 till 4 gånger högre positiva svar över alla ändra verktyg i sin stack." },
-  { slug: "skriva-ett-bra-saljmejl", lang: "sv", title: "Hur man skriver ett bra säljmejl som får svar 2025", excerpt: "Anatomin hos ett högkonverterande kall mejl: ämnesrad, öppning, värdeerbjudande, CTA. Med riktiga exempel.", cat: "Spelbok", rt: "7 min", date: "Mar 2025", tags: ["säljmejl", "copywriting", "svarsfrekvens"], body: "De flesta kall mejl misslyckas av en av tre anledningar: de är för långa, för generiska, eller de ber om för mycket för tidigt.\n\nHär är anatomin hos ett kall mejl som konsekvent får svar.\n\nÄmnesrad: 3 till 6 ord. Specifikt slar smart. 'Fråga om er säljprocess' slår 'Revolutionera er pipeline med AI'. Målet är en nyfiken öppning, inte ett clickbait-löfte.\n\nÖppningsrad: Börja aldrig med 'Jag'. Börja med dem. 'Såg att ni nyligen lanserade X' eller 'Ert team växer snabbt inom Y' visar research och förtjänar uppmärksamhet.\n\nVärdeerbjudande: En mening. Vad gör du och varför spelar det roll för den här specifika personen? Inte en funktionslista. Ett enda konkret resultat.\n\nVisuell krok: Inkludera en personaliserad demobild. En skärmbild med deras logotyp kommunicerar mer än tre stycken med text. Det är det snabbaste sättet att göra det abstrakta konkret.\n\nUppmaning till handling: Be om något litet. 'Värt ett 15-minuters samtal?' eller 'Skulle detta vara användbart för ert team?' En ja/nej-fråga konverterar bättre än 'Boka en demo på min Calendly'.\n\nLängd: Under 100 ord för texten. Bilden gör det tunga lyftet." },
-  { slug: "oka-svarsfrekvens-kall-outreach", lang: "sv", title: "Hur du får högre svarsfrekvens på kall outreach (Beprövade taktiker)", excerpt: "Varje taktik som här en matbar effekt på kall e-post svarsfrekvenser, rankad från högst till lägst effekt.", cat: "Strategi", rt: "6 min", date: "Jan 2025", tags: ["svarsfrekvens", "outreach", "taktiker"], body: "Att få högre svarsfrekvenser på kall outreach handlar inte om att hitta en magisk fras. Det handlar om att stapla marginella vinster över varje element i din outreach.\n\nHögst effekt: Relevans. Att nå rätt person vid rätt tidpunkt med rätt meddelande. Signalbaserad outreach — att rikta in sig på människor som precis bytt jobb, tagit in kapital, eller lanserat en produkt — slår listbaserat spray-and-pray med 5 till 10 gånger.\n\nHög effekt: Visuell personalisering. Att bifoga en personaliserad demobild med prospektets logotyp ökar svarsfrekvenserna mer än någon textoptimering. Bilden kommunicerar relevans snabbare än ord.\n\nMedeleffekt: Ämnesrad. Under 50 tecken. Specifikt och nyfiket slår smart och hypigt. Testa flera versioner.\n\nMedeleffekt: Skicktid. Tisdag till torsdag morgon i prospektets tidszon. Undvik mandagsmorgon och fredagseftermiddag.\n\nLägre effekt men fortfarande meningsfull: Uppföljningssekvens. En uppföljning lägger till 20 till 30% fler svar. Mer än tre uppföljningår visar avtagande avkastning." },
+  { slug: "personaliserade-demos-svarsprocent", lang: "sv", title: "Hur personaliserade säljdemos ökar svarsfrekvensen med 3x", excerpt: "Visuell personalisering slår textbaserad kall outreach i alla studier. Här är datan och hur du gör det i skala.", cat: "Strategi", rt: "5 min", date: "Mar 2025", tags: ["personalisering", "kall e-post", "svarsfrekvens"], body: "Personaliserad outreach är inte nytt. Det som är nytt är att göra det visuellt och i stor skala. När en prospekt öppnar ett mejl och ser sitt eget företagslogotyp perfekt placerat på din produktskärmbild händer något — det signalerar ansträngning, relevans och konverterar.\n\n## Varför visuellt slår text\n\nStudier visar konsekvent att visuell personalisering slår textbaserade metoder. Svarsfrekvenser på 15 till 30% är uppnåeliga för team som implementerar logotypbaserad demopersonalisering, jämfört med branschsnittet på 2 till 5% för generisk kall e-post.\n\n## Kärnmekaniken\n\nLadda upp din produktskärmbild en gång, hämta automatiskt prospektets logotyp och skicka en skräddarsydd bild som ser ut som om du lade en timme på den. Du lade 20 sekunder.\n\nDetta handlar inte om manipulation. Det handlar om att visa din prospekt att du förstår deras värld.\n\n## Skalans fördel\n\n- Manuellt i Figma för en prospekt: 30 minuter\n- Med Logoplacers för 50 prospekter: 8 minuter totalt\n- Resultat: fler svar, samma ansträngning" },
+  { slug: "kall-e-post-tips-sdr", lang: "sv", title: "Kall e-post i skala: En praktisk guide för SDR:er", excerpt: "De flesta SDR:er spenderar 70% av sin tid på manuell research. Här är hur du klipper ner det till under 5% utan att offra kvalitet.", cat: "Spelbok", rt: "7 min", date: "Mar 2025", tags: ["SDR", "kall e-post", "automatisering"], body: "Den genomsnittliga SDR:en spenderar 3,5 timmar per dag på research och personalisering. Det är tid som inte läggs på samtal eller att stänga affärer. Och det mesta av personaliseringen är grundläggande — förnamn, företagsnamn, kanske en LinkedIn-detalj. Prospekter genomskådar det omedelbart.\n\n## Skiftet till visuell personalisering\n\nIstället för att skriva en unik inledningsrad för varje prospekt skapar du en utmärkt visuell tillgång och låter automatiseringen hantera personaliseringslagret.\n\n## Arbetsflödet\n\n- Bygg din demoskärmbild i Logoplacers en gång\n- Lägg till textlager med platshållare för namn och företag\n- Klistra in din prospektlista — 50 logotyper hämtade på under 2 minuter\n- Varje mejl skickas med 15 till 30 sekunders antispam-fördröjning\n\nProspekten tar emot ett mejl som ser ut som om du handgjorde en anpassad demo specifikt för dem.\n\n## Resultat\n\nSDR:erna som anammar detta rapporterar **4 till 6 gånger högre** positiva svarsfrekvenser inom de första två veckorna." },
+  { slug: "hur-man-anvander-logoplacers", lang: "sv", title: "Hur man använder Logoplacers: Komplett guide från installation till första utskick", excerpt: "Steg-för-steg genomgång av Logoplacers — från att ladda upp din första skärmbild till att skicka personaliserade demos till 50 prospekter.", cat: "Guide", rt: "8 min", date: "Feb 2025", tags: ["guide", "komma igång", "tutorial"], body: "Den här guiden tar dig igenom hela Logoplacers-arbetsflödet från din första inloggning till att skicka personaliserade demos till 50 prospekter.\n\n## Steg 1 — Ladda upp din basbild\n\nDetta är skärmbilden du vill personalisera. Idealt ditt produktgränssnitt eller en stark bild som representerar ditt värdeerbjudande. Dra den till uppladdningszonen eller klicka för att bläddra. HEIC från iPhone stöds och konverteras automatiskt.\n\n## Steg 2 — Positionera logotypplatshållaren\n\nLogotypplatshållaren visar var varje prospekts logotyp kommer att visas. Dra den till en naturlig position — inuti en dashboard, i ett header, eller var som helst som ser avsiktligt ut.\n\n## Steg 3 — Lägg till textlager\n\nTextlager låter dig lägga till personaliserad text. Använd `((name))` och `((company))` som platshållare. Dra lagren till önskad position på skärmbilden.\n\n## Steg 4 — Lägg till prospekter\n\nKlistra in en lista med företagsnamn. Logoplacers gissar domänen och hämtar logotypen automatiskt. Lägg till namn, företag och e-post separerat med komma för full personalisering.\n\n## Steg 5 — Förhandsgranska\n\nKlicka Förhandsgranska för att se exakt hur varje personaliserad bild ser ut innan du skickar.\n\n## Steg 6 — Skicka eller ladda ner\n\nAnslut Gmail med ett klick. Skriv din mejlmall med `{name}` och `{company}` som platshållare. Tryck skicka — mejlen går ut med naturliga fördröjningar för att skydda din leverabilitet." },
+  { slug: "basta-saljverktyget-2025", lang: "sv", title: "Bästa säljverktyget 2025: Vad som faktiskt fungerar", excerpt: "En praktisk guide till säljstacken som högpresterande team använder just nu, och vad som är överhypat.", cat: "Bransch", rt: "6 min", date: "Mar 2025", tags: ["saljverktyg", "2025", "stack"], body: "Den moderna säljstacken har exploderat. Det finns hundratals verktyg som lovar att 10x:a din pipeline. De flesta lever inte upp till löftet. Här är vad som faktiskt gör skillnad.\n\n## Prospektering\n\nSales Navigator och Apollo är standarden. Clay blir populärt för databerikande i skala. Nyckeln: **listkvalitet framför liststorlek**.\n\n## Personalisering\n\nDär de flesta team underinvesterar. Generiska AI-skrivna mejl är omedelbart identifierbara. Visuell personalisering — att bädda in prospektets varumärke i en demobild — är mer effektivt och svårare att generera generiskt.\n\n## Sequencing\n\n- **Enterprise:** Outreach, Salesloft\n- **SMB:** Reply.io, Lemlist\n- Verktyget spelar mindre roll än sekvensdesignen\n\n## Den underutnyttjade taktiken 2025\n\nVisuell demopersonalisering. Team som lägger till en personaliserad skärmbild i den första kontakten ser konsekvent 2 till 4 gånger högre positiva svar — över alla andra verktyg i sin stack." },
+  { slug: "skriva-ett-bra-saljmejl", lang: "sv", title: "Hur man skriver ett bra säljmejl som får svar 2025", excerpt: "Anatomin hos ett högkonverterande kall mejl: ämnesrad, öppning, värdeerbjudande, CTA. Med riktiga exempel.", cat: "Spelbok", rt: "7 min", date: "Mar 2025", tags: ["säljmejl", "copywriting", "svarsfrekvens"], body: "De flesta kall mejl misslyckas av en av tre anledningar: för långa, för generiska, eller ber om för mycket för tidigt.\n\n## Ämnesrad\n\n3 till 6 ord. Specifikt slår smart varje gång. 'Fråga om er säljprocess' slår 'Revolutionera er pipeline med AI'.\n\n## Öppningsrad\n\nBörja aldrig med 'Jag'. Börja med dem. 'Såg att ni nyligen lanserade X' visar research och förtjänar uppmärksamhet direkt.\n\n## Värdeerbjudande\n\nEn mening. Ett enda konkret resultat de bryr sig om — inte en funktionslista.\n\n## Visuell krok\n\nInkludera en personaliserad demobild. En skärmbild med deras logotyp kommunicerar mer än tre stycken med text och är det snabbaste sättet att göra det abstrakta konkret.\n\n## Uppmaning till handling\n\n- 'Värt ett 15-minuters samtal?'\n- 'Skulle detta vara användbart för ert team?'\n\nEn ja/nej-fråga konverterar bättre än 'Boka en demo på min Calendly'. Under 100 ord för texten — låt bilden göra det tunga lyftet." },
+  { slug: "oka-svarsfrekvens-kall-outreach", lang: "sv", title: "Hur du får högre svarsfrekvens på kall outreach (Beprövade taktiker)", excerpt: "Varje taktik som har en mätbar effekt på kall e-post svarsfrekvenser, rankad från högst till lägst effekt.", cat: "Strategi", rt: "6 min", date: "Jan 2025", tags: ["svarsfrekvens", "outreach", "taktiker"], body: "Att få högre svarsfrekvenser handlar inte om att hitta en magisk fras. Det handlar om att stapla marginella vinster. Här är de rankade efter effekt.\n\n## Högst effekt: relevans\n\nSignalbaserad outreach — att rikta in sig på människor som precis bytt jobb, tagit in kapital eller lanserat en produkt — slår listbaserat spray-and-pray med 5 till 10 gånger.\n\n## Hög effekt: visuell personalisering\n\nAtt bifoga en personaliserad demobild med prospektets logotyp ökar svarsfrekvenserna mer än någon textoptimering. Bilden kommunicerar relevans snabbare än ord.\n\n## Medeleffekt\n\n- **Ämnesrad:** under 50 tecken, specifikt och nyfiket slår smart\n- **Skicktid:** tisdag till torsdag morgon i prospektets tidszon\n- **Uppföljning:** en uppföljning lägger till 20 till 30% fler svar\n\n## Lägst effekt (men folk överinvesterar här)\n\nExakt formulering av brödtexten. När du har rätt targeting och en stark visuell krok spelar kopians kvalitet mycket mindre roll." },
   { slug: "cold-email-personalization-calculator", lang: "en", title: "Cold Email ROI Calculator: How Much Is Personalisation Worth?", excerpt: "Use this interactive calculator to find out exactly how much revenue visual personalisation adds to your outreach.", cat: "Tutorial", rt: "4 min", date: "May 2025", tags: ["calculator", "ROI", "personalisation"], body: "The ROI of cold email personalisation is measurable. Use these inputs to calculate yours.\n\nStep 1: Enter your monthly send volume.\nStep 2: Enter your current positive reply rate (industry average: 2%).\nStep 3: Enter your average deal size.\nStep 4: Enter your close rate from a meeting (typically 15 to 25%).\n\nConservative uplift with visual personalisation: 2x positive reply rate.\nAggressive uplift (logo + trigger-based): 3 to 5x.\n\nExample: 500 sends/month, 2% reply rate, $50k ACV, 20% close rate.\nCurrent: 10 replies × 0.4 meetings × 20% = 0.8 deals = $40k/month.\nWith 2.5x lift: 25 replies × 1.0 meetings × 20% = 2 deals = $100k/month.\nMonthly lift: $60k from $29/month tool. ROI: 206,796%.\n\nThe numbers work at almost every deal size. The smaller your deal size, the more volume you need to make it material. The larger your deal size, even one additional deal per month from personalisation delivers enormous ROI.\n\nTime investment: 20 minutes to set up your first personalised template in Logoplacers. Then under 30 seconds per prospect forever after." },
   { slug: "startup-outbound-first-100-customers", lang: "en", title: "How to Get Your First 100 B2B Customers with Outbound", excerpt: "The playbook för early-stage founders doing outbound themselves before they can afford a sales team.", cat: "Playbook", rt: "8 min", date: "May 2025", tags: ["startup", "first customers", "outbound"], body: "Getting your first 100 customers with outbound is a different game from scaling outbound with a team. As a founder, you have unique advantages and constraints.\n\nYour advantages: Authenticity. Prospects can tell when they are talking to a founder. Founders can have conversations about product direction that SDRs cannot. Use this.\n\nFounder outreach that works: Short, direct, honest. 'We built X. I think it solves Y för companies like yours. Can I show you in 10 minutes?' Works better than polished corporate copy because it is real.\n\nThe first 10 customers: Do these completely manually. Research each company deeply. Send a personalised email with a custom demo image showing their logo in your product. Follow up once. This high-touch approach gets your first customers and teaches you more about your ICP than any tool can.\n\nCustomers 11 to 50: Same approach but with more automation. Use Logoplacers to generate personalised demo images at scale. Use Apollo för prospecting. Use Reply.io för sequencing. Your personal outreach to each prospect is now supported by a repeatable process.\n\nCustomers 51 to 100: You have enough pattern data to get very specific about ICP. Narrow your targeting to your best-fit companies and increase personalisation depth. At this point, you are building the playbook your first sales hire will execute.\n\nThe handoff: Document everything you do manually. The email templates, the personalisation workflow, the objection handling, the ICP criteria. Your first sales hire needs to be able to replicate your results. If you cannot document it, they cannot replicate it." },
   { slug: "landing-page-conversion-saas", lang: "en", title: "SaaS Landing Page Conversion: The Elements That Actually Matter", excerpt: "Most SaaS landing pages leave 60% of their conversion potential on the table. Here is what to fix first.", cat: "Strategy", rt: "6 min", date: "May 2025", tags: ["landing page", "conversion", "CRO"], body: "A high-converting SaaS landing page does one thing: make the value proposition immediately clear and the first action obviously low-risk.\n\nAbove the fold: The three questions every visitor needs answered in 5 seconds: What is this? Who is it for? Why should I care? A sharp headline, a 10-word subheadline, and a single CTA answer all three.\n\nSocial proof: Customer logos, review scores, or testimonials should appear above the fold or within the first scroll. The first moment of trust-building cannot be below the fold — most visitors never scroll that far.\n\nThe hero visual: För a B2B tool, a product screenshot or animated demo in the hero converts better than a generic stock photo. Show the actual product. If your product is visual and compelling, show it immediately.\n\nCTA copy: 'Start free — no credit card' outperforms 'Get started' by 15 to 30% in most B2B contexts. Remove every friction word ('credit card', 'sign up', 'contract') and emphasise the low-risk entry.\n\nPagespeed: Every 1-second delay costs 7% conversion. Optimise your images, lazy-load below-fold content, and use a CDN. A perfect landing page on a slow server wastes your acquisition spend.\n\nMobile: 40 to 60% of B2B website visitors are now on mobile. A layout that is not optimised för mobile is throwing away nearly half your traffic.\n\nTest one element at a time. Headline, hero image, CTA copy, and social proof placement — each can be tested in isolation with as few as 200 visitors per variant." },
@@ -135,6 +694,10 @@ const POSTS = [
   { slug: "saljpsykologi-sv", lang: "sv", title: "Säljpsykologi: Varför prospekter säger ja (och nej)", excerpt: "Att första de psykologiska drivkrafterna bakom kopbeslut ger dig ett avgörande övertag i säljprocessen.", cat: "Strategi", rt: "6 min", date: "Sep 2024", tags: ["psykologi", "kopbeslut", "salj"], body: "Varje kopbeslut drivs av en kombination av rationella och emotionella faktorer. Första dessa faktorer och du kan designa ett säljprocessen som kanner sig naturlig snarare än tvingande.\n\nReciprocitetsprincipen: När någon ger oss nagonting, kanner vi oss socialt forpliktade att ge tillbaka. I säljkontext: ge forst. En personaliserad demobild, en relevant insikt, ett introduktion — dessa handlingår aktiverar reciprocitetsreflexen och skapar en mer mottaglig kopare.\n\nSocialt bevis: Vi tolkar andras beteende som signal om rätt handling. 'Team på [Företag] använder det har' är mer overtalande än vad du sjalf säger om verktyget. Det är därfor kundlogotyper på hemsidan och specifika case studies i säljprocessen är så kraftfulla.\n\nFörlustorsak (Loss Aversion): Vi är tvingade att undvika forluster starkare än att uppna vinster. 'Ditt team förlorar 3 timmar per dag på manuell personalisering' registreras starkare än 'Ditt team kan spara 3 timmar per dag'. Raminen ditt värdeerbjudande kring forlust, inte bara vinst.\n\nFörankring: Det första priset en person ser ankrar alla efterfoljande bedomningår. Visa alltid din högsta plan forst. När prospekten ser $59/manad-planen forst, kanner $29/manad-planen sig som ett fynd.\n\nBeslutsarstning: För många val leder till paralys. En enkel pricing-sida med tre tydliga alternativ konverterar bättre än sju alternativ med hundratals funktionsjamforelser. Forenkla beslutet till dess minsta element." },
   { slug: "gdpr-sales-tools-2025", lang: "en", title: "GDPR and Sales Tools: What You Need to Know Before Sending Cold Email in Europe", excerpt: "Cold email in Europe is legal — but only if you follow the rules. Here is exactly what GDPR requires from sales teams.", cat: "Industry", rt: "6 min", date: "Mar 2026", tags: ["GDPR", "compliance", "cold email"], body: "GDPR does not ban cold email. It regulates it. Understanding the rules lets you run compliant outreach in Europe without legal risk.\n\nThe core principle: you need a lawful basis for processing personal data. For B2B cold email, this is typically legitimate interest — you have a genuine business reason to contact someone whose role is relevant to your offer.\n\nWhat legitimate interest requires:\nYour product or service must be genuinely relevant to the recipient's professional role. A sales tool sent to SDRs is clearly relevant. The same tool sent to nurses is not. Document your reasoning.\n\nWhat GDPR requires in your outreach:\n1. Identify yourself clearly — no fake sender names or misleading subject lines.\n2. Include a way to opt out — a simple reply or a one-click link is sufficient.\n3. Honour opt-outs immediately — never contact someone who has asked to be removed.\n4. Do not use personal data beyond what is needed — name, email, and company is fine.\n\nWhat Logoplacers does to help:\nLogoplacers sends from your own Gmail account with your real identity. Anti-spam delays between sends mimic natural behaviour. We never store the content of emails you send or your recipient list on our servers.\n\nYour responsibility:\nYou are the data controller. You own your prospect list and are responsible for its compliance. Use verified B2B data from reputable sources. Do not purchase lists of personal email addresses.\n\nThe practical test: Would a reasonable person in this professional role expect to receive this email? If yes, you are almost certainly on solid legal ground." },
   { slug: "datasäkerhet-saljverktyg-sv", lang: "sv", title: "GDPR och säljverktyg: Vad du behöver veta innan du skickar kall outreach i Europa", excerpt: "Kall e-post i Europa är lagligt — men bara om du följer reglerna. Här är exakt vad GDPR kräver av säljteam.", cat: "Bransch", rt: "5 min", date: "Mar 2026", tags: ["GDPR", "compliance", "kall e-post"], body: "GDPR förbjuder inte kall e-post. Det reglerar den. Att förstå reglerna låter dig köra kompatibel outreach i Europa utan juridisk risk.\n\nKärnprincipen: du behöver en laglig grund för att behandla personuppgifter. För B2B-kall e-post är detta typiskt berättigat intresse — du har en genuin affärsanledning att kontakta någon vars roll är relevant för ditt erbjudande.\n\nVad berättigat intresse kräver:\nDin produkt eller tjänst måste vara genuint relevant för mottagarens yrkesroll. Ett säljverktyg skickat till SDR:er är tydligt relevant. Samma verktyg skickat till sjuksköterskor är det inte. Dokumentera ditt resonemang.\n\nVad GDPR kräver i din outreach:\n1. Identifiera dig tydligt — inga falska avsändarnamn eller vilseledande ämnesrader.\n2. Inkludera ett sätt att avsäga sig — ett enkelt svar eller en länk räcker.\n3. Respektera avsägningar omedelbart — kontakta aldrig någon som bett att bli borttagen.\n4. Använd inte personuppgifter utöver vad som behövs — namn, e-post och företag är okej.\n\nVad Logoplacers gör:\nLogoplacers skickar från ditt eget Gmail-konto med din riktiga identitet. Anti-spam-fördröjningar efterliknar naturligt beteende. Vi lagrar aldrig innehållet i mejl du skickar eller din mottagarlista på våra servrar.\n\nDitt ansvar:\nDu är personuppgiftsansvarig. Du äger din prospektlista och ansvarar för dess efterlevnad. Använd verifierad B2B-data från välrenommerade källor. Köp inte listor med privata e-postadresser." },
+
+  { slug: "from-3-to-12-percent-reply-rate", lang: "en", title: "From 3% to 12%: How I Fixed My Cold Email at My Day Job", excerpt: "A personal account of going from embarrassingly bad cold email to a 4x improvement — without changing companies, without a bigger budget, just changing the approach.", cat: "Playbook", rt: "7 min", date: "Mar 2026", tags: ["reply rate", "cold email", "personalisation", "personal story"], body: "I want to share something that took me longer than it should have to figure out.\n\nAt my day job, cold outreach is part of the work. Reaching out to potential clients, partners, decision-makers. I had been doing it for a while with results that I can only describe as acceptable — which, when I look back, really means quietly disappointing.\n\n## Where I started\n\nMy reply rate sat around 3%. Sometimes a little above, sometimes below. I told myself this was normal. I had read that 2 to 5% was the industry average, so I was inside the window. I kept sending more volume hoping the numbers would improve with scale.\n\nThey did not.\n\nMore volume at 3% is just more rejection at higher speed. The underlying problem was not the quantity. It was that every email I sent was, if I am honest, basically the same. Personalised in name only — the prospect's name in the greeting, sometimes a mention of their company, otherwise a generic message about what I was offering and why they should care.\n\n## What I tried first (and what did not work)\n\nI spent a long time optimising the wrong things.\n\nI rewrote the subject line a dozen times. Tested different send days. Shortened the email, then lengthened it, then shortened it again. Tried adding a P.S. line. Read every thread about cold email copywriting I could find and implemented the advice carefully.\n\nNone of it moved the needle in a meaningful way. Maybe a half percentage point here, a point there. The kind of improvement you notice only if you are looking for it.\n\nThe problem was not the words. The problem was that there was nothing in the email that looked like it had been prepared for that specific person. The copy said personalised things, but it looked generic. A wall of text that said 'I did my research' but offered no proof of it.\n\n## The shift to visual personalisation\n\nSomeone in a sales community I follow mentioned offhand that they had added a personalised demo image to their outreach — their product screenshot with the prospect's actual company logo placed in it. Their reply rate went from under 3% to over 10% in about three weeks.\n\nI was sceptical. It sounded like the kind of thing that works once and then becomes expected. But I tried it.\n\nThe first week, I did it manually for ten prospects. Took about 20 minutes each. The results were immediate enough that I knew something had changed — four replies out of ten sends. That had never happened before.\n\nThe obvious problem was scale. 20 minutes per prospect meant this was not a real workflow. It was a trick I could do for high-priority accounts only.\n\n## Finding a workflow that scales\n\nThat is when I found Logoplacers. The whole workflow — upload your screenshot, paste the prospect list, logos get auto-fetched and placed, send from Gmail — took about 8 minutes for 40 prospects. The same process that had taken me hours happened in under ten minutes.\n\nI ran my first full batch on a Monday morning. By Wednesday I had replies from people I had been trying to reach for months.\n\n## The numbers four weeks later\n\nFrom 3% to 12%. Not a straight line — week two was bumpy, I sent some batches to lists that were not well targeted and the numbers dipped. But when I controlled for list quality and kept the visual demo approach consistent, 12% became the new baseline.\n\nMore importantly, the quality of the replies changed. People referenced the image specifically. 'I saw the mockup you put together' — that sentence in a reply means the email did not feel like a mass send. That is the point.\n\n## What I would tell myself earlier\n\n- Copy optimisation has diminishing returns if the email still looks generic. Fix the visual layer first.\n- Manual personalisation at scale is not possible. A tool that removes that friction changes everything.\n- The industry average reply rate is not a target. It is a floor. Aim for 3 to 4 times that.\n\nThe workflow I use now takes less time than what I was doing before. The results are four times better." },
+
+  { slug: "fran-3-till-12-procent-svarsfrekvens", lang: "sv", title: "Från 3% till 12%: Hur jag räddade min kalla outreach på mitt vanliga jobb", excerpt: "En personlig berättelse om hur jag gick från pinsamt dåliga cold emails till en 4x förbättring — utan att byta arbetsplats, utan större budget, bara genom att ändra metod.", cat: "Spelbok", rt: "7 min", date: "Mar 2026", tags: ["svarsfrekvens", "kall e-post", "personalisering", "personlig berattelse"], body: "Jag vill dela med mig av något som tog mig längre tid än det borde att lista ut.\n\nPå mitt vanliga jobb är kall outreach en del av arbetet. Nå ut till potentiella kunder, partners, beslutsfattare. Jag hade gjort det ett tag med resultat som jag bara kan beskriva som acceptabla — vilket, när jag ser tillbaka, egentligen betyder tyst besvikelse.\n\n## Var jag startade\n\nMin svarsfrekvens låg runt 3%. Ibland lite över, ibland under. Jag sa till mig själv att det var normalt. Jag hade läst att 2 till 5% var branschsnittet, så jag var inom ramen. Jag fortsatte skicka mer volym och hoppades att siffrorna skulle förbättras med skala.\n\nDet gjorde de inte.\n\nMer volym på 3% är bara fler avslag i högre hastighet. Det grundläggande problemet var inte kvantiteten. Det var att varje mejl jag skickade, om jag är ärlig, i princip var likadant. Personaliserat bara till namnet — prospektets namn i hälsningen, ibland ett omnämnande av deras företag, annars ett generiskt meddelande.\n\n## Vad jag provade först (och vad som inte fungerade)\n\nJag lade lång tid på att optimera fel saker.\n\nJag skrev om ämnesraden dussintals gånger. Testade olika utskicksdagar. Kortade mejlet, sedan förlängde jag det, sedan kortade igen. Läste alla trådar om kall e-postkopiera jag kunde hitta.\n\nInget av det rörde nålen på ett meningsfullt sätt. Kanske ett halvt procentenhets förbättring här, en poäng där. Den typ av förbättring du bara märker om du letar efter den.\n\nProblemet var inte orden. Problemet var att det inte fanns något i mejlet som såg ut som om det hade förberetts för just den personen. Texten sa personaliserade saker, men det såg generiskt ut.\n\n## Skiftet till visuell personalisering\n\nNågon i ett säljforum jag följer nämnde att de hade lagt till en personaliserad demobild i sin outreach — sin produktskärmbild med prospektets faktiska företagslogotyp placerad på den. Deras svarsfrekvens gick från under 3% till över 10% på ungefär tre veckor.\n\nJag var skeptisk. Det lät som något som fungerar en gång och sedan blir förväntat. Men jag provade.\n\nFörsta veckan gjorde jag det manuellt för tio prospekter. Tog ungefär 20 minuter per styck. Resultaten var tillräckligt omedelbara — fyra svar av tio utskick. Det hade aldrig hänt förut.\n\nDet uppenbara problemet var skala. 20 minuter per prospekt innebar att det inte var ett riktigt arbetsflöde.\n\n## Att hitta ett arbetsflöde som skalar\n\nDet var då jag hittade Logoplacers. Hela arbetsflödet — ladda upp din skärmbild, klistra in prospektlistan, logotyper hämtas och placeras automatiskt, skicka från Gmail — tog ungefär 8 minuter för 40 prospekter.\n\nJag körde mitt första fullständiga batch på en måndag morgon. Till onsdag hade jag svar från folk jag hade försökt nå i månader.\n\n## Siffrorna fyra veckor senare\n\nFrån 3% till 12%. Inte en rak linje — vecka två var ojämn, jag skickade några batchar till listor som inte var välriktade och siffrorna dippade. Men när jag kontrollerade för listkvalitet och höll den visuella demometoden konsekvent, blev 12% den nya baslinjen.\n\nViktigare är att kvaliteten på svaren förändrades. Folk refererade till bilden specifikt. 'Jag såg mockupen du satte ihop' — den meningen i ett svar innebär att mejlet inte kändes som ett massutskick. Det är poängen.\n\n## Vad jag hade velat säga till mig själv tidigare\n\n- Kopieringsoptimering har avtagande avkastning om mejlet fortfarande ser generiskt ut. Fixa det visuella lagret först.\n- Manuell personalisering i stor skala är inte möjlig. Ett verktyg som tar bort den friktionen förändrar allt.\n- Branschsnittet för svarsfrekvens är inte ett mål. Det är ett golv. Sikta på 3 till 4 gånger det.\n\nArbetsflödet jag använder nu tar mindre tid än vad jag gjorde innan. Resultaten är fyra gånger bättre." },
 ];
 
 const CAT_COLORS = { Strategy: "rgba(255,255,255,0.7)", Playbook: "rgba(220,190,255,0.8)", Tutorial: "rgba(180,240,220,0.8)", Industry: "rgba(255,220,140,0.7)", Comparison: "rgba(220,190,255,0.85)", Product: "rgba(160,230,255,0.8)", Strategi: "rgba(255,255,255,0.7)", Spelbok: "rgba(220,190,255,0.8)", Guide: "rgba(180,240,220,0.8)", Bransch: "rgba(255,220,140,0.7)" };
@@ -146,20 +709,29 @@ function BlogCard({ p, onClick }) {
   return (
     <article onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} onClick={() => onClick(p)}
       itemScope itemType="https://schema.org/BlogPosting"
-      style={{ background: hov ? "rgba(255,255,255,.07)" : "rgba(255,255,255,.03)", border: `1px solid ${hov ? "rgba(220,190,255,0.4)" : "rgba(255,255,255,.07)"}`, boxShadow: hov ? "0 0 30px rgba(220,190,255,0.08), 0 14px 44px rgba(0,0,0,.35)" : "none", borderRadius: 20, padding: "26px 24px", cursor: "pointer", transition: "border-color .2s,background .2s,box-shadow .2s,transform .2s", boxShadow: hov ? `0 14px 44px rgba(0,0,0,.3),0 0 0 0.5px ${c}18` : "none", transform: hov ? "translateY(-2px)" : "translateY(0)", display: "flex", flexDirection: "column", gap: 13 }}>
+      style={{ background: hov ? "rgba(255,255,255,.07)" : "rgba(255,255,255,.03)", border: `1px solid ${hov ? `${c}50` : "rgba(255,255,255,.07)"}`, borderRadius: 20, padding: 0, cursor: "pointer", transition: "border-color .2s,background .2s,box-shadow .2s,transform .2s", boxShadow: hov ? `0 14px 44px rgba(0,0,0,.3),0 0 0 0.5px ${c}18` : "none", transform: hov ? "translateY(-3px)" : "translateY(0)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <meta itemProp="headline" content={p.title} />
       <meta itemProp="datePublished" content={p.date} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: c, background: `${c}14`, border: `1px solid ${c}30`, borderRadius: 6, padding: "3px 8px" }}>{p.cat}</span>
+      {/* Illustration header */}
+      <div style={{ height: 120, background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", overflow: "hidden", position: "relative", transition: "all .3s" }}>
+        <div style={{ position: "absolute", inset: 0, transform: hov ? "scale(1.03)" : "scale(1)", transition: "transform .4s ease", transformOrigin: "center center" }}>
+          <BlogIllustration slug={p.slug} cat={p.cat} accent={c} />
         </div>
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,.24)" }}>{p.rt} read</span>
+        {/* Subtle gradient overlay at bottom */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 40, background: "linear-gradient(to top, rgba(255,255,255,0.04), transparent)", pointerEvents: "none" }}/>
       </div>
-      <h2 itemProp="name" style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-.3px", lineHeight: 1.34 }}>{p.title}</h2>
-      <p itemProp="description" style={{ fontSize: 12, color: "rgba(255,255,255,.4)", lineHeight: 1.65, margin: 0, flex: 1 }}>{p.excerpt}</p>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,.24)" }}>{p.date}</span>
-        <span style={{ fontSize: 12, color: c, fontWeight: 600 }}>{t("blog.read_more")} →</span>
+      {/* Content */}
+      <div style={{ padding: "18px 20px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: c, background: `${c}14`, border: `1px solid ${c}30`, borderRadius: 6, padding: "3px 8px" }}>{p.cat}</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,.24)" }}>{p.rt} read</span>
+        </div>
+        <h2 itemProp="name" style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-.3px", lineHeight: 1.34 }}>{p.title}</h2>
+        <p itemProp="description" style={{ fontSize: 12, color: "rgba(255,255,255,.4)", lineHeight: 1.65, margin: 0, flex: 1 }}>{p.excerpt}</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,.24)" }}>{p.date}</span>
+          <span style={{ fontSize: 12, color: c, fontWeight: 600 }}>{t("blog.read_more")} →</span>
+        </div>
       </div>
     </article>
   );
@@ -182,30 +754,103 @@ function BlogPost({ p, onBack }) {
       </button>
       <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: c, background: `${c}14`, border: `1px solid ${c}30`, borderRadius: 6, padding: "4px 10px", display: "inline-block", marginBottom: 20 }}>{p.cat}</span>
       <h1 style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 800, letterSpacing: "-1.5px", margin: "0 0 16px", lineHeight: 1.15, color: "#fff" }}><CDShimmerText dark={true}>{p.title}</CDShimmerText></h1>
-      <div style={{ display: "flex", gap: 14, marginBottom: 48, fontSize: 12, color: "rgba(255,255,255,.28)" }}>
+      <div style={{ display: "flex", gap: 14, marginBottom: 32, fontSize: 12, color: "rgba(255,255,255,.28)" }}>
         <span>{p.date}</span><span>·</span><span>{p.rt} read</span>
         {p.lang === "sv" && <span style={{ background: "rgba(255,255,255,.06)", padding: "1px 7px", borderRadius: 5 }}>Svenska</span>}
       </div>
+      {/* Hero illustration */}
+      <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", marginBottom: 40, height: 180 }}
+        role="img" aria-label={`Illustration for ${p.title}`}>
+        <BlogIllustration slug={p.slug} cat={p.cat} accent={c} />
+      </div>
       <div style={{ fontSize: 16, color: "rgba(255,255,255,.65)", lineHeight: 1.85 }}>
         {p.body.trim().split("\n\n").map((para, i) => {
-          const isHeader = /^(Step \d|Template \d|Steg \d|[A-Z][A-Z ]{6,}:)/.test(para.trim());
-          const isBullet = para.trim().startsWith("—") || para.trim().startsWith("-");
-          if (isHeader) return (
-            <h2 key={i} style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-.5px", margin: "36px 0 10px", lineHeight: 1.3 }}>{para}</h2>
+          const trimmed = para.trim();
+
+          // H2 — lines starting with ## or known header patterns
+          const isH2 = trimmed.startsWith("## ") ||
+            /^(Step \d+|Steg \d+|Template \d+|Mall \d+)[—:\s]/.test(trimmed) ||
+            /^[A-Z][A-Za-z ]{4,30}:\s/.test(trimmed) && trimmed.length < 80;
+
+          // H3 — lines starting with ###
+          const isH3 = trimmed.startsWith("### ");
+
+          // Bullet list block — lines starting with - or •
+          const isBulletBlock = trimmed.split("\n").every(l => /^[-•]\s/.test(l.trim()) || l.trim() === "");
+
+          // Single bullet
+          const isBullet = /^[-•]\s/.test(trimmed) && !trimmed.includes("\n");
+
+          // Numbered list
+          const isNumbered = /^\d+\.\s/.test(trimmed);
+
+          // Bold intro line (e.g. "**Subject line:**")
+          const hasBold = trimmed.includes("**");
+
+          if (isH2) return (
+            <h2 key={i} style={{ fontSize: "clamp(18px,2.5vw,22px)", fontWeight: 800, color: "#fff", letterSpacing: "-.5px", margin: "44px 0 12px", lineHeight: 1.2, borderLeft: `3px solid ${c}`, paddingLeft: 14 }}>
+              {trimmed.replace(/^##\s*/, "")}
+            </h2>
           );
+
+          if (isH3) return (
+            <h3 key={i} style={{ fontSize: 17, fontWeight: 700, color: "rgba(255,255,255,.85)", letterSpacing: "-.3px", margin: "32px 0 8px", lineHeight: 1.3 }}>
+              {trimmed.replace(/^###\s*/, "")}
+            </h3>
+          );
+
+          if (isBulletBlock && trimmed.includes("\n")) return (
+            <ul key={i} style={{ margin: "0 0 22px", paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+              {trimmed.split("\n").filter(l => l.trim()).map((line, j) => (
+                <li key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ color: c, flexShrink: 0, fontSize: 18, lineHeight: 1.4 }}>→</span>
+                  <span>{line.replace(/^[-•]\s*/, "")}</span>
+                </li>
+              ))}
+            </ul>
+          );
+
           if (isBullet) return (
-            <div key={i} style={{ display: "flex", gap: 10, margin: "0 0 14px", paddingLeft: 4 }}>
-              <span style={{ color: c, flexShrink: 0, marginTop: 3 }}>→</span>
-              <p style={{ margin: 0 }}>{para.replace(/^[—\-]\s*/, "")}</p>
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", margin: "0 0 12px" }}>
+              <span style={{ color: c, flexShrink: 0, fontSize: 18, lineHeight: 1.4 }}>→</span>
+              <span>{trimmed.replace(/^[-•]\s*/, "")}</span>
             </div>
           );
-          return <p key={i} style={{ margin: "0 0 22px" }}>{para}</p>;
+
+          if (isNumbered) return (
+            <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", margin: "0 0 14px" }}>
+              <span style={{ color: c, flexShrink: 0, fontWeight: 700, fontSize: 14, minWidth: 22, marginTop: 2 }}>{trimmed.match(/^\d+/)?.[0]}.</span>
+              <span>{trimmed.replace(/^\d+\.\s*/, "")}</span>
+            </div>
+          );
+
+          // Render paragraph with internal links for Logoplacers pages and bold text
+          const renderInline = (text) => {
+            // Bold **text**
+            const parts = text.split(/(\*\*[^*]+\*\*)/g);
+            return parts.map((part, pi) => {
+              if (part.startsWith("**") && part.endsWith("**")) {
+                return <strong key={pi} style={{ color: "#fff", fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+              }
+              // Internal links for key terms
+              const linked = part
+                .replace(/(Logoplacers)/g, '<a href="#app" style="color:ACCENT;text-decoration:none;border-bottom:1px solid ACCENTbb">$1</a>')
+                .replace(/(cold email personalisation|visual personalisation|personalised demo)/gi, '<a href="#blog" style="color:ACCENT;text-decoration:none;border-bottom:1px solid ACCENTbb">$1</a>');
+              if (linked !== part) {
+                return <span key={pi} dangerouslySetInnerHTML={{ __html: linked.replaceAll("ACCENT", c) }} />;
+              }
+              return part;
+            });
+          };
+
+          return <p key={i} style={{ margin: "0 0 22px" }}>{renderInline(trimmed)}</p>;
         })}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 40, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,.06)" }}>
         {p.tags.map(tag => <span key={tag} style={{ fontSize: 11, color: "rgba(255,255,255,.32)", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 6, padding: "3px 9px" }}>#{tag}</span>)}
       </div>
-      <div style={{ marginTop: 56, background: "rgba(220,190,255,.07)", border: "1px solid rgba(220,190,255,.2)", borderRadius: 20, padding: "32px 28px", textAlign: "center" }}>
+      <RelatedPosts current={p} all={POSTS} onPost={onBack.relatedPost || onBack} />
+      <div style={{ marginTop: 40, background: "rgba(220,190,255,.07)", border: "1px solid rgba(220,190,255,.2)", borderRadius: 20, padding: "32px 28px", textAlign: "center" }}>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,.5)", margin: "0 0 8px" }}>{t("blog.cta_sub")}</p>
         <h3 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-1px", margin: "0 0 20px", color: "#fff" }}>{t("blog.cta_title")}</h3>
         <a href="#app" style={{ display: "inline-block", background: "linear-gradient(105deg,#fff 0%,#e8c8ff 30%,#f8c8ff 60%,#fff 100%)", backgroundSize: "200% auto", animation: "cdShimmer 4s linear infinite", color: "#000", textDecoration: "none", borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 700, boxShadow: "0 8px 28px rgba(220,190,255,0.3)" }}>
@@ -259,40 +904,100 @@ function BlogIndex({ onPost }) {
   );
 }
 
+
+// ─────────────────────────────────────────────
+// URL HELPERS — readable blog URLs
+// /blog/en/strategy/how-personalised-sales-demos-increase-reply-rates-by-3x
+// /blog/sv/strategi/hur-personaliserade-saljdemos-okar-svarsfrekvensen-med-3x
+// ─────────────────────────────────────────────
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .replace(/å/g, "a").replace(/ä/g, "a").replace(/ö/g, "o")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function postToPath(p) {
+  const base = p.lang === "sv" ? "/blogg" : "/blog";
+  return `${base}/${p.lang}/${slugify(p.cat)}/${slugify(p.title)}`;
+}
+
+function pathToPost(pathname) {
+  const m = pathname.match(/^\/(blog|blogg)\/([^/]+)\/[^/]+\/([^/]+)/);
+  if (!m) return null;
+  const [, , lang, titleSlug] = m;
+  return POSTS.find(p => p.lang === lang && slugify(p.title) === titleSlug) || null;
+}
+
 export default function Blog() {
   const { lang } = useLang();
   const t = useT();
   const darkMode = true;
   const [activePost, setActivePost] = useState(null);
+
+  // On mount: restore post from URL path
   useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (hash) { const found = POSTS.find(p => p.slug === hash); if (found) setActivePost(found); }
+    const post = pathToPost(window.location.pathname);
+    if (post) setActivePost(post);
   }, []);
-  const handlePost = (p) => { setActivePost(p); window.location.hash = p.slug; window.scrollTo(0, 0); };
-  const handleBack = () => { setActivePost(null); window.location.hash = ""; window.scrollTo(0, 0); };
+
+  // Browser back/forward support
+  useEffect(() => {
+    const onPop = () => {
+      const post = pathToPost(window.location.pathname);
+      setActivePost(post || null);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  const handlePost = (p) => {
+    const path = postToPath(p);
+    window.history.pushState({ slug: p.slug }, p.title, path);
+    document.title = `${p.title} — Logoplacers Blog`;
+    setActivePost(p);
+    window.scrollTo(0, 0);
+  };
+
+  const handleBack = () => {
+    const blogPath = lang === "sv" ? "/blogg" : "/blog";
+    window.history.pushState({}, "Logoplacers Blog", blogPath);
+    document.title = "Logoplacers Blog — Personalised Sales Demos";
+    setActivePost(null);
+    window.scrollTo(0, 0);
+  };
+
+  // Attach relatedPost so RelatedPosts can navigate within a post
+  const handleBackWithNav = Object.assign(handleBack, { relatedPost: handlePost });
+
   return (
     <div style={{ background: "#000", color: "#fff", minHeight: "100vh", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", transition: "background .4s, color .4s" }}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <nav style={{ position: "sticky", top: 0, zIndex: 100, height: 60, padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-        <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-          <Logo size={28} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: "-.3px" }}>Logoplacers</span>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,.25)", margin: "0 2px" }}>/</span>
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,.45)", fontWeight: 500 }}>{t("nav.blog")}</span>
-        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <a href="/" onClick={e => { e.preventDefault(); window.history.pushState({}, "", "/"); window.dispatchEvent(new PopStateEvent("popstate")); }} style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
+            <Logo size={28} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: "-.3px" }}>Logoplacers</span>
+          </a>
+          <a href="/blog" onClick={e => { e.preventDefault(); handleBack(); }} style={{ display: "flex", alignItems: "center", gap: 0, textDecoration: "none" }}>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,.25)", margin: "0 6px" }}>/</span>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,.45)", fontWeight: 500 }}>{t("nav.blog")}</span>
+          </a>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <a href="#app" style={{ background: "linear-gradient(105deg,#fff 0%,#e8c8ff 30%,#f8c8ff 60%,#fff 100%)", backgroundSize: "200% auto", animation: "cdShimmer 4s linear infinite", color: "#000", textDecoration: "none", borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 20px rgba(220,190,255,0.25)" }}>
+          <a href="/app" onClick={e => { e.preventDefault(); window.history.pushState({}, "", "/app"); window.dispatchEvent(new PopStateEvent("popstate")); }} style={{ background: "linear-gradient(105deg,#fff 0%,#e8c8ff 30%,#f8c8ff 60%,#fff 100%)", backgroundSize: "200% auto", animation: "cdShimmer 4s linear infinite", color: "#000", textDecoration: "none", borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 20px rgba(220,190,255,0.25)" }}>
             {t("blog.cta_btn")} →
           </a>
         </div>
       </nav>
-      {activePost ? <BlogPost p={activePost} onBack={handleBack} /> : <BlogIndex onPost={handlePost} />}
+      {activePost ? <BlogPost p={activePost} onBack={handleBackWithNav} /> : <BlogIndex onPost={handlePost} />}
       <footer style={{ borderTop: "1px solid rgba(255,255,255,.05)", padding: "24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Logo size={22} /><span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,.4)" }}>Logoplacers</span></div>
         <span style={{ fontSize: 12, color: "rgba(255,255,255,.2)" }}>{t("blog.footer_tagline")}</span>
-        <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ fontSize: 12, color: "rgba(255,255,255,.3)", textDecoration: "none" }}>{t("blog.back_home")}</a>
+        <a href="/blog" onClick={e => { e.preventDefault(); handleBack(); }} style={{ fontSize: 12, color: "rgba(255,255,255,.3)", textDecoration: "none" }}>{t("blog.back_home")}</a>
       </footer>
-      <style>{`*{box-sizing:border-box}html{scroll-behavior:smooth}@keyframes cdShimmer{0%{background-position:0% center}100%{background-position:200% center}}[data-theme="light"] [style*="rgba(255,255,255,.4)"]{color:rgba(0,0,0,.45)!important}[data-theme="light"] [style*="rgba(255,255,255,.24)"]{color:rgba(0,0,0,.3)!important}[data-theme="light"] [style*="rgba(255,255,255,.28)"]{color:rgba(0,0,0,.35)!important}[data-theme="light"] [style*="rgba(255,255,255,.65)"]{color:rgba(0,0,0,.7)!important}[data-theme="light"] [style*="rgba(255,255,255,.36)"]{color:rgba(0,0,0,.4)!important}[data-theme="light"] [style*="rgba(255,255,255,.32)"]{color:rgba(0,0,0,.35)!important}[data-theme="light"] [style*="rgba(255,255,255,.42)"]{color:rgba(0,0,0,.45)!important}[data-theme="light"] input{background:rgba(0,0,0,.04)!important;color:#0a0a0a!important;border-color:rgba(0,0,0,.1)!important}`}</style>
+      <style>{`*{box-sizing:border-box}html{scroll-behavior:smooth}@keyframes cdShimmer{0%{background-position:0% center}100%{background-position:200% center}}@keyframes illus-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes illus-pulse{0%,100%{opacity:.7}50%{opacity:1}}[data-theme="light"] [style*="rgba(255,255,255,.4)"]{color:rgba(0,0,0,.45)!important}[data-theme="light"] [style*="rgba(255,255,255,.24)"]{color:rgba(0,0,0,.3)!important}[data-theme="light"] [style*="rgba(255,255,255,.28)"]{color:rgba(0,0,0,.35)!important}[data-theme="light"] [style*="rgba(255,255,255,.65)"]{color:rgba(0,0,0,.7)!important}[data-theme="light"] [style*="rgba(255,255,255,.36)"]{color:rgba(0,0,0,.4)!important}[data-theme="light"] [style*="rgba(255,255,255,.32)"]{color:rgba(0,0,0,.35)!important}[data-theme="light"] [style*="rgba(255,255,255,.42)"]{color:rgba(0,0,0,.45)!important}[data-theme="light"] input{background:rgba(0,0,0,.04)!important;color:#0a0a0a!important;border-color:rgba(0,0,0,.1)!important}`}</style>
     </div>
   );
 }
