@@ -3526,8 +3526,6 @@ function useCredits() {
     setCredits(updated);
   };
 
-  const refresh = () => setCredits(getOrInitCredits());
-
   return { credits, spend, canBulk, topUp, refresh, plan: PLANS[credits.plan] };
 }
 
