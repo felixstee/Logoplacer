@@ -2803,10 +2803,23 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     setSendErrMsg("");
     cancelledRef.current = false;
     setStep("sending");
+
+    // Load sent-set from sessionStorage — prevents double-send if modal was closed mid-batch
+    const SENT_KEY = "lp_sent_batch";
+    const getSentSet = () => { try { return new Set(JSON.parse(sessionStorage.getItem(SENT_KEY) || "[]")); } catch { return new Set(); } };
+    const addToSentSet = (id) => { try { const s = getSentSet(); s.add(id); sessionStorage.setItem(SENT_KEY, JSON.stringify([...s])); } catch {} };
+
     let tokenExpired = false;
     for (let si = 0; si < selectedContacts.length; si++) {
       if (cancelledRef.current) break;
       const c = selectedContacts[si];
+
+      // Skip already-sent contacts from a previous run in this session
+      if (getSentSet().has(c.id)) {
+        setResults(r => ({ ...r, [c.id]: "ok" }));
+        continue;
+      }
+
       if (si > 0) {
         const delay = Math.floor(Math.random() * (sendDelayMax - sendDelayMin + 1)) + sendDelayMin;
         for (let s = delay; s > 0; s--) {
@@ -2842,10 +2855,15 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           const errBody = await res.json().catch(() => ({}));
           const errMsg = errBody?.error?.message || `HTTP ${res.status}`;
           console.error("Gmail send error:", res.status, errMsg, "for", c.email);
-          if (res.status === 401) { tokenExpired = true; }
+          if (res.status === 401) {
+            tokenExpired = true;
+            // Clear sent-set on token expiry so user can safely re-run after reconnect
+            sessionStorage.removeItem(SENT_KEY);
+          }
           setResults(r => ({ ...r, [c.id]: "err" }));
           setSendErrMsg(res.status === 401 ? "Gmail session expired — reconnect below" : `Error: ${errMsg}`);
         } else {
+          addToSentSet(c.id);
           setResults(r => ({ ...r, [c.id]: "ok" }));
         }
       } catch (err) {
@@ -2861,6 +2879,8 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
     } else if (tokenExpired) {
       setStep("reauth");
     } else {
+      // Clear sent-set when batch completes cleanly
+      sessionStorage.removeItem(SENT_KEY);
       setStep("done");
     }
   };
@@ -3658,6 +3678,114 @@ function UpgradeModal({ onClose, credits }) {
 }
 
 // ─── User menu: profile pic + gear → dropdown with sign out & delete ───────
+// ── Delete Account Modal (3 steps) ───────────────────────────────────────────
+function DeleteAccountModal({ sessionUser, onClose, onConfirmed }) {
+  const [step, setStep] = useState(1); // 1=warning, 2=type email, 3=confirm with delay
+  const [typed, setTyped] = useState("");
+  const [countdown, setCountdown] = useState(5);
+  const [deleting, setDeleting] = useState(false);
+  const { lang } = useLang();
+
+  useEffect(() => {
+    if (step !== 3) return;
+    setCountdown(5);
+    const iv = setInterval(() => setCountdown(c => { if (c <= 1) { clearInterval(iv); return 0; } return c - 1; }), 1000);
+    return () => clearInterval(iv);
+  }, [step]);
+
+  const doDelete = async () => {
+    setDeleting(true);
+    try {
+      await fetch(`${SB_URL}/rest/v1/users?email=eq.${encodeURIComponent(sessionUser.email)}`, {
+        method: "DELETE",
+        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+      });
+      sessionStorage.clear();
+      localStorage.clear();
+      onConfirmed();
+    } catch {
+      window.alert("Kontakta hello@logoplacers.com för att radera ditt konto.");
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal-box" style={{ maxWidth: 420 }}>
+        <div className="modal-head">
+          <div className="modal-title" style={{ color: "rgba(239,68,68,0.9)" }}>
+            {lang === "sv" ? "Radera konto" : "Delete account"}
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body" style={{ gap: 14 }}>
+          {step === 1 && (
+            <>
+              <div style={{ fontSize: 13, color: "var(--t2)", lineHeight: 1.6 }}>
+                {lang === "sv"
+                  ? "Det här raderar ditt konto permanent, inklusive alla dina krediter och inställningar. Det går inte att ångra."
+                  : "This permanently deletes your account, including all your credits and settings. This cannot be undone."}
+              </div>
+              <div style={{ padding: "10px 14px", background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, fontSize: 12, color: "rgba(239,68,68,0.8)" }}>
+                {lang === "sv" ? `Inloggad som: ${sessionUser.email}` : `Signed in as: ${sessionUser.email}`}
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <div style={{ fontSize: 13, color: "var(--t2)", lineHeight: 1.6 }}>
+                {lang === "sv"
+                  ? `Skriv in din e-postadress för att bekräfta:`
+                  : `Type your email address to confirm:`}
+              </div>
+              <input
+                className="modal-inp"
+                autoFocus
+                placeholder={sessionUser.email}
+                value={typed}
+                onChange={e => setTyped(e.target.value)}
+              />
+            </>
+          )}
+          {step === 3 && (
+            <div style={{ fontSize: 13, color: "var(--t2)", lineHeight: 1.6 }}>
+              {lang === "sv"
+                ? "Sista steget. Knappen aktiveras om 5 sekunder."
+                : "Final step. The button activates in 5 seconds."}
+            </div>
+          )}
+        </div>
+        <div className="modal-foot">
+          <button className="btn-s" onClick={step === 1 ? onClose : () => setStep(s => s - 1)}>
+            {step === 1 ? (lang === "sv" ? "Avbryt" : "Cancel") : (lang === "sv" ? "Tillbaka" : "Back")}
+          </button>
+          {step === 1 && (
+            <button onClick={() => setStep(2)} style={{ padding: "8px 20px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "rgba(239,68,68,0.9)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+              {lang === "sv" ? "Fortsätt →" : "Continue →"}
+            </button>
+          )}
+          {step === 2 && (
+            <button
+              disabled={typed.trim().toLowerCase() !== sessionUser.email.toLowerCase()}
+              onClick={() => setStep(3)}
+              style={{ padding: "8px 20px", background: typed.trim().toLowerCase() === sessionUser.email.toLowerCase() ? "rgba(239,68,68,0.12)" : "var(--bg4)", border: `1px solid ${typed.trim().toLowerCase() === sessionUser.email.toLowerCase() ? "rgba(239,68,68,0.3)" : "var(--sep)"}`, color: typed.trim().toLowerCase() === sessionUser.email.toLowerCase() ? "rgba(239,68,68,0.9)" : "var(--t4)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: typed.trim().toLowerCase() === sessionUser.email.toLowerCase() ? "pointer" : "not-allowed", fontFamily: "inherit" }}>
+              {lang === "sv" ? "Bekräfta →" : "Confirm →"}
+            </button>
+          )}
+          {step === 3 && (
+            <button
+              disabled={countdown > 0 || deleting}
+              onClick={doDelete}
+              style={{ padding: "8px 20px", background: countdown === 0 && !deleting ? "rgba(239,68,68,0.85)" : "var(--bg4)", border: "none", color: countdown === 0 && !deleting ? "#fff" : "var(--t4)", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: countdown === 0 && !deleting ? "pointer" : "not-allowed", fontFamily: "inherit", minWidth: 140, transition: "all .3s" }}>
+              {deleting ? (lang === "sv" ? "Raderar…" : "Deleting…") : countdown > 0 ? `${lang === "sv" ? "Radera konto" : "Delete account"} (${countdown}s)` : (lang === "sv" ? "Radera konto permanent" : "Permanently delete account")}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -4070,6 +4198,7 @@ function App() {
   const [allPreviews, setAllPreviews] = useState([]);
   const [previewIdx, setPreviewIdx] = useState(0);
   const [showSendModal, setShowSendModal] = useState(false);
+  const sendModalEverOpened = useRef(false);
   const [showMacBookModal, setShowMacBookModal] = useState(false);
   const [showMockupModal, setShowMockupModal] = useState(false);
   const [gmailToken, setGmailToken] = useState(() => sessionStorage.getItem("lp_gtoken") || null);
@@ -4077,6 +4206,7 @@ function App() {
   const [editingDomain, setEditingDomain] = useState({});
   const [editingContact, setEditingContact] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [showSymbols, setShowSymbols] = useState(false);
   const [importMode, setImportMode] = useState("manual"); // "manual" | "email" | "columns" | "csv"
@@ -4673,22 +4803,7 @@ function App() {
               <UserMenu
                 sessionUser={sessionUser}
                 onSignOut={() => { sessionStorage.clear(); setAuthed(false); }}
-                onDeleteAccount={() => {
-                  if (window.confirm(t("app.delete_account_confirm"))) {
-                    fetch(`${SB_URL}/rest/v1/users?email=eq.${encodeURIComponent(sessionUser.email)}`, {
-                      method: "DELETE",
-                      headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
-                    }).then(() => {
-                      sessionStorage.clear();
-                      localStorage.clear();
-                      setAuthed(false);
-                      window.history.pushState({}, "", "/");
-                      window.dispatchEvent(new PopStateEvent("popstate"));
-                    }).catch(() => {
-                      window.alert("Kontakta hello@logoplacers.com för att radera ditt konto.");
-                    });
-                  }
-                }}
+                onDeleteAccount={() => setShowDeleteModal(true)}
                 t={t}
                 tokenExpired={gmailWasConnected && !gmailToken}
               />
@@ -4707,7 +4822,7 @@ function App() {
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" onClick={() => setShowSendModal(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+            <button className="btn-s" onClick={() => { sendModalEverOpened.current = true; setShowSendModal(true); }} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2L15 22 11 13 2 9l20-7z" /></svg>
               {t("app.send")}
               {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "#000", color: "#fff", borderRadius: "100px", padding: "1px 5px", border: "1px solid rgba(255,255,255,0.2)" }}>{companies.filter(c => c.email).length}</span>}
@@ -4719,6 +4834,19 @@ function App() {
         </div>
 
         {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
+
+        {showDeleteModal && (
+          <DeleteAccountModal
+            sessionUser={sessionUser}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirmed={() => {
+              setShowDeleteModal(false);
+              setAuthed(false);
+              window.history.pushState({}, "", "/");
+              window.dispatchEvent(new PopStateEvent("popstate"));
+            }}
+          />
+        )}
 
         {showImportTable && (
           <ImportTableModal
@@ -5436,18 +5564,22 @@ function App() {
           </div>
         )}
 
-        {showSendModal && (
-          <SendModal
-            companies={companies}
-            getImageBlob={getImageBlob}
-            sharedToken={gmailToken}
-            onTokenAcquired={t => { setGmailToken(t); setGmailWasConnected(true); sessionStorage.setItem("lp_gtoken", t); }}
-            onClose={() => setShowSendModal(false)}
-            spendCredits={spend}
-            creditsBalance={credits.balance}
-            isFreePlan={credits.plan === "free"}
-            onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
-          />
+
+        {/* SendModal always mounted once opened — prevents unmount from killing active send loop */}
+        {(showSendModal || sendModalEverOpened.current) && (
+          <div style={{ display: showSendModal ? "contents" : "none" }}>
+            <SendModal
+              companies={companies}
+              getImageBlob={getImageBlob}
+              sharedToken={gmailToken}
+              onTokenAcquired={t => { setGmailToken(t); setGmailWasConnected(true); sessionStorage.setItem("lp_gtoken", t); }}
+              onClose={() => setShowSendModal(false)}
+              spendCredits={spend}
+              creditsBalance={credits.balance}
+              isFreePlan={credits.plan === "free"}
+              onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
+            />
+          </div>
         )}
         {showUpgradeModal && <UpgradeModal credits={credits} onClose={() => setShowUpgradeModal(false)} />}
       </div>

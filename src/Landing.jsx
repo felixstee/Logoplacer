@@ -1187,33 +1187,7 @@ function SocialProofTicker() {
 
 // ─────────────────────────────────────────────
 // EXIT INTENT POPUP
-// ─────────────────────────────────────────────
-function ExitIntentPopup({ onEnterApp }) {
-  const { lang } = useLang();
-  const [show, setShow] = useState(false);
-  const fired = useRef(false);
-  useEffect(() => {
-    const fn = (e) => { if (!fired.current && e.clientY < 16) { fired.current = true; setTimeout(() => setShow(true), 180); } };
-    document.addEventListener("mousemove", fn);
-    return () => document.removeEventListener("mousemove", fn);
-  }, []);
-  if (!show) return null;
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
-      onClick={e => e.target === e.currentTarget && setShow(false)}>
-      <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 24, padding: "44px 40px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 40px 100px rgba(0,0,0,0.9)" }}>
-        <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}><Logo size={44} /></div>
-        <h3 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-1px", margin: "0 0 12px", color: "#fff" }}>{lang === "sv" ? "Vänta — få 10 gratis krediter" : "Wait — get 10 free credits"}</h3>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.65, marginBottom: 28 }}>Try Logoplacers before you go. Send your first personalised demo in under 30 seconds — no credit card needed.</p>
-        <button onClick={() => { setShow(false); onEnterApp(); }} style={{ background: "#fff", color: "#000", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", marginBottom: 10, transition: "opacity .15s" }}
-          onMouseEnter={e => e.currentTarget.style.opacity = ".9"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-          Try it free →
-        </button>
-        <button onClick={() => setShow(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.2)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>No thanks, I prefer generic outreach</button>
-      </div>
-    </div>
-  );
-}
+
 
 // ─────────────────────────────────────────────
 // LIVE DEMO (preserved from previous)
@@ -2684,7 +2658,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
         <div className="glow-orb glow-orb-1" />
         <div className="glow-orb glow-orb-2" />
         <div className="glow-orb glow-orb-3" />
-        <ExitIntentPopup onEnterApp={onEnterApp} />
+
         <SocialProofTicker />
         <FloatingDock onEnterApp={onEnterApp} onOpenBlog={onOpenBlog} />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
