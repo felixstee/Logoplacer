@@ -496,6 +496,9 @@ const style = `
   /* Tag btn press */
   .tag-btn:active { transform: scale(.94); }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .credit-spinner { width: 11px; height: 11px; border: 1.5px solid rgba(255,255,255,0.15); border-top-color: rgba(255,255,255,0.7); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+
   /* Scrollbar brand-colored */
   .modal-body::-webkit-scrollbar { width: 4px; }
   .modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.85); border-radius: 4px; }
@@ -2728,7 +2731,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
   );
 }
 
-function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false }) {
+function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
   const t = useT();
   const { lang } = useLang();
   const [step, setStep] = useState("compose");
@@ -2857,6 +2860,12 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           console.error("Gmail send error:", res.status, errMsg, "for", c.email);
           if (res.status === 401) {
             tokenExpired = true;
+            // Remove already-sent contacts from the list so no double-send on retry
+            const sentIds = Object.entries(results).filter(([,v]) => v === "ok").map(([id]) => id);
+            if (sentIds.length > 0) {
+              // Bubble up to parent to remove them
+              onAutoRemoveSent && onAutoRemoveSent(sentIds);
+            }
             // Clear sent-set on token expiry so user can safely re-run after reconnect
             sessionStorage.removeItem(SENT_KEY);
           }
@@ -3530,7 +3539,7 @@ function useCredits() {
 }
 
 // Credit badge shown in header
-function CreditBadge({ credits, onUpgrade }) {
+function CreditBadge({ credits, onUpgrade, synced }) {
   const plan = PLANS[credits.plan] || PLANS["free"];
   const [pulse, setPulse] = useState(false);
   const prevBalance = useRef(credits.balance);
@@ -3554,11 +3563,15 @@ function CreditBadge({ credits, onUpgrade }) {
         borderRadius: 8, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6,
         boxShadow: low ? "none" : "0 0 10px rgba(255,255,255,0.05)",
       }}>
+        {!synced ? (
+          <div className="credit-spinner" />
+        ) : (
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={low ? "rgba(255,100,100,0.9)" : "rgba(255,255,255,0.75)"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
+        )}
         <span style={{ fontSize: 12, fontWeight: 600, color: low ? "rgba(255,100,100,0.9)" : "rgba(255,255,255,0.9)", fontVariantNumeric: "tabular-nums" }}>
-          {credits.balance.toLocaleString()}
+          {!synced ? "—" : credits.balance.toLocaleString()}
         </span>
         <span style={{ fontSize: 10, color: "var(--t4)" }}>/ {plan.label}</span>
       </div>
@@ -3784,7 +3797,7 @@ function DeleteAccountModal({ sessionUser, onClose, onConfirmed }) {
   );
 }
 
-function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) {
+function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp, onManageSubscription, currentPlan, t, tokenExpired }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -3828,6 +3841,30 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, t, tokenExpired }) 
             <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)" }}>{sessionUser.name}</div>
             <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>{sessionUser.email}</div>
           </div>
+          {/* Help center */}
+          <button onClick={() => { setOpen(false); onHelp && onHelp(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Help center
+          </button>
+          {/* Feedback */}
+          <button onClick={() => { setOpen(false); onFeedback && onFeedback(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Send feedback
+          </button>
+          {/* Manage subscription — only for paid users */}
+          {currentPlan && currentPlan !== "free" && (
+            <button onClick={() => { setOpen(false); onManageSubscription && onManageSubscription(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+              onMouseLeave={e => e.currentTarget.style.background = "none"}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Manage subscription
+            </button>
+          )}
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 0" }} />
           {/* Sign out */}
           <button onClick={() => { setOpen(false); onSignOut(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
@@ -4106,6 +4143,8 @@ function App() {
                       body: JSON.stringify({ priceId: pendingPrice, email: user.email }),
                     }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
                   }
+                  // Poll credits immediately after Supabase sync
+                  refreshCredits().finally(() => setCreditsSynced(true));
                 }).catch(() => { });
                 setAuthed(true);
                 // Small delay so React re-renders before navigation (prevents white screen)
@@ -4141,6 +4180,7 @@ function App() {
     }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
   }, [authed]);
 
+  const [creditsSynced, setCreditsSynced] = useState(false);
   const [converting, setConverting] = useState(false);
   const companiesKey = sessionUser.email ? `lp_companies_${sessionUser.email}` : "lp_companies";
   const [companies, setCompanies] = useState(() => {
@@ -4802,18 +4842,17 @@ function App() {
                 sessionUser={sessionUser}
                 onSignOut={() => { sessionStorage.clear(); setAuthed(false); }}
                 onDeleteAccount={() => setShowDeleteModal(true)}
+                onFeedback={() => setShowFeedback(true)}
+                onHelp={() => window.open("https://www.logoplacers.com/help", "_blank")}
+                onManageSubscription={() => window.open("https://billing.stripe.com/p/login/test_00g00000000000000000", "_blank")}
+                currentPlan={credits.plan}
                 t={t}
                 tokenExpired={gmailWasConnected && !gmailToken}
               />
             )}
-            <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} />
+            <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} synced={creditsSynced} />
             {saving && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>{t("app.saving")}</span>}
             {!saving && sessionLoaded && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>{t("app.saved")}</span>}
-            <button onClick={() => setShowManual(true)} title={t("manual.title")} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--t2)", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>?</button>
-            <button onClick={() => setShowFeedback(true)} style={{ background: "rgba(255,255,255,.06)", border: "0.5px solid var(--sep)", borderRadius: 8, padding: "0 10px", height: 30, display: "flex", alignItems: "center", gap: 5, cursor: "pointer", color: "var(--t2)", fontSize: 12, fontWeight: 600, fontFamily: "inherit", flexShrink: 0 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-              {t("app.feedback")}
-            </button>
             <button className="btn-s" disabled={!hasImage} onClick={showPreview} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -5576,6 +5615,7 @@ function App() {
               creditsBalance={credits.balance}
               isFreePlan={credits.plan === "free"}
               onUpgrade={() => { setShowSendModal(false); setShowUpgradeModal(true); }}
+              onAutoRemoveSent={ids => setCompanies(cs => cs.filter(c => !ids.includes(c.id)))}
             />
           </div>
         )}
