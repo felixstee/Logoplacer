@@ -361,7 +361,337 @@ function DashboardCards() {
 }
 
 // ─────────────────────────────────────────────
-// HUBSPOT-STYLE STEP SLIDESHOW — 5 glass slides
+// GLOWING CD STRINGS — animated iridescent lines
+// ─────────────────────────────────────────────
+function CDStrings({ height = 200 }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W = canvas.width = canvas.offsetWidth;
+    let H = canvas.height = canvas.offsetHeight;
+    let raf;
+    const strings = Array.from({ length: 7 }, (_, i) => ({
+      yFrac: 0.08 + i * 0.13,
+      speed: 0.15 + i * 0.05,
+      phase: i * 1.1,
+      amp: 14 + i * 5,
+      hueBase: i * 45,
+    }));
+    let t = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      t += 0.006;
+      strings.forEach(s => {
+        const y0 = s.yFrac * H;
+        const grad = ctx.createLinearGradient(0, 0, W, 0);
+        const stops = [0, 0.2, 0.4, 0.6, 0.8, 1];
+        stops.forEach((pos, i) => {
+          const h = (s.hueBase + pos * 280 + t * 25) % 360;
+          grad.addColorStop(pos, `hsla(${h},85%,72%,${0.35 + Math.sin(t + i) * 0.15})`);
+        });
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 3) {
+          const y = y0
+            + Math.sin(x * 0.007 + t * s.speed + s.phase) * s.amp
+            + Math.sin(x * 0.002 + t * 0.3) * s.amp * 0.35;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.0;
+        ctx.shadowColor = `hsla(${(s.hueBase + t * 25) % 360},90%,70%,0.5)`;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    const ro = new ResizeObserver(() => {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    });
+    ro.observe(canvas);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, []);
+  return (
+    <canvas ref={canvasRef} style={{ display: "block", width: "100%", height }} />
+  );
+}
+
+// ─────────────────────────────────────────────
+// VERTICAL WORKFLOW — replaces StepSlideshow
+// ─────────────────────────────────────────────
+function VerticalWorkflow({ onEnterApp }) {
+  const { lang } = useLang();
+  const darkMode = useDarkMode();
+
+  const STEPS = [
+    {
+      n: "01",
+      tag: lang === "sv" ? "Basbild" : "Base image",
+      title: lang === "sv" ? "Ladda upp din produktskärmbild" : "Upload your product screenshot",
+      body: lang === "sv"
+        ? "Dra in valfri skärmbild — dashboard, feature-vy eller landningssida. Stöder PNG, JPG, HEIC. Lägg sedan till textlager med ((name)) och ((company)) och dra prospektets logotyp dit du vill ha den."
+        : "Drag in any screenshot — dashboard, feature view or landing page. Supports PNG, JPG, HEIC. Then add text layers with ((name)) and ((company)) and drag the prospect's logo exactly where you want it.",
+      visual: () => (
+        <div style={{ background: "#0a0a0a", borderRadius: 14, padding: 20, height: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ border: "1.5px dashed rgba(255,255,255,0.12)", borderRadius: 10, padding: "28px 20px", textAlign: "center", background: "rgba(255,255,255,0.02)", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontWeight: 600 }}>{lang === "sv" ? "Klicka eller dra hit" : "Click or drag here"}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.18)" }}>PNG · JPG · HEIC</div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, padding: "11px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>product_demo.png</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{lang === "sv" ? "Redo att personalisera" : "Ready to personalise"}</div>
+            </div>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { label: "Logo 1", color: "#f97316" },
+              { label: "Logo 2", color: "#22c55e" },
+            ].map((l, i) => (
+              <div key={i} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: l.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      n: "02",
+      tag: lang === "sv" ? "Mejlkomposition" : "Compose email",
+      title: lang === "sv" ? "Skriv ett mejl med smarta variabler" : "Write an email with smart variables",
+      body: lang === "sv"
+        ? "Skriv ditt mejl en gång och använd ((name)), ((company)) och ((address)) som automatiskt ersätts per mottagare. Bilden bifogas automatiskt som personaliserad .png."
+        : "Write your email once and use ((name)), ((company)) and ((address)) — replaced automatically per recipient. The personalised image attaches automatically as a .png.",
+      visual: () => (
+        <div style={{ background: "#0a0a0a", borderRadius: 14, padding: 20, height: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: "#22c55e", fontWeight: 600 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gmail connected
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, padding: "10px 12px" }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "1px", marginBottom: 5 }}>SUBJECT</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+              {lang === "sv" ? "En personlig demo för " : "A personal demo for "}
+              <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 5px", color: "#fff", fontWeight: 700 }}>((company))</span>
+            </div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 9, padding: "10px 12px", flex: 1 }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "1px", marginBottom: 8 }}>MESSAGE</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>
+              {lang === "sv" ? "Hej " : "Hi "}
+              <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 5px", color: "#fff", fontWeight: 700 }}>((name))</span>,
+              <br /><br />
+              {lang === "sv" ? "Här är en personaliserad demo vi satt ihop för " : "Here's a personalised demo we put together for "}
+              <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 5px", color: "#fff", fontWeight: 700 }}>((company))</span>.
+            </div>
+          </div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", gap: 5 }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            {lang === "sv" ? "Bild bifogas automatiskt per mottagare" : "Image attached automatically per recipient"}
+          </div>
+        </div>
+      ),
+    },
+    {
+      n: "03",
+      tag: lang === "sv" ? "Granska & skicka" : "Review & send",
+      title: lang === "sv" ? "Granska varje demo och tryck skicka" : "Review every demo and hit send",
+      body: lang === "sv"
+        ? "Förhandsgranska varje personaliserat mejl innan utskick. Ställ in anti-spam-intervall (15–45s). Logoplacers skickar sedan alla mejl direkt från ditt Gmail — du behöver inte göra något mer."
+        : "Preview every personalised email before sending. Set your anti-spam interval (15–45s). Logoplacers then sends all emails directly from your Gmail — you don't need to do anything else.",
+      visual: () => (
+        <div style={{ background: "#0a0a0a", borderRadius: 14, padding: 20, height: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, padding: "10px 12px" }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "1px", marginBottom: 6 }}>SEND INTERVAL</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, position: "relative" }}>
+                <div style={{ position: "absolute", left: "15%", right: "40%", top: 0, bottom: 0, background: "rgba(255,255,255,0.5)", borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>15–45s</span>
+            </div>
+          </div>
+          {[
+            { name: "Alex Peterson", co: "Rocketship", email: "alex@rocketship.io", status: "ok" },
+            { name: "Maya Chen", co: "Synapse AI", email: "maya@synapse.ai", status: "ok" },
+            { name: "Jonas Berg", co: "Orbit Labs", email: "jonas@orbitlabs.se", status: "ing" },
+          ].map((r, i) => (
+            <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 9, padding: "9px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 22, background: "rgba(255,255,255,0.06)", borderRadius: 5, flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>{r.name}</div>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{r.email}</div>
+              </div>
+              {r.status === "ok"
+                ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                : <div style={{ width: 10, height: 10, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />
+              }
+            </div>
+          ))}
+          <div style={{ marginTop: "auto", textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>17 / 17</div>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>{lang === "sv" ? "mejl skickade" : "emails sent"}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      n: "04",
+      tag: lang === "sv" ? "Video-läge" : "Video mode",
+      title: lang === "sv" ? "Skapa en personaliserad videodemo" : "Create a personalised video demo",
+      body: lang === "sv"
+        ? "Ladda upp din skärminspelning och lägg till mottagarens namn som intro-text. Logoplacers renderar en unik video per prospekt — det ser ut som du presenterar specifikt för dem."
+        : "Upload your screen recording and add the recipient's name as intro text. Logoplacers renders a unique video per prospect — it looks like you're presenting specifically for them.",
+      visual: () => (
+        <div style={{ background: "#0a0a0a", borderRadius: 14, padding: 20, height: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 9, padding: "10px 12px" }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "1px", marginBottom: 6 }}>YOUR VIDEO</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>product_demo.mp4</div>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.25)" }}>15s · MP4</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 9, padding: "10px 12px" }}>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "1px", marginBottom: 6 }}>INTRO TEXT OVERLAY</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+              <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 5px", color: "#fff", fontWeight: 700 }}>((name))</span>
+              {lang === "sv" ? "'s framtida IR" : "'s future IR"}
+            </div>
+          </div>
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 9, overflow: "hidden", position: "relative" }}>
+            {[{ name: "Alex Peterson", co: "Rocketship" }, { name: "Maya Chen", co: "Synapse AI" }, { name: "Jonas Berg", co: "Orbit Labs" }].map((r, i) => (
+              <div key={i} style={{ padding: "7px 12px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: ["#f97316","#3b82f6","#22c55e"][i] + "22", border: `1px solid ${["#f97316","#3b82f6","#22c55e"][i]}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: ["#f97316","#3b82f6","#22c55e"][i] }}>{r.co[0]}</div>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{r.name}</span>
+                <div style={{ marginLeft: "auto", fontSize: 9, color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.05)", borderRadius: 4, padding: "2px 6px" }}>Create</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      n: "05",
+      tag: lang === "sv" ? "Video + logotyp" : "Video + logo",
+      title: lang === "sv" ? "Visa deras logotyp i din videodemo" : "Show their logo inside your video demo",
+      body: lang === "sv"
+        ? "Ladda upp en basvideo av din skärm och lägg till mottagarens logotyp direkt i videon. Varje prospekt ser en video där deras egna logotyp visas — kraftfullt och unikt."
+        : "Upload a base video of your screen and add the recipient's logo directly into the video. Each prospect sees a video with their own logo shown — powerful and unique.",
+      visual: () => (
+        <div style={{ background: "#0a0a0a", borderRadius: 14, padding: 20, height: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ flex: 1, background: "#111", borderRadius: 10, overflow: "hidden", position: "relative" }}>
+            {/* Mock laptop screen */}
+            <div style={{ position: "absolute", inset: "10px 10px 30px 10px", background: "#1a1a2e", borderRadius: 6, overflow: "hidden" }}>
+              {[0.6, 0.3, 0.8, 0.5, 0.4].map((w, i) => (
+                <div key={i} style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, margin: "8px 10px", width: `${w * 100}%` }} />
+              ))}
+              {/* Glowing logo placeholder */}
+              <div style={{ position: "absolute", top: 12, right: 12, width: 36, height: 36, borderRadius: 8, background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.5)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 20px rgba(99,102,241,0.3)", fontSize: 10, fontWeight: 800, color: "rgba(99,102,241,0.9)" }}>R</div>
+            </div>
+            {/* Bottom bar */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 22, background: "#111", display: "flex", alignItems: "center", padding: "0 10px", gap: 6 }}>
+              <div style={{ width: 14, height: 14, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="5" height="5" viewBox="0 0 10 10" fill="rgba(255,255,255,0.5)"><polygon points="3,1 9,5 3,9"/></svg>
+              </div>
+              <div style={{ flex: 1, height: 2, background: "rgba(255,255,255,0.08)", borderRadius: 1 }}>
+                <div style={{ width: "30%", height: "100%", background: "rgba(255,255,255,0.4)", borderRadius: 1 }} />
+              </div>
+              <span style={{ fontSize: 8, color: "rgba(255,255,255,0.25)" }}>0:05 / 0:15</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[
+              { co: "Rocketship", color: "#f97316" },
+              { co: "Synapse AI", color: "#3b82f6" },
+              { co: "Orbit Labs", color: "#22c55e" },
+            ].map((r, i) => (
+              <div key={i} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 7, padding: "6px 8px", textAlign: "center" }}>
+                <div style={{ width: 16, height: 16, borderRadius: 4, background: r.color + "22", border: `1px solid ${r.color}44`, margin: "0 auto 4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: r.color }}>{r.co[0]}</div>
+                <div style={{ fontSize: 8, color: "rgba(255,255,255,0.35)" }}>{r.co}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 48px" }}>
+      <div style={{ textAlign: "center", marginBottom: 80 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", marginBottom: 16 }}>
+          {lang === "sv" ? "Hur det fungerar" : "How it works"}
+        </div>
+        <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 14px", color: "#fff", lineHeight: 1.1 }}>
+          {lang === "sv" ? "Från skärmbild till 100 demos" : "From screenshot to 100 demos"}
+          <br />
+          <CDShimmerText dark={darkMode}>{lang === "sv" ? "på under 10 minuter." : "in under 10 minutes."}</CDShimmerText>
+        </h2>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {STEPS.map((step, i) => {
+          const [ref, vis] = [useRef(null), useState(false)];
+          // We can't use hooks in a map — use a wrapper
+          return <WorkflowStep key={i} step={step} idx={i} total={STEPS.length} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WorkflowStep({ step, idx, total }) {
+  const [ref, vis] = useReveal(0.15);
+  const isEven = idx % 2 === 0;
+  const isLast = idx === total - 1;
+
+  return (
+    <div ref={ref} style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 64,
+      alignItems: "center",
+      padding: "72px 0",
+      borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.05)",
+      opacity: vis ? 1 : 0,
+      transform: vis ? "translateY(0)" : "translateY(40px)",
+      transition: "opacity .8s, transform .8s",
+    }}>
+      {/* Text — alternates sides */}
+      <div style={{ order: isEven ? 1 : 2 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,0.5)", letterSpacing: "-0.5px" }}>{step.n}</div>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>{step.tag}</span>
+        </div>
+        <h3 style={{ fontSize: "clamp(22px,2.8vw,34px)", fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", marginBottom: 18, lineHeight: 1.1 }}>{step.title}</h3>
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.42)", lineHeight: 1.8, maxWidth: 420 }}>{step.body}</p>
+      </div>
+
+      {/* Visual */}
+      <div style={{ order: isEven ? 2 : 1, height: 320, borderRadius: 18, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.015)", boxShadow: "0 24px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)", padding: 4 }}>
+        {step.visual()}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// HUBSPOT-STYLE STEP SLIDESHOW — 5 glass slides (kept for reference)
 // ─────────────────────────────────────────────
 function StepSlideshow() {
   const darkMode = useDarkMode();
@@ -817,58 +1147,89 @@ function FeaturesShowcase() {
 
   return (
     <div ref={ref} style={{ maxWidth: 1140, margin: "0 auto" }}>
-      <div style={{
-        textAlign: "center", marginBottom: 72,
-        opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(28px)",
-        transition: "opacity .8s, transform .8s",
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 16 }}>
-          {lang === "sv" ? "Funktioner" : "Features"}
-        </div>
-        <h2 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 24px", color: "#fff" }}>
-          {lang === "sv" ? "Allt du behöver för att" : "Everything you need to"}
-          <br />
+      <div style={{ textAlign: "center", marginBottom: 72, opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(28px)", transition: "opacity .8s, transform .8s" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", marginBottom: 16 }}>{lang === "sv" ? "Funktioner" : "Features"}</div>
+        <h2 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 16px", color: "#fff" }}>
+          {lang === "sv" ? "Allt du behöver för att" : "Everything you need to"}<br />
           <CDShimmerText dark={darkMode}>{lang === "sv" ? "sticka ut i inkorgen." : "stand out in the inbox."}</CDShimmerText>
         </h2>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-          {pills.map((pill, i) => (
-            <div key={i}
-              onMouseEnter={() => setActiveTag(i)}
-              style={{
-                padding: "6px 14px", borderRadius: 100,
-                background: activeTag === i ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${activeTag === i ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.08)"}`,
-                fontSize: 11, fontWeight: 600,
-                color: activeTag === i ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.35)",
-                cursor: "default", transition: "all .2s",
-                boxShadow: "none",
-              }}>
-              {pill.label}
-            </div>
-          ))}
-        </div>
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.35)", maxWidth: 440, margin: "0 auto", lineHeight: 1.7 }}>
+          {lang === "sv" ? "Logoplacers hämtar logotyper, genererar bilder och skickar mejl — du fokuserar på att stänga affärer." : "Logoplacers fetches logos, generates images and sends emails — you focus on closing deals."}
+        </p>
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gap: 14,
-        opacity: vis ? 1 : 0,
-        transition: "opacity .6s .2s",
-      }}>
-        {features.map((f, i) => (
-          <FeatureBentoCard
-            key={i}
-            icon={f.icon}
-            title={f.title}
-            desc={f.desc}
-            idx={i}
-            visible={vis}
-            accentColor={f.accent}
-            wide={f.wide}
-            visual={f.visual}
-          />
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: 3, opacity: vis ? 1 : 0, transition: "opacity .6s .2s" }}>
+        {/* Row 1 */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+          <div style={{ background: "#111", borderRadius: "16px 4px 4px 16px", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(129,140,248,0.12)", border: "1px solid rgba(129,140,248,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{Icon.search}</div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px", color: "#fff", margin: "0 0 10px" }}>{lang === "sv" ? "Automatisk logotypdetektering" : "Automatic logo detection"}</h3>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0, maxWidth: 340 }}>{lang === "sv" ? "Skriv ett bolagsnamn — logotypen hämtas direkt. Fungerar för vilket bolag som helst i världen." : "Type a company name — logo fetched instantly. Works for any company in the world."}</p>
+          </div>
+          <div style={{ background: "#111", borderRadius: "4px 16px 16px 4px", padding: "32px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {[{ co: "Rocketship", domain: "rocketship.io", color: "#818cf8", done: true }, { co: "Synapse AI", domain: "synapse.ai", color: "#34d399", done: true }, { co: "Orbit Labs", domain: "orbitlabs.se", color: "#fb7185", done: true }, { co: "Stackflow", domain: "stackflow.com", color: "#fbbf24", done: false }].map((r, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${r.color}18`, border: `1px solid ${r.color}35`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: r.color, flexShrink: 0 }}>{r.co[0]}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>{r.co}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{r.domain}</div>
+                </div>
+                {r.done ? <div style={{ fontSize: 9, color: "#22c55e", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 5px #22c55e" }} />LOGO ✓</div>
+                  : <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2 */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+          <div style={{ background: "#0f0f0f", borderRadius: "16px 4px 4px 16px", padding: "32px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "14px 16px" }}>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", fontWeight: 700, letterSpacing: "1px", marginBottom: 7 }}>COMPOSE</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>Hi <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 6px", color: "#fff", fontWeight: 700 }}>((name))</span>, here's a demo for <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 6px", color: "#fff", fontWeight: 700 }}>((company))</span></div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: 10 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 7px #22c55e" }} />
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Gmail connected · 15–45s anti-spam delay</span>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>17 / 17</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", marginTop: 2 }}>{lang === "sv" ? "mejl skickade" : "emails sent"}</div>
+            </div>
+          </div>
+          <div style={{ background: "#0f0f0f", borderRadius: "4px 16px 16px 4px", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{Icon.send}</div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px", color: "#fff", margin: "0 0 10px" }}>{lang === "sv" ? "Skicka direkt från Gmail" : "Send directly from Gmail"}</h3>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0, maxWidth: 340 }}>{lang === "sv" ? "Anslut Gmail med ett klick. Anti-spam-fördröjningar inbyggda. 100 personaliserade mejl på under 10 minuter." : "Connect Gmail in one click. Anti-spam delays built in. 100 personalised emails in under 10 minutes."}</p>
+          </div>
+        </div>
+
+        {/* Row 3 */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 3 }}>
+          <div style={{ background: "#111", borderRadius: "16px 4px 4px 4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.box}</div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Bulk på sekunder" : "Bulk in seconds"}</h3>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: "0 0 14px" }}>{lang === "sv" ? "100 personaliserade demos på den tid det brukar ta att göra en." : "100 personalised demos in the time it used to take to do one."}</p>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}><span style={{ fontSize: 28, fontWeight: 800, color: "#a78bfa", letterSpacing: "-1.5px" }}>{demoCount.toLocaleString()}</span><span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{lang === "sv" ? "demos skapade" : "demos created"}</span></div>
+            </div>
+          </div>
+          <div style={{ background: "#111", borderRadius: "4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(251,146,60,0.12)", border: "1px solid rgba(251,146,60,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.move}</div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Pixelperfekt placering" : "Pixel-perfect placement"}</h3>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: 0 }}>{lang === "sv" ? "Dra och placera logotyp och text exakt där du vill — varje gång." : "Drag and place logo and text exactly where you want — every time."}</p>
+            </div>
+          </div>
+          <div style={{ background: "#111", borderRadius: "4px 16px 16px 4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.lock}</div>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Säkert & privat" : "Secure & private"}</h3>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: "0 0 14px" }}>{lang === "sv" ? "Din kontaktdata sparas lokalt i webbläsaren. Gmail-tokenet är session-only." : "Contact data saved locally in your browser. Gmail token is session-only."}</p>
+              <div style={{ display: "flex", gap: 5 }}>{(lang === "sv" ? ["Lokalt", "GDPR"] : ["Local only", "GDPR"]).map((tag, i) => (<div key={i} style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 100, background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.2)", color: "rgba(34,211,238,0.7)" }}>{tag}</div>))}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -969,61 +1330,184 @@ const TDATA = [
 function TestimonialCarousel() {
   const darkMode = useDarkMode();
   const [idx, setIdx] = useState(0);
-  const [fading, setFading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(0);
+  const [dragDelta, setDragDelta] = useState(0);
+  const [animating, setAnimating] = useState(false);
   const { lang } = useLang();
   const [ref, vis] = useReveal(0.08);
-
-  const touchStartX = useRef(null);
+  const n = TDATA.length;
 
   const go = useCallback((next) => {
-    if (fading) return;
-    setFading(true);
-    setTimeout(() => { setIdx(next); setFading(false); }, 250);
-  }, [fading]);
+    if (animating) return;
+    setAnimating(true);
+    setTimeout(() => { setIdx(((next % n) + n) % n); setAnimating(false); }, 420);
+  }, [animating, n]);
 
   useEffect(() => {
-    const t = setInterval(() => go((idx + 1) % TDATA.length), 4800);
+    const t = setInterval(() => go(idx + 1), 5200);
     return () => clearInterval(t);
   }, [idx, go]);
 
-  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
-    const diff = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (diff < -50) go((idx + 1) % TDATA.length);
-    else if (diff > 50) go((idx - 1 + TDATA.length) % TDATA.length);
+  // Drag / touch handling
+  const onDragStart = (clientX) => { setDragging(true); setDragStart(clientX); setDragDelta(0); };
+  const onDragMove = (clientX) => { if (!dragging) return; setDragDelta(clientX - dragStart); };
+  const onDragEnd = () => {
+    setDragging(false);
+    if (dragDelta < -60) go(idx + 1);
+    else if (dragDelta > 60) go(idx - 1);
+    setDragDelta(0);
   };
 
-  const cur = TDATA[idx];
+  // Card position helper — returns transform + opacity + zIndex for each slot
+  const getCardStyle = (i) => {
+    const total = n;
+    let rel = ((i - idx) % total + total) % total;
+    if (rel > total / 2) rel -= total; // wrap: -2 -1 0 +1 +2
+    const absRel = Math.abs(rel);
+    if (absRel > 2) return { display: "none" };
+
+    const xOffsets = [-480, -240, 0, 240, 480];
+    const zOffsets = [-140, -70, 0, -70, -140];
+    const rotates  = [18, 9, 0, -9, -18];
+    const scales   = [0.72, 0.85, 1, 0.85, 0.72];
+    const opacities= [0, 0.45, 1, 0.45, 0];
+
+    const slot = rel + 2; // 0..4
+
+    // apply drag nudge to center card
+    const dragNudge = rel === 0 ? dragDelta * 0.4 : 0;
+    const x = xOffsets[slot] + dragNudge;
+    const z = zOffsets[slot];
+    const rot = rotates[slot];
+    const sc = scales[slot];
+    const op = opacities[slot];
+
+    return {
+      display: "block",
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      transform: `translate(-50%, -50%) translateX(${x}px) translateZ(${z}px) rotateY(${rot}deg) scale(${sc})`,
+      opacity: op,
+      zIndex: 10 - absRel,
+      transition: dragging ? "none" : "transform .42s cubic-bezier(.34,1.1,.64,1), opacity .42s ease",
+      cursor: rel === 0 ? "default" : rel < 0 ? "w-resize" : "e-resize",
+      pointerEvents: absRel > 1 ? "none" : "auto",
+    };
+  };
+
   return (
     <div ref={ref} style={{
-      maxWidth: 900, margin: "0 auto",
+      maxWidth: 1400, margin: "0 auto",
       opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(28px)",
-      transition: "opacity .8s, transform .8s"
+      transition: "opacity .8s, transform .8s",
     }}>
-      <div style={{ textAlign: "center", marginBottom: 52 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 14 }}>{lang === "sv" ? "Vad folk säger" : "What people say"}</div>
-        <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 800, letterSpacing: "-2px", margin: 0, color: "#fff" }}><CDShimmerText dark={darkMode}>{lang === "sv" ? "Säljteam älskar det." : "Sales teams love it."}</CDShimmerText></h2>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 64 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 14 }}>
+          {lang === "sv" ? "Vad folk säger" : "What people say"}
+        </div>
+        <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 800, letterSpacing: "-2px", margin: 0, color: "#fff" }}>
+          <CDShimmerText dark={darkMode}>{lang === "sv" ? "Säljteam älskar det." : "Sales teams love it."}</CDShimmerText>
+        </h2>
       </div>
-      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "clamp(28px,4vw,52px)", backdropFilter: "blur(20px)", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", opacity: fading ? 0 : 1, transition: "opacity .25s" }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+
+      {/* 3D stage — taller + wider */}
+      <div
+        style={{ position: "relative", height: 420, perspective: "1600px", perspectiveOrigin: "50% 50%", userSelect: "none" }}
+        onMouseDown={e => onDragStart(e.clientX)}
+        onMouseMove={e => onDragMove(e.clientX)}
+        onMouseUp={onDragEnd}
+        onMouseLeave={onDragEnd}
+        onTouchStart={e => onDragStart(e.touches[0].clientX)}
+        onTouchMove={e => onDragMove(e.touches[0].clientX)}
+        onTouchEnd={onDragEnd}
       >
-        <div style={{ display: "flex", gap: 3, marginBottom: 20 }}>
-          {[...Array(5)].map((_, i) => <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>)}
+        {TDATA.map((t, i) => {
+          const cs = getCardStyle(i);
+          if (cs.display === "none") return null;
+          const isActive = ((i - idx + n) % n) === 0;
+          const quote = lang === "sv" && t.quoteSv ? t.quoteSv : t.quote;
+          const role = lang === "sv" && t.roleSv ? t.roleSv : t.role;
+
+          return (
+            <div
+              key={i}
+              onClick={() => { if (!isActive && !dragging) go(i); }}
+              style={{
+                ...cs,
+                width: 580,
+                padding: "48px 52px 44px",
+                borderRadius: 28,
+                background: "transparent",
+                backdropFilter: "none",
+                WebkitBackdropFilter: "none",
+                border: isActive
+                  ? "1px solid rgba(255,255,255,0.14)"
+                  : "1px solid rgba(255,255,255,0.05)",
+                boxShadow: isActive
+                  ? "0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07)"
+                  : "0 20px 50px rgba(0,0,0,0.45)",
+              }}
+            >
+              {/* Stars */}
+              <div style={{ display: "flex", gap: 4, marginBottom: 24 }}>
+                {[...Array(5)].map((_, si) => (
+                  <svg key={si} width="14" height="14" viewBox="0 0 24 24" fill={isActive ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.2)"} stroke="none">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <p style={{
+                fontSize: isActive ? 18 : 15,
+                color: isActive ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.35)",
+                lineHeight: 1.7, marginBottom: 36, fontStyle: "italic",
+                transition: "font-size .3s, color .3s",
+              }}>
+                "{quote}"
+              </p>
+
+              {/* Author */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.06)",
+                  border: `1px solid ${isActive ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 16, fontWeight: 700,
+                  color: isActive ? "#fff" : "rgba(255,255,255,0.35)",
+                  flexShrink: 0,
+                }}>{t.name[0]}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? "#fff" : "rgba(255,255,255,0.35)" }}>{t.name}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{role} · {t.company}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigation — plain monochrome arrows + dots */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginTop: 40 }}>
+        <button onClick={() => go(idx - 1)} style={{ width: 38, height: 38, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", background: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color .18s, color .18s", fontFamily: "inherit" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.color = "#fff"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.35)"; }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        <div style={{ display: "flex", gap: 7 }}>
+          {TDATA.map((_, i) => (
+            <button key={i} onClick={() => go(i)} style={{ width: i === idx ? 22 : 7, height: 7, borderRadius: 4, background: i === idx ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)", border: "none", cursor: "pointer", padding: 0, transition: "all .3s", flexShrink: 0 }} />
+          ))}
         </div>
-        <p style={{ fontSize: "clamp(16px,2vw,20px)", color: "rgba(255,255,255,0.8)", lineHeight: 1.65, marginBottom: 28, fontStyle: "italic" }}>"{lang === "sv" && cur.quoteSv ? cur.quoteSv : cur.quote}"</p>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#fff" }}>{cur.name[0]}</div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{cur.name}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{lang === "sv" && cur.roleSv ? cur.roleSv : cur.role} · {cur.company}</div>
-          </div>
-          <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
-            {TDATA.map((_, i) => <button key={i} onClick={() => go(i)} style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 3, background: i === idx ? "#fff" : "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", padding: 0, transition: "all .3s" }} />)}
-          </div>
-        </div>
+        <button onClick={() => go(idx + 1)} style={{ width: 38, height: 38, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", background: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color .18s, color .18s", fontFamily: "inherit" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.color = "#fff"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.35)"; }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
       </div>
     </div>
   );
@@ -2535,10 +3019,10 @@ function HiDemoCard({ lang, statsVis }) {
     <div className="hi-demo-card-wrap" style={{
       position: "relative", borderRadius: 22, overflow: "hidden",
       background: "linear-gradient(160deg, #09090b 0%, #07070a 100%)",
-      border: "1px solid rgba(255,255,255,0.06)",
-      boxShadow: "0 32px 80px rgba(0,0,0,0.7)",
+      border: "1px solid rgba(255,255,255,0.14)",
+      boxShadow: "0 40px 120px rgba(0,0,0,0.85), 0 0 0 1px rgba(220,190,255,0.08), 0 0 80px rgba(200,160,255,0.06)",
       display: "flex", flexDirection: "column",
-      minHeight: 320,
+      minHeight: 420,
       opacity: statsVis ? 1 : 0,
       transform: statsVis ? "translateY(0)" : "translateY(32px)",
       transition: "opacity .8s, transform .8s",
@@ -2654,10 +3138,8 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
   return (
     <DarkModeContext.Provider value={darkMode}>
       <div data-theme={darkMode ? "dark" : "light"} className="scroll-glow-bg" style={{ background: darkMode ? "#000" : "#fafaf8", color: darkMode ? "#fff" : "#0a0a0a", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", overflowX: "hidden", transition: "background .4s, color .4s" }}>
-        {/* Floating glow orbs — persist through scroll */}
-        <div className="glow-orb glow-orb-1" />
-        <div className="glow-orb glow-orb-2" />
-        <div className="glow-orb glow-orb-3" />
+        {/* Grid background overlay */}
+        <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "80px 80px" }} />
 
         <SocialProofTicker />
         <FloatingDock onEnterApp={onEnterApp} onOpenBlog={onOpenBlog} />
@@ -2708,26 +3190,30 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
 
         {/* ── HERO ──────────────────────────────────── */}
         <section aria-label="Hero" style={{ position: "relative", minHeight: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 64 }}>
+          {/* CD strings subtle background layer */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", opacity: 0.45 }}>
+            <CDStrings height="100%" />
+          </div>
           <HeroScene />
           {/* Bottom fade to black */}
           <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "radial-gradient(ellipse 100% 50% at 50% 100%, #000 0%, transparent 60%)" }} />
 
-          {/* Two-column hero layout */}
+          {/* Two-column hero layout — 2fr/3fr (40/60) */}
           <div className="hero-grid" style={{
             position: "relative", zIndex: 10,
             maxWidth: 1200, margin: "0 auto", width: "100%",
             padding: "80px 48px 60px",
-            display: "grid", gridTemplateColumns: "1fr 1fr",
+            display: "grid", gridTemplateColumns: "2fr 3fr",
             gap: 64, alignItems: "center",
           }}>
             {/* LEFT — headline + CTAs */}
             <div style={{ animation: "fadeSlideUp .8s ease both" }}>
 
-              <h1 style={{ fontSize: "clamp(40px, 5.5vw, 76px)", fontWeight: 800, lineHeight: 1.0, letterSpacing: "-3px", margin: "0 0 24px" }}>
+              <h1 style={{ fontSize: "clamp(36px, 4.5vw, 58px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-2.5px", margin: "0 0 20px" }}>
                 <span style={{ color: "#fff", display: "block" }}>
                   {lang === "sv" ? "Din produkt." : "Your product."}
                 </span>
-                <CDShimmerText style={{ display: "block", fontSize: "clamp(40px, 5.5vw, 76px)", fontWeight: 800, letterSpacing: "-3px" }}>
+                <CDShimmerText style={{ display: "block", fontSize: "clamp(36px, 4.5vw, 58px)", fontWeight: 800, letterSpacing: "-2.5px" }}>
                   {lang === "sv" ? "Deras logotyp." : "Their logo."}
                 </CDShimmerText>
                 <span style={{ color: "#fff", display: "block" }}>
@@ -2735,10 +3221,10 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
                 </span>
               </h1>
 
-              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", lineHeight: 1.75, maxWidth: 480, margin: "0 0 36px", fontWeight: 400 }}>
+              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.65, maxWidth: 400, margin: "0 0 32px", fontWeight: 400 }}>
                 {lang === "sv"
-                  ? "Ladda upp en skärmbild, klistra in dina prospekter — Logoplacers hämtar varje logotyp och skickar 100 personaliserade demos direkt från Gmail på under 10 minuter."
-                  : "Upload a screenshot, paste your prospects — Logoplacers auto-fetches every logo and sends 100 personalised demos directly from Gmail in under 10 minutes."}
+                  ? "Klistra in prospekter — Logoplacers hämtar varje logotyp och skickar 100 personaliserade demos från Gmail på under 10 minuter."
+                  : "Paste your prospects — Logoplacers auto-fetches every logo and sends 100 personalised demos from Gmail in under 10 minutes."}
               </p>
 
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
@@ -2790,57 +3276,92 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
           </div>
         </section>
 
-        {/* ── STATS / SOCIAL PROOF ──────────────────── */}
-        <section ref={statsRef} style={{ padding: "80px 48px", borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          {/* Dashboard cards row */}
-          <div style={{ opacity: statsVis ? 1 : 0, transform: statsVis ? "translateY(0)" : "translateY(24px)", transition: "opacity .8s, transform .8s", marginBottom: 48 }}>
-            <DashboardCards />
-          </div>
-          {/* Animated stat numbers */}
-          <div className="stats-numbers-grid" style={{ maxWidth: 1040, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-            {[
-              { target: 1, suffix: "s", prefix: "< ", lbl: lang === "sv" ? "att personalisera per prospekt" : "to personalise per prospect", grad: "linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)", staticDisplay: true },
-              { target: 94, suffix: "%", prefix: "", lbl: lang === "sv" ? "av köpare föredrar visuella demos" : "of buyers prefer visual demos", grad: "linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)" },
-              { target: 1000, suffix: "", prefix: "", lbl: lang === "sv" ? "personaliserade demos per batch" : "personalised demos per batch", grad: "linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)" },
-              { target: 1, suffix: " min", prefix: "", lbl: lang === "sv" ? "från skärmbild till skickade mejl" : "from screenshot to sent emails", grad: "linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.6) 100%)", staticDisplay: true },
-            ].map(({ target, suffix, prefix, lbl, grad, staticDisplay }, i) => (
-              <AnimatedStat key={i} target={target} suffix={suffix} prefix={prefix} lbl={lbl} visible={statsVis} delay={i * 120} mouseX={mouse.x} mouseY={mouse.y} idx={i} grad={grad} staticDisplay={staticDisplay} />
-            ))}
+        {/* ── CD STRINGS DIVIDER ────────────────────── */}
+        <div style={{ position: "relative", overflow: "hidden", background: "#000" }}>
+          <CDStrings height={120} />
+        </div>
+
+        {/* ── VISUAL METRICS ────────────────────────── */}
+        <section aria-label="Key metrics" style={{ padding: "80px 48px", background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 2 }}>
+              {[
+                { value: "< 1s", label: lang === "sv" ? "per personalisering" : "per personalisation", icon: "⚡", desc: lang === "sv" ? "Automatisk logotyphämtning" : "Automatic logo fetch" },
+                { value: "94%", label: lang === "sv" ? "föredrar visuella demos" : "prefer visual demos", icon: "👁", desc: lang === "sv" ? "Av B2B-köpare" : "Of B2B buyers" },
+                { value: "1 000+", label: lang === "sv" ? "demos per batch" : "demos per batch", icon: "📦", desc: lang === "sv" ? "Ingen hård gräns" : "No hard limit" },
+                { value: "< 10 min", label: lang === "sv" ? "till skickade mejl" : "to sent emails", icon: "🚀", desc: lang === "sv" ? "Från skärmbild" : "From screenshot" },
+              ].map((m, i) => (
+                <div key={i} style={{
+                  padding: "32px 28px",
+                  background: i === 1 ? "rgba(255,255,255,0.04)" : "transparent",
+                  borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                  position: "relative",
+                }}>
+                  <div style={{ fontSize: 11, marginBottom: 12, opacity: 0.5 }}>{m.icon}</div>
+                  <div style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 800, letterSpacing: "-2px", color: "#fff", lineHeight: 1, marginBottom: 8 }}>{m.value}</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 600, marginBottom: 4 }}>{m.label}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.22)" }}>{m.desc}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
-        {/* ── HUBSPOT-STYLE STEP SLIDESHOW ─────────── */}
-        <section id="how-it-works" style={{ padding: "120px 0" }}>
-          <div ref={stepsRef} style={{ opacity: stepsVis ? 1 : 0, transform: stepsVis ? "translateY(0)" : "translateY(36px)", transition: "opacity .9s, transform .9s" }}>
-            <StepSlideshow />
+        {/* ── VERTICAL WORKFLOW ─────────────────────── */}
+        <section id="how-it-works" style={{ padding: "120px 0", background: "#050505", position: "relative", overflow: "hidden" }}>
+          {/* Grid background — soft radial fade toward each step */}
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            WebkitMaskImage: "radial-gradient(ellipse 80% 90% at 50% 50%, black 30%, transparent 100%)",
+            maskImage: "radial-gradient(ellipse 80% 90% at 50% 50%, black 30%, transparent 100%)",
+          }} />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <VerticalWorkflow onEnterApp={onEnterApp} />
           </div>
         </section>
 
+        {/* ── CD STRINGS DIVIDER 2 ──────────────────── */}
+        <div style={{ position: "relative", overflow: "hidden", background: "#000" }}>
+          <CDStrings height={100} />
+        </div>
+
         {/* ── FEATURES ──────────────────────────────── */}
-        <section id="features" style={{ padding: "120px 48px", background: "rgba(0,0,0,0.45)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <section id="features" aria-label="Features" style={{ padding: "120px 48px", background: "#0d0d0d", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <div ref={featRef} style={{ opacity: featVis ? 1 : 0, transition: "opacity .8s" }}>
             <FeaturesShowcase />
           </div>
         </section>
 
         {/* ── LIVE DEMO ─────────────────────────────── */}
-        <section id="demo" style={{ padding: "120px 48px" }}>
-          <LiveDemo />
+        <section id="demo" aria-label="Live demo" style={{ padding: "120px 48px", position: "relative", overflow: "hidden" }}>
+          {/* CD strings subtle background */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.35 }}>
+            <CDStrings height="100%" />
+          </div>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <LiveDemo />
+          </div>
         </section>
 
         {/* ── TESTIMONIALS ──────────────────────────── */}
-        <section style={{ padding: "100px 48px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.012)" }}>
+        <section aria-label="Testimonials" style={{ padding: "100px 48px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "#0a0a0a" }}>
           <TestimonialCarousel />
         </section>
 
         {/* ── COMPARISON ────────────────────────────── */}
-        <section id="comparison" style={{ padding: "100px 48px" }}>
+        <section id="comparison" aria-label="Comparison" style={{ padding: "100px 48px", background: "#050505" }}>
           <ComparisonTable />
         </section>
 
         {/* ── CTA ───────────────────────────────────── */}
-        <section id="cta" ref={ctaRef} style={{ padding: "140px 48px 160px", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative" }}>
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 400, background: "radial-gradient(ellipse, rgba(255,255,255,0.03) 0%, transparent 70%)", pointerEvents: "none" }} />
-          <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center", opacity: ctaVis ? 1 : 0, transform: ctaVis ? "translateY(0)" : "translateY(28px)", transition: "opacity .9s, transform .9s" }}>
+        <section id="cta" aria-label="Call to action" ref={ctaRef} style={{ padding: "140px 48px 160px", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
+          {/* CD strings subtle background */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.35 }}>
+            <CDStrings height="100%" />
+          </div>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 400, background: "radial-gradient(ellipse, rgba(255,255,255,0.03) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1 }} />
+          <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 2, opacity: ctaVis ? 1 : 0, transform: ctaVis ? "translateY(0)" : "translateY(28px)", transition: "opacity .9s, transform .9s" }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", marginBottom: 20 }}>{lang === "sv" ? "Börja idag" : "Start today"}</div>
             <h2 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 800, letterSpacing: "-2px", margin: "0 0 16px", color: "#fff" }}>
               <CDShimmerText dark={darkMode}>{lang === "sv" ? "Redo att stänga fler affärer?" : "Ready to close more deals?"}</CDShimmerText>
@@ -2968,64 +3489,16 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
         @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)} }
         @keyframes cdShimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
         @keyframes featurePulse { 0%,100%{opacity:.7} 50%{opacity:1} }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes floatPulse { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-6px)} }
         @keyframes glowPulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.04)} }
-        @keyframes gradientDrift {
-          0%   { background-position: 0% 0%; }
-          33%  { background-position: 100% 50%; }
-          66%  { background-position: 0% 100%; }
-          100% { background-position: 0% 0%; }
-        }
-        @keyframes glowFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,-30px) scale(1.08)} }
-        @keyframes glowFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,40px) scale(1.06)} }
-        @keyframes glowFloat3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,30px) scale(1.05)} }
-
-        .scroll-glow-bg::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
-          background:
-            radial-gradient(ellipse 55% 45% at 15% 25%, rgba(180,140,255,0.07) 0%, transparent 60%),
-            radial-gradient(ellipse 45% 38% at 85% 55%, rgba(120,180,255,0.06) 0%, transparent 55%),
-            radial-gradient(ellipse 50% 40% at 50% 85%, rgba(160,120,255,0.05) 0%, transparent 60%),
-            radial-gradient(ellipse 30% 30% at 70% 15%, rgba(200,160,255,0.05) 0%, transparent 50%);
-          background-size: 200% 200%;
-          animation: gradientDrift 20s ease-in-out infinite;
-        }
-
-        .glow-orb {
-          position: fixed;
-          border-radius: 50%;
-          pointer-events: none;
-          filter: blur(120px);
-          z-index: 0;
-        }
-        .glow-orb-1 {
-          width: 600px; height: 600px;
-          top: -100px; left: -150px;
-          background: radial-gradient(circle, rgba(160,100,255,0.06) 0%, transparent 70%);
-          animation: glowFloat1 14s ease-in-out infinite;
-        }
-        .glow-orb-2 {
-          width: 500px; height: 500px;
-          top: 30%; right: -100px;
-          background: radial-gradient(circle, rgba(80,160,255,0.055) 0%, transparent 70%);
-          animation: glowFloat2 18s ease-in-out infinite;
-        }
-        .glow-orb-3 {
-          width: 450px; height: 450px;
-          bottom: 10%; left: 30%;
-          background: radial-gradient(circle, rgba(140,80,255,0.05) 0%, transparent 70%);
-          animation: glowFloat3 22s ease-in-out infinite;
-        }
 
         /* ── Mobile responsive ── */
         @media (max-width: 768px) {
           /* Hero: stack vertically on mobile */
           .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 60px 20px 40px !important; }
-          .hero-demo-card { display: none !important; }
+          .hero-demo-card { display: block !important; max-width: 100% !important; }
+          .hero-demo-card > div { min-height: 340px !important; }
 
           /* Stats: 2x2 on mobile */
           .dashboard-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -3053,7 +3526,7 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
 
           /* Hero padding */
           .hero-section { padding: 80px 20px 60px !important; }
-          .hero-h1 { font-size: clamp(32px,8vw,52px) !important; }
+          .hero-h1 { font-size: clamp(30px,7vw,44px) !important; }
         }
 
         @media (max-width: 480px) {
