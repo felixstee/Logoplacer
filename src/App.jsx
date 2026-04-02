@@ -4192,7 +4192,7 @@ function App() {
     }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
   }, [authed]);
 
-  const [creditsSynced, setCreditsSynced] = useState(() => !!sessionStorage.getItem("lp_verified_plan"));
+  const [creditsSynced, setCreditsSynced] = useState(() => !!sessionStorage.getItem("lp_verified_plan") || !!localStorage.getItem("lp_credits"));
   const [converting, setConverting] = useState(false);
   const companiesKey = sessionUser.email ? `lp_companies_${sessionUser.email}` : "lp_companies";
   const [companies, setCompanies] = useState(() => {
