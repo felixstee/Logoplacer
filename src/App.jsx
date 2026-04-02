@@ -2731,7 +2731,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
   );
 }
 
-function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
+function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, onTokenExpired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
   const t = useT();
   const { lang } = useLang();
   const [step, setStep] = useState("compose");
@@ -2860,13 +2860,14 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
           console.error("Gmail send error:", res.status, errMsg, "for", c.email);
           if (res.status === 401) {
             tokenExpired = true;
-            // Remove already-sent contacts from the list so no double-send on retry
-            const sentIds = Object.entries(results).filter(([,v]) => v === "ok").map(([id]) => id);
+            // Clear the stale token so the header correctly shows tokenExpired
+            sessionStorage.removeItem("lp_gtoken");
+            onTokenExpired && onTokenExpired();
+            // Remove already-sent contacts so no double-send on retry
+            const sentIds = [...getSentSet()];
             if (sentIds.length > 0) {
-              // Bubble up to parent to remove them
               onAutoRemoveSent && onAutoRemoveSent(sentIds);
             }
-            // Clear sent-set on token expiry so user can safely re-run after reconnect
             sessionStorage.removeItem(SENT_KEY);
           }
           setResults(r => ({ ...r, [c.id]: "err" }));
@@ -3084,11 +3085,22 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
             <>
               <div style={{ fontSize: 12, color: "var(--red)", flex: 1 }}>{lang === "sv" ? "Gmail-session har gått ut. Återanslut och försök igen." : "Gmail session expired. Reconnect and try again."}</div>
               <button className="btn-p" style={{ width: "auto", padding: "8px 20px" }} onClick={() => {
-                window.google?.accounts?.oauth2?.initTokenClient({
-                  client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
-                  scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
-                  callback: (r) => { if (r.access_token) { onTokenAcquired(r.access_token); setToken(r.access_token); setStep("approve"); setSendErrMsg(""); setResults({}); } },
-                }).requestAccessToken({ prompt: "" });
+                loadGIS().then(() => {
+                  window.google?.accounts?.oauth2?.initTokenClient({
+                    client_id: "1004987283059-4kv0vtqrdc1mf1en2udktim2sjk18v7o.apps.googleusercontent.com",
+                    scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
+                    callback: (r) => {
+                      if (r.access_token) {
+                        sessionStorage.setItem("lp_gtoken", r.access_token);
+                        onTokenAcquired(r.access_token);
+                        setToken(r.access_token);
+                        setStep("approve");
+                        setSendErrMsg("");
+                        setResults({});
+                      }
+                    },
+                  }).requestAccessToken({ prompt: "" });
+                });
               }}>{lang === "sv" ? "Återanslut Gmail →" : "Reconnect Gmail →"}</button>
             </>
           )}
@@ -3124,104 +3136,99 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
+    let W = canvas.width = canvas.offsetWidth;
+    let H = canvas.height = canvas.offsetHeight;
     let raf;
-    const onResize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
-    window.addEventListener("resize", onResize);
 
-    const COUNT = 160;
-    const particles = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * W, y: Math.random() * H, z: Math.random() * 3 + 0.2,
-      vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
-      r: Math.random() * 1.0 + 0.2, alpha: Math.random() * 0.4 + 0.1,
-      pulse: Math.random() * Math.PI * 2, pulseSpeed: 0.008 + Math.random() * 0.022,
-      color: Math.random() > 0.6 ? "rgba(255,255,255," : Math.random() > 0.3 ? "rgba(200,200,200," : "rgba(160,160,160,",
+    // Samma CDStrings-animation som i Landing.jsx hero
+    const strings = Array.from({ length: 14 }, (_, i) => ({
+      yFrac: 0.04 + i * 0.072,
+      speed: 0.12 + i * 0.04,
+      phase: i * 1.1,
+      amp: 10 + i * 4.5,
+      hueBase: i * 26,
     }));
 
-    const orbs = Array.from({ length: 3 }, () => ({
-      x: Math.random() * W, y: Math.random() * H, r: 60 + Math.random() * 100,
-      vx: (Math.random() - 0.5) * 0.09, vy: (Math.random() - 0.5) * 0.09,
-      color: "180,180,180", alpha: 0.006 + Math.random() * 0.008,
-    }));
-
+    let t = 0;
     const draw = () => {
-      raf = requestAnimationFrame(draw);
-      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
-      orbs.forEach(o => {
-        o.x += o.vx; o.y += o.vy;
-        if (o.x < -o.r) o.x = W + o.r; if (o.x > W + o.r) o.x = -o.r;
-        if (o.y < -o.r) o.y = H + o.r; if (o.y > H + o.r) o.y = -o.r;
-        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
-        g.addColorStop(0, `rgba(${o.color},${o.alpha})`); g.addColorStop(1, `rgba(${o.color},0)`);
-        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
-      });
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.pulse += p.pulseSpeed;
-        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-        const a = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
-        const r = p.r / p.z;
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
-        g.addColorStop(0, `${p.color}${a})`); g.addColorStop(1, `${p.color}0)`);
-        ctx.beginPath(); ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
-        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fillStyle = `${p.color}${Math.min(a * 2, 1)})`; ctx.fill();
-      });
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const a = particles[i], b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y, dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 90) {
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 90) * 0.04})`; ctx.lineWidth = 0.5; ctx.stroke();
-          }
+      ctx.clearRect(0, 0, W, H);
+      t += 0.005;
+      strings.forEach(s => {
+        const y0 = s.yFrac * H;
+        const grad = ctx.createLinearGradient(0, 0, W, 0);
+        [0, 0.2, 0.4, 0.6, 0.8, 1].forEach((pos, i) => {
+          const h = (s.hueBase + pos * 280 + t * 22) % 360;
+          grad.addColorStop(pos, `hsla(${h},88%,72%,${0.38 + Math.sin(t + i) * 0.16})`);
+        });
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 3) {
+          const y = y0
+            + Math.sin(x * 0.007 + t * s.speed + s.phase) * s.amp
+            + Math.sin(x * 0.002 + t * 0.3) * s.amp * 0.35;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
-      }
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.0;
+        ctx.shadowColor = `hsla(${(s.hueBase + t * 22) % 360},90%,70%,0.55)`;
+        ctx.shadowBlur = 14;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+      raf = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
+
+    const ro = new ResizeObserver(() => {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    });
+    ro.observe(canvas);
+
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, []);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000", overflow: "hidden" }}>
-      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }} />
+      <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none", background: "radial-gradient(ellipse 75% 65% at 50% 50%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.82) 100%)" }} />
       <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 52 }}>
-          <div style={{ width: 50, height: 50, borderRadius: 15, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Logo size={26} />
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 44 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Logo size={24} />
           </div>
           <div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>LogoPlacer</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 3, letterSpacing: "1px", textTransform: "uppercase" }}>Personalised demos</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.8px" }}>LogoPlacer</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 2, letterSpacing: "1.8px", textTransform: "uppercase" }}>Personalised demos</div>
           </div>
         </div>
-        <div style={{ background: "rgba(0,0,0,0.97)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 24, padding: "40px 44px", width: "100%", maxWidth: 390, display: "flex", flexDirection: "column", alignItems: "center", gap: 26, boxShadow: "0 48px 96px rgba(0,0,0,0.9)" }}>
+        <div style={{ background: "rgba(4,4,8,0.85)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 22, padding: "38px 42px", width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", alignItems: "center", gap: 24, boxShadow: "0 40px 80px rgba(0,0,0,0.9), 0 0 0 0.5px rgba(255,255,255,0.06)", position: "relative" }}>
+          <div style={{ position: "absolute", top: 0, left: "18%", right: "18%", height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)" }} />
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", letterSpacing: "-.4px", marginBottom: 8 }}>Sign in</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", lineHeight: 1.65 }}>Use your Google account to<br />access the app.</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#f3f5ff", letterSpacing: "-0.4px", marginBottom: 8 }}>Logga in</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.32)", lineHeight: 1.7 }}>Använd ditt Google-konto för att<br />komma åt appen.</div>
           </div>
-          <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.05)" }} />
-          {/* GDPR Consent */}
+          <div style={{ width: "100%", height: "1px", background: "rgba(255,255,255,0.06)" }} />
           <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", width: "100%" }}>
             <input type="checkbox" checked={gdprConsent} onChange={e => onSetGdprConsent(e.target.checked)}
-              style={{ marginTop: 2, accentColor: "rgba(255,255,255,0.85)", flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", lineHeight: 1.6 }}>
-              Jag godkänner att Logoplacers lagrar min e-post och plan för att hantera mitt konto.
-              Läs vår <a href="#privacy" style={{ color: "rgba(100,180,255,0.7)", textDecoration: "underline" }}>integritetspolicy</a>.
+              style={{ marginTop: 2, flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.65 }}>
+              Jag godkänner att Logoplacer lagrar min e-post och plan för att hantera mitt konto.{" "}
+              <a href="/privacy" style={{ color: "rgba(160,195,255,0.65)", textDecoration: "underline" }}>Integritetspolicy</a>
             </span>
           </label>
           <button onClick={onLogin} disabled={loading || !gdprConsent}
             onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.25)" : hovered ? "#fff" : "rgba(255,255,255,0.93)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.4)" : "#111827", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s" }}>
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 11, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.18)" : hovered ? "#ffffff" : "rgba(255,255,255,0.92)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.35)" : "#111", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s", boxShadow: (!gdprConsent || loading) ? "none" : hovered ? "0 0 0 2px rgba(180,160,255,0.5), 0 0 28px rgba(180,160,255,0.2), 0 8px 32px rgba(0,0,0,0.5)" : "0 4px 16px rgba(0,0,0,0.4)", transform: hovered && !loading && gdprConsent ? "translateY(-1px)" : "none" }}>
             <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent || loading) ? "#aaa" : "#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
             {loading ? "Loggar in..." : gdprConsent ? "Fortsätt med Google" : "Godkänn för att fortsätta"}
           </button>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center", marginTop: -10 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.16)", textAlign: "center", marginTop: -8, lineHeight: 1.6 }}>
             Vi läser aldrig din inkorg — vi skickar bara mejl <em>från</em> dig.
           </div>
         </div>
       </div>
-      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }`}</style>
     </div>
   );
 }
@@ -3463,7 +3470,7 @@ function getOrInitCredits() {
 function useCredits() {
   const [credits, setCredits] = useState(() => getOrInitCredits());
 
-  const refresh = () => setCredits(getOrInitCredits());
+  const refresh = () => { setCredits(getOrInitCredits()); return Promise.resolve(); };
 
   // ── Listen for plan changes from admin panel (same browser) ──
   useEffect(() => {
@@ -3797,7 +3804,7 @@ function DeleteAccountModal({ sessionUser, onClose, onConfirmed }) {
   );
 }
 
-function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp, onManageSubscription, currentPlan, t, tokenExpired }) {
+function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp, onManageSubscription, onRenewGmail, currentPlan, t, tokenExpired }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -3826,14 +3833,19 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp,
       {/* Dropdown */}
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 9999, background: "var(--bg2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "6px", minWidth: 200, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", animation: "expandDown .15s ease" }}>
-          {/* Token expired warning */}
+          {/* Token expired — renew button */}
           {tokenExpired && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 6 }}>
-              <span style={{ fontSize: 13, marginTop: 1 }}>⚠️</span>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "rgb(251,146,60)", lineHeight: 1.3 }}>Gmail session expired</div>
-                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2, lineHeight: 1.4 }}>Sign out and back in to restore email sending.</div>
+            <div style={{ padding: "8px 10px 10px", borderBottom: "1px solid rgba(255,255,255,0.07)", marginBottom: 6 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "rgb(251,146,60)", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                <span>⚠️</span> Gmail session expired
               </div>
+              <button onClick={() => {
+                setOpen(false);
+                onRenewGmail && onRenewGmail();
+              }} style={{ width: "100%", padding: "7px 12px", background: "rgba(251,146,60,0.12)", border: "1px solid rgba(251,146,60,0.4)", borderRadius: 8, color: "rgb(251,146,60)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Renew Gmail connection
+              </button>
             </div>
           )}
           {/* User info header */}
@@ -4180,7 +4192,7 @@ function App() {
     }).then(r => r.json()).then(data => { if (data.url) window.location.href = data.url; }).catch(() => { });
   }, [authed]);
 
-  const [creditsSynced, setCreditsSynced] = useState(false);
+  const [creditsSynced, setCreditsSynced] = useState(() => !!sessionStorage.getItem("lp_verified_plan"));
   const [converting, setConverting] = useState(false);
   const companiesKey = sessionUser.email ? `lp_companies_${sessionUser.email}` : "lp_companies";
   const [companies, setCompanies] = useState(() => {
@@ -4843,8 +4855,28 @@ function App() {
                 onSignOut={() => { sessionStorage.clear(); setAuthed(false); }}
                 onDeleteAccount={() => setShowDeleteModal(true)}
                 onFeedback={() => setShowFeedback(true)}
-                onHelp={() => window.open("https://www.logoplacers.com/help", "_blank")}
-                onManageSubscription={() => window.open("https://billing.stripe.com/p/login/test_00g00000000000000000", "_blank")}
+                onHelp={() => setShowManual(true)}
+                onManageSubscription={async () => {
+                  const res = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionUser.email }) });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                }}
+                onRenewGmail={() => {
+                  loadGIS().then(() => {
+                    window.google.accounts.oauth2.initTokenClient({
+                      client_id: GOOGLE_CLIENT_ID,
+                      scope: "openid email profile https://www.googleapis.com/auth/gmail.send",
+                      callback: (r) => {
+                        if (r.access_token) {
+                          sessionStorage.setItem("lp_gtoken", r.access_token);
+                          setGmailToken(r.access_token);
+                          setGmailWasConnected(true);
+                          showToast("✓ Gmail reconnected");
+                        }
+                      },
+                    }).requestAccessToken({ prompt: "" });
+                  });
+                }}
                 currentPlan={credits.plan}
                 t={t}
                 tokenExpired={gmailWasConnected && !gmailToken}
@@ -5610,6 +5642,7 @@ function App() {
               getImageBlob={getImageBlob}
               sharedToken={gmailToken}
               onTokenAcquired={t => { setGmailToken(t); setGmailWasConnected(true); sessionStorage.setItem("lp_gtoken", t); }}
+              onTokenExpired={() => { setGmailToken(null); }}
               onClose={() => setShowSendModal(false)}
               spendCredits={spend}
               creditsBalance={credits.balance}
