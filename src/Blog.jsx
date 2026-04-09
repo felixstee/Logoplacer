@@ -863,17 +863,263 @@ function BlogPost({ p, onBack }) {
   );
 }
 
+// ─────────────────────────────────────────────
+// EMAIL ANALYZER — Claude API powered
+// ─────────────────────────────────────────────
+function EmailAnalyzer({ lang }) {
+  const sv = lang === "sv";
+  const [email, setEmail] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const analyze = async () => {
+    if (!email.trim()) return;
+    setLoading(true); setResult(null);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are a cold email expert for B2B sales. Analyze this cold email and respond ONLY with a JSON object, no markdown, no preamble:
+{
+  "score": <0-100>,
+  "verdict": "<one punchy sentence verdict>",
+  "issues": [{"label": "<issue name>", "detail": "<1 sentence fix>"}],
+  "strengths": ["<strength 1>", "<strength 2>"],
+  "rewrite_tip": "<one concrete rewrite suggestion>"
+}
+
+Rules: Flag if word count >100 (too long), if no personalisation (impersonal), if vague value prop, if weak CTA, if starts with "I", if no specific number/result, if too salesy. Be direct and honest.
+
+Email to analyze:
+"""
+${email}
+"""`,
+          }],
+        }),
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || "{}";
+      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      setResult(parsed);
+    } catch { setResult({ score: 0, verdict: sv ? "Kunde inte analysera — försök igen." : "Could not analyze — try again.", issues: [], strengths: [], rewrite_tip: "" }); }
+    setLoading(false);
+  };
+
+  const scoreColor = result ? (result.score >= 70 ? "#22c55e" : result.score >= 45 ? "#fbbf24" : "#ef4444") : "#fff";
+
+  return (
+    <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      <div style={{ marginBottom: 12, fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
+        {sv ? "Klistra in ditt mejl nedan — få direkt feedback på längd, personalisering, CTA och mer." : "Paste your cold email below — get instant feedback on length, personalisation, CTA and more."}
+      </div>
+      <textarea
+        value={email} onChange={e => setEmail(e.target.value)}
+        placeholder={sv ? "Klistra in ditt mejl här..." : "Paste your cold email here..."}
+        style={{ width: "100%", minHeight: 180, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "14px 16px", color: "#fff", fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.7, marginBottom: 10 }}
+      />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+        <button onClick={analyze} disabled={loading || !email.trim()}
+          style={{ background: "#fff", color: "#000", border: "none", borderRadius: 10, padding: "10px 24px", fontSize: 13, fontWeight: 700, cursor: loading || !email.trim() ? "not-allowed" : "pointer", opacity: loading || !email.trim() ? 0.5 : 1, fontFamily: "inherit", transition: "opacity .15s" }}>
+          {loading ? (sv ? "Analyserar..." : "Analyzing...") : (sv ? "Analysera mejl" : "Analyze email")}
+        </button>
+        {email && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{email.trim().split(/\s+/).length} {sv ? "ord" : "words"}</span>}
+      </div>
+
+      {result && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Score */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 22px", background: "rgba(255,255,255,0.04)", border: `1px solid ${scoreColor}30`, borderRadius: 14 }}>
+            <div style={{ fontSize: 42, fontWeight: 800, color: scoreColor, letterSpacing: "-2px", lineHeight: 1, flexShrink: 0 }}>{result.score}</div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 4 }}>{sv ? "Poäng / 100" : "Score / 100"}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>{result.verdict}</div>
+            </div>
+          </div>
+
+          {/* Issues */}
+          {result.issues?.length > 0 && (
+            <div style={{ padding: "16px 20px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(239,68,68,0.7)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>{sv ? "Problem" : "Issues"}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {result.issues.map((issue, i) => (
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 12, color: "#ef4444", flexShrink: 0, marginTop: 1 }}>✕</span>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>{issue.label}: </span>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>{issue.detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Strengths */}
+          {result.strengths?.length > 0 && (
+            <div style={{ padding: "16px 20px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(34,197,94,0.7)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>{sv ? "Styrkor" : "Strengths"}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {result.strengths.map((s, i) => (
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 12, color: "#22c55e", flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{s}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rewrite tip */}
+          {result.rewrite_tip && (
+            <div style={{ padding: "14px 18px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 6 }}>{sv ? "Tips" : "Tip"}</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>{result.rewrite_tip}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// RESOURCES TAB — tips + templates
+// ─────────────────────────────────────────────
+function ResourcesTab({ lang }) {
+  const sv = lang === "sv";
+  const [section, setSection] = useState("tips");
+  const [copied, setCopied] = useState(null);
+
+  const copyText = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopied(id); setTimeout(() => setCopied(null), 1800);
+  };
+
+  const tips = sv ? [
+    { cat: "Ämnesrad", items: ["3–6 ord — specifikt slår smart varje gång.", "Börja aldrig med frågetecken i ämnesraden — sänker öppningsfrekvens.", "Undvik 'RE:' om det inte är ett genuint svar — det uppfattas som spam.", "Prospektets förnamn i ämnesraden ökar öppningar med ~18% i snitt.", "Testa A/B: en specifik ämnesrad mot en nyfiken.", "Undvik ord som 'gratis', 'exklusivt', 'spara pengar' — spamfilter.", "Specifik referens ('Såg att ni anställde 3 SDRs') slår generisk öppning."] },
+    { cat: "Öppningsrad", items: ["Börja aldrig med 'Jag'. Börja med dem.", "'Noticed you recently...' visar research utan att vara läskig.", "Första meningen avgör om de läser vidare — inga uppvärmningsfraser.", "Referera till en specifik trigger (funding, ny roll, lansering).", "Undvik komplimanger ('Great work on...') — genomskådas direkt."] },
+    { cat: "Brödtext", items: ["Max 80 ord. Om det är längre — klipp.", "En idé per mejl. Två idéer halverar konverteringsgraden.", "Konkreta siffror ('3 timmar om dagen') slår vaga påståenden ('sparar tid').", "Undvik 'vi hjälper företag som ert' — det säger ingenting specifikt.", "Nämn en liknande kund vid namn — referens utan att be om referens.", "Fetstil fungerar — ett ord eller en siffra, inte ett stycke.", "Skriv som du pratar till en kollega, inte som en pressrelease."] },
+    { cat: "Visuell personalisering", items: ["En bild med mottagarens logotyp ersätter tre stycken text.", "Logotypen behöver inte vara i en demo — valfri bild fungerar.", "Bildpersonalisering i första mejlet ger 3–5x högre svarsprocent.", "Skicka bild 2 i uppföljningen för att visa att du ansträngt dig igen.", "Kombinera text-personalisering med bildpersonalisering för maxeffekt."] },
+    { cat: "CTA", items: ["Ställ en ja/nej-fråga — 'Värt ett samtal?' konverterar bättre än 'Boka här'.", "Be om något litet — ett svar, inte en demo.", "En CTA per mejl. Fler val = färre svar.", "Undvik Calendly-länk i första mejlet — för tidigt.", "'Skulle detta passa er?' är mjukare och konverterar lika bra."] },
+    { cat: "Timing & volym", items: ["Tisdag–torsdag, 8–10 på morgonen i prospektets tidszon.", "En uppföljning lägger till 20–30% mer svar.", "Tre uppföljningar är max — efter det riskerar du att bränna relationen.", "15–45 sekunder mellan mejl skyddar din sender reputation.", "Ny jobbroll är det bästa signalet — prospektera inom 30 dagar."] },
+  ] : [
+    { cat: "Subject line", items: ["3–6 words. Specific beats clever every time.", "Never start with a question mark — lowers open rates.", "Avoid 'RE:' unless it's a genuine reply — perceived as spam.", "Prospect's first name in subject line lifts opens ~18% on average.", "A/B test: one specific vs one curious subject line per campaign.", "Avoid 'free', 'exclusive', 'save money' — spam filters.", "Specific reference ('Saw you hired 3 SDRs') beats generic opener."] },
+    { cat: "Opening line", items: ["Never start with 'I'. Start with them.", "'Noticed you recently...' shows research without being creepy.", "First sentence decides if they keep reading — no warm-up phrases.", "Reference a specific trigger (funding, new role, launch).", "Avoid compliments ('Great work on...') — they see through it immediately."] },
+    { cat: "Body", items: ["Max 80 words. If it's longer — cut it.", "One idea per email. Two ideas halve your conversion rate.", "Concrete numbers ('3 hours per day') beat vague claims ('saves time').", "Avoid 'we help companies like yours' — says nothing specific.", "Name a similar customer — reference without asking for a reference.", "Bold works — one word or number, not a whole paragraph.", "Write like you're talking to a colleague, not writing a press release."] },
+    { cat: "Visual personalisation", items: ["One image with their logo replaces three paragraphs of copy.", "The logo doesn't have to be in a demo — any image works.", "Image personalisation in the first email gives 3–5x higher reply rates.", "Send a different personalised image in your follow-up to show continued effort.", "Combine text personalisation with image personalisation for maximum effect."] },
+    { cat: "CTA", items: ["Ask a yes/no question — 'Worth a call?' converts better than 'Book here'.", "Ask for something small — a reply, not a demo.", "One CTA per email. More options = fewer responses.", "Avoid Calendly link in the first email — too early.", "'Would this apply to your team?' is softer and converts just as well."] },
+    { cat: "Timing & volume", items: ["Tue–Thu, 8–10am in the prospect's timezone.", "One follow-up adds 20–30% more replies.", "Three follow-ups is the maximum — beyond that you risk burning the relationship.", "15–45 seconds between sends protects your sender reputation.", "New job role is the best signal — prospect within 30 days of the change."] },
+  ];
+
+  const templates = sv ? [
+    { id: "visual", label: "The Visual Hook", subject: "[Företag] i vår plattform", body: "Hej [Namn],\n\nLa ihop en snabb bild — hur [Företag]s brand hade sett ut i vår plattform.\n\n[Bifoga personaliserad bild]\n\nVärt 15 minuter den här veckan?" },
+    { id: "trigger", label: "The Trigger", subject: "Grattis till fundingrunden", body: "Hej [Namn],\n\n[Företag] stängde precis [runda] — grattis.\n\nTeam i det skedet brukar stöta på [specifikt problem vi löser]. Vi fixade det för [liknande bolag].\n\nSnabbt samtal den här veckan?" },
+    { id: "comparison", label: "The Comparison", subject: "Hur [Konkurrentkund] hanterade detta", body: "Hej [Namn],\n\n[Liknande bolag] hanterade [problem] innan de bytte. Nu [resultat].\n\nGäller samma sak för [Företag]?" },
+    { id: "direct", label: "The Direct Ask", subject: "[Problem] på [Företag]?", body: "Hej [Namn],\n\nHanterar ni fortfarande [specifik uppgift] manuellt?\n\nVi byggde något som klipper ner det till minuter. Ska jag skicka en one-pager?" },
+    { id: "followup1", label: "Uppföljning 1", subject: "Re: [ursprunglig ämnesrad]", body: "Hej [Namn],\n\nSkapar en snabb påminnelse — den här bilden gjordes specifikt för [Företag].\n\n[Bifoga ny personaliserad bild]\n\nStämmer det att det är rätt timing nu?" },
+    { id: "breakup", label: "Break-up email", subject: "Sista mejlet från mig", body: "Hej [Namn],\n\nHar försökt nå dig ett par gånger utan svar. Ska inte störa mer.\n\nOm timing blir bättre — hör av dig. Eller om du är fel person, vem ska jag prata med?\n\nMvh [Ditt namn]" },
+  ] : [
+    { id: "visual", label: "The Visual Hook", subject: "[Company] in our platform", body: "Hi [Name],\n\nPut together a quick image — showing what [Company]'s brand would look like inside our platform.\n\n[Attach personalised image]\n\nWorth 15 minutes this week?" },
+    { id: "trigger", label: "The Trigger", subject: "Congrats on the funding", body: "Hi [Name],\n\n[Company] just closed [round] — congrats.\n\nTeams at that stage usually hit [specific problem we solve]. We fixed this for [similar company].\n\nQuick call this week?" },
+    { id: "comparison", label: "The Comparison", subject: "How [Competitor customer] handled this", body: "Hi [Name],\n\n[Similar company] was dealing with [problem] before switching. Now they [result].\n\nWould the same apply to [Company]?" },
+    { id: "direct", label: "The Direct Ask", subject: "[Problem] at [Company]?", body: "Hi [Name],\n\nDo you still handle [specific task] manually?\n\nWe built something that cuts that to minutes. Want me to send a one-pager?" },
+    { id: "followup1", label: "Follow-up 1", subject: "Re: [original subject]", body: "Hi [Name],\n\nSending a quick follow-up — this image was made specifically for [Company].\n\n[Attach new personalised image]\n\nIs the timing better now?" },
+    { id: "breakup", label: "Break-up email", subject: "Last email from me", body: "Hi [Name],\n\nTried reaching out a couple of times without a response — won't keep pushing.\n\nIf timing changes, feel free to reach out. Or if you're not the right person, who should I speak with?\n\n[Your name]" },
+  ];
+
+  const sections = [
+    { id: "tips", label: sv ? "50 tips" : "50 tips" },
+    { id: "templates", label: sv ? "Mallar" : "Templates" },
+    { id: "analyzer", label: sv ? "Analysera mejl" : "Analyze email" },
+  ];
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 0 60px" }}>
+      {/* Sub-nav */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 36, borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 0 }}>
+        {sections.map(s => (
+          <button key={s.id} onClick={() => setSection(s.id)}
+            style={{ background: "none", border: "none", color: section === s.id ? "#fff" : "rgba(255,255,255,0.35)", fontSize: 14, fontWeight: section === s.id ? 700 : 500, cursor: "pointer", fontFamily: "inherit", padding: "10px 16px", borderBottom: `2px solid ${section === s.id ? "rgba(255,255,255,0.6)" : "transparent"}`, transition: "all .15s", marginBottom: -1 }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tips */}
+      {section === "tips" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+          {tips.map((group, gi) => (
+            <div key={gi}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 12 }}>{group.cat}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {group.items.map((tip, ti) => (
+                  <div key={ti} style={{ display: "flex", gap: 12, padding: "12px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "rgba(255,255,255,0.2)", flexShrink: 0, minWidth: 20, marginTop: 1 }}>{gi * 10 + ti + 1}.</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Templates */}
+      {section === "templates" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(380px,1fr))", gap: 14 }}>
+          {templates.map(tpl => (
+            <div key={tpl.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{tpl.label}</span>
+                <button onClick={() => copyText(`Subject: ${tpl.subject}\n\n${tpl.body}`, tpl.id)}
+                  style={{ fontSize: 11, fontWeight: 600, color: copied === tpl.id ? "#22c55e" : "rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit", transition: "color .2s" }}>
+                  {copied === tpl.id ? (sv ? "Kopierat ✓" : "Copied ✓") : (sv ? "Kopiera" : "Copy")}
+                </button>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.3)", letterSpacing: "0.5px" }}>
+                {sv ? "Ämne" : "Subject"}: <span style={{ color: "rgba(255,255,255,0.55)", fontWeight: 500 }}>{tpl.subject}</span>
+              </div>
+              <pre style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.75, margin: 0, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{tpl.body}</pre>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Analyzer */}
+      {section === "analyzer" && <EmailAnalyzer lang={lang} />}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 function BlogIndex({ onPost }) {
+  const [tab, setTab] = useState("articles");
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const { lang, setLang } = useLang();
   const t = useT();
   const cats = lang === "en"
     ? ["All", "Strategy", "Playbook", "Tutorial", "Industry", "Comparison", "Product"]
     : ["All", "Strategi", "Spelbok", "Guide", "Bransch"];
-  const shown = POSTS.filter(p => p.lang === lang).filter(p => filter === "All" || p.cat === filter);
+  const q = search.toLowerCase();
+  const shown = POSTS
+    .filter(p => p.lang === lang)
+    .filter(p => filter === "All" || p.cat === filter)
+    .filter(p => !q || p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || p.tags?.some(tag => tag.toLowerCase().includes(q)));
+
+  const tabs = [
+    { id: "articles", label: lang === "sv" ? "Artiklar" : "Articles" },
+    { id: "resources", label: lang === "sv" ? "Resurser & Mallar" : "Resources & Templates" },
+  ];
+
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 24px 80px" }}>
-      <div style={{ textAlign: "center", marginBottom: 56 }}>
+      <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", marginBottom: 14 }}>{t("nav.blog")}</div>
         <h1 style={{ fontSize: "clamp(32px,5vw,56px)", fontWeight: 800, letterSpacing: "-2.5px", margin: "0 0 14px", lineHeight: 1.04 }}>
           <CDShimmerText dark={true}>{t("blog.title")}</CDShimmerText>
@@ -882,7 +1128,7 @@ function BlogIndex({ onPost }) {
           {t("blog.sub")}
         </p>
         {/* Language toggle */}
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
           {[
             { code: "en", label: t("blog.lang_en"), abbr: "EN" },
             { code: "sv", label: t("blog.lang_sv"), abbr: "SV" },
@@ -890,6 +1136,7 @@ function BlogIndex({ onPost }) {
             <button key={l.code} onClick={() => {
               setLang(l.code);
               setFilter("All");
+              setSearch("");
               const newPath = l.code === "sv" ? "/sv/blogg" : "/en/blog";
               window.history.replaceState({}, "Logoplacers Blog", newPath);
             }} style={{ background: lang === l.code ? "rgba(255,255,255,.10)" : "rgba(255,255,255,.04)", border: `1px solid ${lang === l.code ? "rgba(255,255,255,.30)" : "rgba(255,255,255,.08)"}`, color: lang === l.code ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,.38)", borderRadius: 100, padding: "5px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, letterSpacing: ".5px" }}>
@@ -898,15 +1145,50 @@ function BlogIndex({ onPost }) {
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "center" }}>
-          {cats.map(cat => (
-            <button key={cat} onClick={() => setFilter(cat)} style={{ background: filter === cat ? "rgba(220,190,255,.15)" : "rgba(255,255,255,.04)", border: `1px solid ${filter === cat ? "rgba(220,190,255,.38)" : "rgba(255,255,255,.08)"}`, color: filter === cat ? "rgba(240,220,255,0.7)" : "rgba(255,255,255,.42)", borderRadius: 100, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}>{cat}</button>
+        {/* Main tabs */}
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 28, borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 0 }}>
+          {tabs.map(tb => (
+            <button key={tb.id} onClick={() => setTab(tb.id)}
+              style={{ background: "none", border: "none", color: tab === tb.id ? "#fff" : "rgba(255,255,255,0.4)", fontSize: 15, fontWeight: tab === tb.id ? 700 : 500, cursor: "pointer", fontFamily: "inherit", padding: "10px 20px", borderBottom: `2px solid ${tab === tb.id ? "rgba(255,255,255,0.6)" : "transparent"}`, transition: "all .15s", marginBottom: -1 }}>
+              {tb.label}
+            </button>
           ))}
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 16 }}>
-        {shown.map(p => <BlogCard key={p.slug} p={p} onClick={onPost} />)}
-      </div>
+
+      {tab === "articles" && (
+        <>
+          {/* Search */}
+          <div style={{ position: "relative", maxWidth: 480, margin: "0 auto 20px" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder={lang === "sv" ? "Sök artiklar..." : "Search articles..."}
+              style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "10px 16px 10px 38px", color: "#fff", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border-color .15s" }}
+              onFocus={e => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
+              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+            />
+            {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>}
+          </div>
+          {/* Category filters */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "center", marginBottom: 40 }}>
+            {cats.map(cat => (
+              <button key={cat} onClick={() => setFilter(cat)} style={{ background: filter === cat ? "rgba(220,190,255,.15)" : "rgba(255,255,255,.04)", border: `1px solid ${filter === cat ? "rgba(220,190,255,.38)" : "rgba(255,255,255,.08)"}`, color: filter === cat ? "rgba(240,220,255,0.7)" : "rgba(255,255,255,.42)", borderRadius: 100, padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}>{cat}</button>
+            ))}
+          </div>
+          {shown.length === 0 && (
+            <div style={{ textAlign: "center", color: "rgba(255,255,255,0.2)", fontSize: 14, padding: "48px 0" }}>
+              {lang === "sv" ? "Inga artiklar matchade din sökning." : "No articles matched your search."}
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 16 }}>
+            {shown.map(p => <BlogCard key={p.slug} p={p} onClick={onPost} />)}
+          </div>
+        </>
+      )}
+
+      {tab === "resources" && <ResourcesTab lang={lang} />}
     </div>
   );
 }
