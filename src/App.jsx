@@ -174,8 +174,8 @@ const style = `
 
   /* ── Tag buttons ─────────────────────────────────────── */
   .tag-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-  .tag-btn { background: var(--brand-dim); border: 1px solid var(--brand-border); color: rgba(255,255,255,0.75); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
-  .tag-btn:hover { background: var(--brand-grad); color: #fff; border-color: transparent; }
+  .tag-btn { background: transparent; border: 1px solid var(--brand-border); color: rgba(255,255,255,0.6); font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .tag-btn:hover { background: transparent; color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.6); }
 
   /* ── Controls grid ───────────────────────────────────── */
   .cg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -397,15 +397,19 @@ const style = `
   @keyframes cdShimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
   @keyframes borderShimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-  /* cd-shimmer-box: plain black with white border */
+  /* cd-shimmer-box: plain dark with subtle border */
   .cd-shimmer-box {
-    background: #000;
-    color: #fff;
+    background: var(--bg);
+    color: var(--t3);
     border-radius: 10px;
     padding: 10px 14px;
     font-size: 12px;
     line-height: 1.6;
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid var(--sep);
+  }
+  .cd-shimmer-box strong {
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
   }
 
   /* Checkbox shimmer outline on hover + checked */
@@ -1252,9 +1256,8 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const [myVideo, setMyVideo] = useState(null);
   const [myVideoName, setMyVideoName] = useState(null);
   const [overlay, setOverlay] = useState(DEFAULT_VIDEO_OVERLAY);
-  const [timings, setTimings] = useState({ demoImg: 7, screenshot: 8 });
-  const [phaseOrder, setPhaseOrder] = useState(["demo", "screenshot"]);
-  const [screenshots, setScreenshots] = useState({});
+  // One duration entry per slide — count synced to Image mode's baseSlides
+  const [slideDurations, setSlideDurations] = useState([7]);
   const [generating, setGenerating] = useState(null);
   const [generated, setGenerated] = useState({});
   const videoRef = useRef(null);
@@ -1262,34 +1265,45 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   const updateOverlay = p => setOverlay(o => ({ ...o, ...p }));
   const readyCompanies = companies.filter(c => c.status === "ok");
 
-  const handleScreenshotFile = (companyId, file) => {
-    if (!file || !file.type.startsWith("image/")) return;
-    const img = new Image();
-    img.onload = () => setScreenshots(s => ({ ...s, [companyId]: img }));
-    img.src = URL.createObjectURL(file);
-  };
+  // Sync duration array length to match baseSlides count from Image mode
+  const baseSlides = renderIngredients?.baseSlides?.filter(Boolean) || [];
+  const slideCount = Math.max(baseSlides.length, 1);
+  useEffect(() => {
+    setSlideDurations(prev => {
+      if (prev.length === slideCount) return prev;
+      if (prev.length < slideCount) return [...prev, ...Array(slideCount - prev.length).fill(7)];
+      return prev.slice(0, slideCount);
+    });
+  }, [slideCount]);
+
+  const updateDuration = (i, dur) => setSlideDurations(prev => prev.map((d, idx) => idx === i ? Math.max(1, Math.min(20, dur)) : d));
 
   const previewC = readyCompanies[0];
   const previewText = resolveTemplateFn(overlay.text, previewC?.personName || "Demo", previewC?.companyName || "Exempelbolaget AB");
-  const totalSec = timings.demoImg + timings.screenshot;
+  const totalSec = slideDurations.reduce((a, b) => a + b, 0);
 
   const generateVideo = async (company) => {
     if (!myVideo) return;
     setGenerating(company.id);
     const ovSnap = { ...overlay };
-    const phSnap = [...phaseOrder];
-    const tmSnap = { ...timings };
-    const ssImg = screenshots[company.id] || null;
+    const durSnap = [...slideDurations];
+    const bsSnap = renderIngredients?.baseSlides?.filter(Boolean) || [];
 
-    let demoImg = null;
-    if (renderIngredients?.baseImg) {
-      const { baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols } = renderIngredients;
-      const off = renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, null);
-      demoImg = await new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = off.toDataURL(); });
-    }
+    // Render each slide with its own config + company logo
+    const slideImgs = await Promise.all(
+      (bsSnap.length > 0 ? bsSnap : [null]).map(async (sl, i) => {
+        if (!sl?.img && !renderIngredients?.baseImg) return null;
+        const baseImg = sl?.img || renderIngredients.baseImg;
 
-    const imgA = phSnap[0] === "demo" ? demoImg : ssImg;
-    const imgB = phSnap[0] === "demo" ? ssImg : demoImg;
+        // Use per-slide config if available, else current active config
+        const cfg = renderIngredients.slideConfigs?.[i] || renderIngredients;
+        const { logoInstances, myLogoEl, myLogoPos, myLogoSize, textLayers, symbols } = cfg;
+        const { w, h } = renderIngredients;
+
+        const off = renderComposite(baseImg, logoInstances, myLogoEl, myLogoPos, myLogoSize, w, h, textLayers, symbols, company.personName, company.companyName, company.logoEl, null);
+        return new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = off.toDataURL(); });
+      })
+    );
     const resolvedText = resolveTemplateFn(ovSnap.text, company.personName, company.companyName);
 
     const videoArrayBuffer = await myVideo.arrayBuffer();
@@ -1326,10 +1340,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-    const dur1 = Math.min(ovSnap.duration * 1000, tmSnap.demoImg * 1000);
-    const dur2 = tmSnap.demoImg * 1000;
-    const dur3 = tmSnap.screenshot * 1000;
-    const total = Math.min(dur2 + dur3, isFinite(vidDurMs) ? vidDurMs : dur2 + dur3, 30000);
+    // Build timeline: cumulative start time per slide (ms)
+    const slideDursMs = durSnap.map(d => d * 1000);
+    const slideStarts = slideDursMs.map((_, i) => slideDursMs.slice(0, i).reduce((a, b) => a + b, 0));
+    const totalMs = Math.min(slideDursMs.reduce((a, b) => a + b, 0), isFinite(vidDurMs) ? vidDurMs : 999999, 60000);
+    const introDurMs = Math.min(ovSnap.duration * 1000, slideDursMs[0]);
 
     const pipW = Math.round(VW * 0.22);
     const pipH = Math.round(pipW * (VH / VW));
@@ -1386,9 +1401,18 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
         if (done) return;
         const el = performance.now() - t0;
         ctx.clearRect(0, 0, VW, VH);
-        if (el < dur2) { drawImg(imgA); if (el < dur1) drawText(); drawPip(); }
-        else if (el < total) { drawImg(imgB); drawPip(); }
-        if (el >= total && !done) {
+
+        // Determine which slide to show based on elapsed time
+        let currentSlideIdx = slideImgs.length - 1;
+        for (let i = 0; i < slideImgs.length; i++) {
+          if (el < slideStarts[i] + slideDursMs[i]) { currentSlideIdx = i; break; }
+        }
+
+        drawImg(slideImgs[currentSlideIdx]);
+        if (el < introDurMs) drawText();
+        drawPip();
+
+        if (el >= totalMs && !done) {
           done = true; clearInterval(timerId); recorder.stop(); vid.pause();
           if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch (_) { } }
         }
@@ -1402,7 +1426,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           try { recorder.stop(); } catch (_) { } vid.pause();
           if (audioRes) { try { audioRes.anode.stop(); audioRes.actx.close(); } catch (_) { } }
         }
-      }, total + 8000);
+      }, totalMs + 8000);
     });
 
     URL.revokeObjectURL(videoUrl);
@@ -1428,6 +1452,35 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
               </label>
             </DropZone>
             <video ref={videoRef} style={{ display: "none" }} playsInline muted={false} />
+          </div>
+        </div>
+
+        {/* ── Slides ─────────────────────────────────────────── */}
+        <div className="s-row">
+          <span className="s-label">Slides ({slideCount}) · set timing</span>
+        </div>
+        <div className="card" style={{ margin: "0 10px" }}>
+          <div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {slideCount === 1 && baseSlides.length === 0 && (
+              <span style={{ fontSize: 11, color: "var(--t3)" }}>Add more slides in Image mode (+ button on base image)</span>
+            )}
+            {Array.from({ length: slideCount }).map((_, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: "var(--bg4)", border: "1px solid var(--sep)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--t2)", flexShrink: 0 }}>
+                  {i + 1}
+                </div>
+                {baseSlides[i] ? (
+                  <img src={baseSlides[i].img?.src} alt=""
+                    style={{ width: 38, height: 25, objectFit: "cover", borderRadius: 4, border: "1px solid var(--sep)", flexShrink: 0 }} />
+                ) : (
+                  <span style={{ fontSize: 11, color: "var(--t3)", flex: 1 }}>from Image mode</span>
+                )}
+                <input className="timing-input" type="number" min={1} max={20} value={slideDurations[i] ?? 7}
+                  onChange={e => updateDuration(i, Number(e.target.value))}
+                  style={{ width: 42, textAlign: "center", marginLeft: "auto" }} />
+                <span style={{ fontSize: 11, color: "var(--t3)", flexShrink: 0 }}>s</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -1464,29 +1517,9 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <span className="timing-label">BG opacity</span>
                 <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({ bgOpacity: Number(e.target.value) })} style={{ accentColor: "rgba(255,255,255,0.85)" }} />
               </div>
-            </div>
-          </div>
-        </div>
-
-        <span className="s-label">Timing (seconds)</span>
-        <div className="card" style={{ margin: "0 10px" }}>
-          <div className="card-pad">
-            <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Intro text duration</span>
+                <span className="timing-label">Intro duration</span>
                 <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({ duration: Number(e.target.value) })} />
-              </div>
-              <div className="timing-cell">
-                <span className="timing-label">Phase 2 (demo)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.demoImg} onChange={e => setTimings(t => ({ ...t, demoImg: Number(e.target.value) }))} />
-              </div>
-              <div className="timing-cell">
-                <span className="timing-label">Phase 3 (website)</span>
-                <input className="timing-input" type="number" min={1} max={30} value={timings.screenshot} onChange={e => setTimings(t => ({ ...t, screenshot: Number(e.target.value) }))} />
-              </div>
-              <div className="timing-cell">
-                <span className="timing-label">Total</span>
-                <div style={{ fontSize: 15, fontWeight: 600, color: "var(--t1)", padding: "6px 0" }}>{totalSec}s</div>
               </div>
             </div>
           </div>
@@ -1507,7 +1540,9 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           <div style={{ fontSize: Math.max(overlay.fontSize * 0.35, 12), fontFamily: overlay.fontFamily, color: overlay.color, fontWeight: overlay.bold ? "bold" : "normal", background: "rgba(0,0,0,0.55)", display: "inline-block", padding: "4px 14px", borderRadius: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
             {previewText}
           </div>
-          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>{overlay.duration}s intro · {timings.demoImg}s demo · {timings.screenshot}s website = <strong style={{ color: "rgba(255,255,255,0.7)" }}>{totalSec}s</strong></span>
+          <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>
+            {slideDurations.map((d, i) => `Slide ${i + 1}: ${d}s`).join(" · ")} = <strong style={{ color: "rgba(255,255,255,0.7)" }}>{totalSec}s</strong>
+          </span>
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
@@ -1527,16 +1562,6 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
                 {c.domain}
               </button>
-              <DropZone accept="image/*" onFile={file => handleScreenshotFile(c.id, file)} style={{ cursor: "pointer" }}>
-                <label style={{ cursor: "pointer" }}>
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleScreenshotFile(c.id, e.target.files[0])} />
-                  {screenshots[c.id]
-                    ? <img className="screenshot-thumb" src={screenshots[c.id].src} alt="screenshot" />
-                    : <div className="screenshot-placeholder">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
-                    </div>}
-                </label>
-              </DropZone>
               <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                 {generated[c.id] && (
                   <>
@@ -1561,7 +1586,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             </div>
           ))}
         </div>
-        <div className="canvas-footer">Click or drag a screenshot · Creates .webm per company</div>
+        <div className="canvas-footer">{slideCount} slide{slideCount > 1 ? "s" : ""} · {totalSec}s total · Download .webm and attach to email</div>
       </div>
     </div>
   );
@@ -3199,7 +3224,7 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
             <Logo size={24} />
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.8px" }}>LogoPlacer</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.8px" }}>Logoplacers</div>
             <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 2, letterSpacing: "1.8px", textTransform: "uppercase" }}>Personalised demos</div>
           </div>
         </div>
@@ -3214,7 +3239,7 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
             <input type="checkbox" checked={gdprConsent} onChange={e => onSetGdprConsent(e.target.checked)}
               style={{ marginTop: 2, flexShrink: 0, width: 14, height: 14, cursor: "pointer" }} />
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", lineHeight: 1.65 }}>
-              Jag godkänner att Logoplacer lagrar min e-post och plan för att hantera mitt konto.{" "}
+              Jag godkänner att Logoplacers lagrar min e-post och plan för att hantera mitt konto.{" "}
               <a href="/privacy" style={{ color: "rgba(160,195,255,0.65)", textDecoration: "underline" }}>Integritetspolicy</a>
             </span>
           </label>
@@ -4224,6 +4249,9 @@ function App() {
   const [myLogoEl, setMyLogoEl] = useState(null);
   const [myLogoName, setMyLogoName] = useState(null);
   const [baseImageName, setBaseImageName] = useState(null);
+  const [baseSlides, setBaseSlides] = useState([]); // [{img, name, thumb}] up to 4
+  const [activeSlideIdx, setActiveSlideIdx] = useState(0);
+  const activeSlideIdxRef = useRef(0);
   const [myLogoSize, setMyLogoSize] = useState(100);
   const [myLogoPos, setMyLogoPos] = useState({ x: 200, y: 50 });
   const [textLayers, setTextLayers] = useState([defaultText()]);
@@ -4319,6 +4347,9 @@ function App() {
   const canvasWrapperRef = useRef(null);
   const baseImageRef = useRef(null);
   const baseImageInputRef = useRef(null);
+  const addSlideInputRef = useRef(null);
+  const pendingSlideIdxRef = useRef(null); // tracks which slide index a new upload targets
+  const slideConfigsRef = useRef({}); // per-slide canvas configs, keyed by slide index
   const canvasSizeRef = useRef({ w: 0, h: 0 });
   const pendingLoadImgRef = useRef(null); // base image waiting for canvas to mount
 
@@ -4442,7 +4473,8 @@ function App() {
     setShowTemplates(false); showToast(`Template "${tpl.name}" loaded`);
   };
 
-  const drawImageToCanvas = (img) => {
+  const drawImageToCanvas = (img, slideName = null, slideIdx = null) => {
+    const idx = slideIdx ?? activeSlideIdxRef.current;
     const maxW = 760, maxH = 520;
     let w = img.width, h = img.height;
     if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
@@ -4454,6 +4486,14 @@ function App() {
       canvasRef.current.getContext("2d").drawImage(img, 0, 0, w, h);
     }
     setHasImage(true);
+    // Store in baseSlides array
+    const name = slideName || img._lpName || `Slide ${idx + 1}`;
+    const thumb = img.src || img._lpSrc || "";
+    setBaseSlides(prev => {
+      const updated = [...prev];
+      updated[idx] = { img, name, thumb };
+      return updated;
+    });
   };
 
   const redrawBaseCanvas = () => {
@@ -4480,17 +4520,71 @@ function App() {
     const file = e.target.files[0]; if (!file) return;
     const name = file.name.toLowerCase();
     const isHEIC = name.endsWith(".heic") || name.endsWith(".heif") || file.type === "image/heic" || file.type === "image/heif";
-    setBaseImageName(file.name);
+    const slideName = file.name;
+    // Use pending index (set by addNewSlide) or current active index
+    const slideIdx = pendingSlideIdxRef.current !== null ? pendingSlideIdxRef.current : activeSlideIdx;
+    pendingSlideIdxRef.current = null;
+    activeSlideIdxRef.current = slideIdx; // update ref synchronously before async callbacks
+    setActiveSlideIdx(slideIdx);
+    setBaseImageName(slideName);
     if (isHEIC) {
       setConverting(true); showToast("Converting HEIC...");
       try {
         const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
         const blob = Array.isArray(converted) ? converted[0] : converted;
-        const img = new Image(); img.onload = () => { drawImageToCanvas(img); setConverting(false); showToast("HEIC converted"); }; img.src = URL.createObjectURL(blob);
+        const img = new Image(); img.onload = () => {
+          drawImageToCanvas(img, slideName, slideIdx);
+          setConverting(false); showToast("HEIC converted");
+        }; img.src = URL.createObjectURL(blob);
       } catch { setConverting(false); showToast("Could not convert HEIC"); }
       return;
     }
-    const img = new Image(); img.onload = () => drawImageToCanvas(img); img.src = URL.createObjectURL(file);
+    const img = new Image(); img.onload = () => drawImageToCanvas(img, slideName, slideIdx);
+    img.src = URL.createObjectURL(file);
+  };
+
+  const switchToSlide = (idx) => {
+    const s = baseSlides[idx]; if (!s) return;
+
+    // Save current slide's canvas config
+    slideConfigsRef.current[activeSlideIdx] = {
+      logoInstances, textLayers, symbols, canvasBg,
+      myLogoEl, myLogoPos, myLogoSize,
+    };
+
+    // Load target slide's config (or defaults if first time)
+    const saved = slideConfigsRef.current[idx];
+    if (saved) {
+      setLogoInstances(saved.logoInstances);
+      setTextLayers(saved.textLayers);
+      setSymbols(saved.symbols);
+      setCanvasBg(saved.canvasBg);
+      setMyLogoEl(saved.myLogoEl);
+      setMyLogoPos(saved.myLogoPos);
+      setMyLogoSize(saved.myLogoSize);
+    } else {
+      // Fresh slide — reset to defaults
+      setLogoInstances([{ id: uid(), size: 120, opacity: 100, pos: { x: 50, y: 50 } }]);
+      setTextLayers([defaultText()]);
+      setSymbols([]);
+      setCanvasBg({ enabled: false, color: "#1a1a2e" });
+      setMyLogoEl(null); setMyLogoPos({ x: 200, y: 50 }); setMyLogoSize(100);
+    }
+
+    setActiveSlideIdx(idx);
+    activeSlideIdxRef.current = idx;
+    setBaseImageName(s.name);
+    drawImageToCanvas(s.img, s.name, idx);
+  };
+
+  const addNewSlide = () => {
+    // Save current before opening picker
+    slideConfigsRef.current[activeSlideIdx] = {
+      logoInstances, textLayers, symbols, canvasBg,
+      myLogoEl, myLogoPos, myLogoSize,
+    };
+    pendingSlideIdxRef.current = baseSlides.filter(Boolean).length;
+    addSlideInputRef.current?.click();
   };
 
   const addContact = (personName, companyRaw, email = null, address = "") => {
@@ -4845,7 +4939,7 @@ function App() {
         <div className="header">
           <div className="header-brand">
             <div className="header-icon"><Logo size={28} /></div>
-            <div><div className="header-name">LogoPlacer</div><div className="header-sub">{t("hero.sub").substring(0, 22)}…</div></div>
+            <div><div className="header-name">Logoplacers</div><div className="header-sub">{t("hero.sub").substring(0, 22)}…</div></div>
           </div>
           <div className="header-btns">
             <LangToggle />
@@ -5087,7 +5181,7 @@ function App() {
         {mode === "video" && <VideoMode
           companies={companies}
           resolveTemplateFn={resolveTemplate}
-          renderIngredients={hasImage && baseImageRef.current ? { baseImg: baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w: canvasSizeRef.current.w, h: canvasSizeRef.current.h, textLayers, symbols } : null}
+          renderIngredients={hasImage && baseImageRef.current ? { baseImg: baseImageRef.current, logoInstances, myLogoEl, myLogoPos, myLogoSize, w: canvasSizeRef.current.w, h: canvasSizeRef.current.h, textLayers, symbols, baseSlides, slideConfigs: slideConfigsRef.current, activeSlideIdx } : null}
         />}
 
         {mode === "image" && <div className="workspace">
@@ -5099,19 +5193,83 @@ function App() {
                   <input ref={baseImageInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
                   <div className="uz-icon" style={{ color: "var(--t3)" }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
                   {converting && <p className="uz-active">Converting...</p>}
-                  {!converting && baseImageName && <p className="uz-active">{baseImageName}</p>}
+                  {!converting && baseImageName && <p className="uz-active">{baseSlides.filter(Boolean).length > 1 ? `Slide ${activeSlideIdx + 1}: ${baseImageName}` : baseImageName}</p>}
                   {!converting && !baseImageName && <p className="uz-text">Click or drag here</p>}
                   <p className="uz-hint">JPG · PNG · WEBP · HEIC</p>
                 </label>
               </DropZone>
+
+              {/* Slide strip — shown when at least 1 slide loaded */}
+              {baseSlides.filter(Boolean).length > 0 && (
+                <div style={{ display: "flex", gap: 5, marginTop: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  {baseSlides.map((s, i) => s && (
+                    <button key={i} onClick={() => switchToSlide(i)}
+                      title={s.name}
+                      style={{ padding: 0, border: `1.5px solid ${i === activeSlideIdx ? "rgba(255,255,255,0.65)" : "var(--sep)"}`, borderRadius: 5, background: "none", cursor: "pointer", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                      <img src={s.img.src} style={{ width: 40, height: 27, objectFit: "cover", display: "block" }} alt={`slide ${i + 1}`} />
+                      <span style={{ position: "absolute", top: 1, left: 2, fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.85)", background: "rgba(0,0,0,0.55)", borderRadius: 2, padding: "0 2px", lineHeight: 1.4 }}>{i + 1}</span>
+                    </button>
+                  ))}
+                  {/* + add slide button — max 4 slides */}
+                  {baseSlides.filter(Boolean).length < 4 && (
+                    <>
+                      <input ref={addSlideInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
+                      <button onClick={addNewSlide} title="Add slide"
+                        style={{ width: 40, height: 27, border: "1px dashed var(--sep)", borderRadius: 5, background: "none", color: "var(--t3)", cursor: "pointer", fontSize: 18, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "border-color .15s, color .15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)"; e.currentTarget.style.color = "var(--t1)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--sep)"; e.currentTarget.style.color = "var(--t3)"; }}>
+                        +
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
               {hasImage && (
                 <button onClick={() => {
-                  const ctx = canvasRef.current?.getContext("2d");
-                  if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                  baseImageRef.current = null;
-                  setHasImage(false);
-                  setBaseImageName(null);
-                }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>{t("app.remove_image")}</button>
+                  const remaining = baseSlides.filter((s, i) => s && i !== activeSlideIdx);
+                  if (remaining.length === 0) {
+                    // Last slide — clear everything
+                    const ctx = canvasRef.current?.getContext("2d");
+                    if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                    baseImageRef.current = null;
+                    setHasImage(false);
+                    setBaseImageName(null);
+                    setBaseSlides([]);
+                    setActiveSlideIdx(0);
+                    activeSlideIdxRef.current = 0;
+                    slideConfigsRef.current = {};
+                  } else {
+                    // Remove active slide, shift remaining
+                    const newSlides = baseSlides.filter((s, i) => i !== activeSlideIdx);
+                    const newConfigs = {};
+                    Object.keys(slideConfigsRef.current).forEach(k => {
+                      const ki = Number(k);
+                      if (ki !== activeSlideIdx) newConfigs[ki > activeSlideIdx ? ki - 1 : ki] = slideConfigsRef.current[ki];
+                    });
+                    slideConfigsRef.current = newConfigs;
+                    const newIdx = Math.max(0, activeSlideIdx - 1);
+                    setBaseSlides(newSlides);
+                    setActiveSlideIdx(newIdx);
+                    activeSlideIdxRef.current = newIdx;
+                    // Switch canvas to new active slide
+                    const s = newSlides[newIdx];
+                    if (s) {
+                      baseImageRef.current = s.img;
+                      setBaseImageName(s.name);
+                      const maxW = 760, maxH = 520;
+                      let w = s.img.width, h = s.img.height;
+                      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+                      if (h > maxH) { w = Math.round(w * maxH / h); h = maxH; }
+                      canvasSizeRef.current = { w, h }; setCanvasSize({ w, h });
+                      if (canvasRef.current) { canvasRef.current.width = w; canvasRef.current.height = h; canvasRef.current.getContext("2d").drawImage(s.img, 0, 0, w, h); }
+                      const cfg = newConfigs[newIdx];
+                      if (cfg) { setLogoInstances(cfg.logoInstances); setTextLayers(cfg.textLayers); setSymbols(cfg.symbols); setCanvasBg(cfg.canvasBg); setMyLogoEl(cfg.myLogoEl); setMyLogoPos(cfg.myLogoPos); setMyLogoSize(cfg.myLogoSize); }
+                    }
+                  }
+                }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  {baseSlides.filter(Boolean).length > 1 ? `Remove slide ${activeSlideIdx + 1}` : t("app.remove_image")}
+                </button>
               )}
             </div></div>
 
@@ -5266,7 +5424,7 @@ function App() {
               ].map(m => (
                 <button key={m.key} onClick={() => setImportMode(m.key)}
                   style={{
-                    background: importMode === m.key ? "#000" : "var(--bg3)",
+                    background: importMode === m.key ? "var(--bg)" : "var(--bg4)",
                     border: `1px solid ${importMode === m.key ? "rgba(255,255,255,0.35)" : "var(--sep)"}`,
                     boxShadow: importMode === m.key ? "0 0 8px rgba(255,255,255,0.08)" : "none",
                     color: importMode === m.key ? "#fff" : "var(--t3)",

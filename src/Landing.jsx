@@ -704,8 +704,8 @@ function StepSlideshow() {
   const SLIDES = [
     {
       n: "01",
-      title: lang === "sv" ? "Ladda upp din skärmbild" : "Upload your screenshot",
-      body: lang === "sv" ? "Dra in valfri skärmbild av din produkt — dashboard, feature view eller landing page. Stöder PNG, JPG, HEIC." : "Drag in any product screenshot — dashboard, feature view or landing page. Supports PNG, JPG, HEIC.",
+      title: lang === "sv" ? "Ladda upp valfri bild" : "Upload any image",
+      body: lang === "sv" ? "Det behöver inte vara en produktdemo. En pitch-slide, en prislista, ett event-flyer — valfri bild med mottagarens logotyp får dem att tro att du lade 5 minuter på att göra den bara för dem. Stöder PNG, JPG, HEIC." : "It does not have to be a product demo. A pitch slide, pricing sheet, event flyer — any image with their logo makes them think you spent 5 minutes making it just for them. Supports PNG, JPG, HEIC.",
       icon: Icon.upload,
       visual: "upload",
     },
@@ -719,7 +719,7 @@ function StepSlideshow() {
     {
       n: "03",
       title: lang === "sv" ? "Placera logotyp och lägg till text" : "Place logo & add text",
-      body: lang === "sv" ? "Dra prospektets logotyp till exakt rätt position. Lägg till ((name)) och ((company)) textlager för djup personalisering." : "Drag the prospect's logo to the exact position. Add ((name)) and ((company)) text layers for deep personalisation.",
+      body: lang === "sv" ? "Dra prospektets logotyp till exakt rätt position. Lägg till ((name)) och ((company)) textlager för djup personalisering. Bygg upp till 4 slides per utskick." : "Drag the prospect's logo to the exact position. Add ((name)) and ((company)) text layers for deep personalisation. Build up to 4 slides per send.",
       icon: Icon.move,
       visual: "editor",
     },
@@ -732,8 +732,8 @@ function StepSlideshow() {
     },
     {
       n: "05",
-      title: lang === "sv" ? "Skicka direkt från Gmail" : "Send directly from Gmail",
-      body: lang === "sv" ? "Anslut Gmail med ett klick. 100 personaliserade mejl med unika bilder skickas med naturliga fördröjningar — under 10 minuter." : "Connect Gmail in one click. 100 personalised emails with unique images sent with natural delays — under 10 minutes.",
+      title: lang === "sv" ? "Skicka bilder eller exportera videopitch" : "Send images or export as video pitch",
+      body: lang === "sv" ? "Skicka 1–4 slides direkt som bilagor via Gmail, eller exportera som en kort videopitch med din webbkamera i hörnet. 100 personaliserade utskick på under 10 minuter." : "Send 1–4 slides as attachments via Gmail, or export as a short video pitch with your webcam in the corner. 100 personalised sends in under 10 minutes.",
       icon: Icon.send,
       visual: "send",
     },
@@ -1045,6 +1045,139 @@ function FeatureBentoCard({ icon, title, desc, idx, visible, accentColor, wide =
   );
 }
 
+// ─────────────────────────────────────────────
+// FAKE INBOX MOCKUP
+// ─────────────────────────────────────────────
+function FakeInbox({ lang }) {
+  const [activeEmail, setActiveEmail] = useState(2);
+  const sv = lang === "sv";
+
+  const LogoBadge = ({ letter, color, bg }) => (
+    <div style={{ width: 36, height: 36, borderRadius: 9, background: bg, border: `1px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color, flexShrink: 0 }}>
+      {letter}
+    </div>
+  );
+
+  const PersonalisedImage = () => (
+    <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)", background: "#0a0a14", position: "relative", width: "100%", aspectRatio: "16/7" }}>
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 7, height: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ff5f57" }} />
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ffbd2e" }} />
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#28c840" }} />
+          <div style={{ flex: 1, height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", marginLeft: 4 }} />
+        </div>
+        <div style={{ display: "flex", gap: 8, flex: 1 }}>
+          <div style={{ width: 48, display: "flex", flexDirection: "column", gap: 4 }}>
+            {[1,1,1,1,1].map((_, i) => <div key={i} style={{ height: 6, borderRadius: 3, background: i === 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)" }} />)}
+          </div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 5, background: "#1e40af", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 900, color: "#fff", flexShrink: 0, boxShadow: "0 0 10px rgba(59,130,246,0.6)" }}>N</div>
+              <div style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>Company AB</div>
+              <div style={{ marginLeft: "auto", fontSize: 7, color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.05)", padding: "1px 5px", borderRadius: 4 }}>LIVE DEMO</div>
+            </div>
+            {[80, 55, 68, 40].map((w, i) => <div key={i} style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.06)", width: `${w}%` }} />)}
+            <div style={{ display: "flex", gap: 4, marginTop: 2 }}>
+              {["#818cf8","#34d399","#fbbf24"].map((c,i) => <div key={i} style={{ flex: 1, height: 16, borderRadius: 4, background: `${c}18`, border: `1px solid ${c}30` }} />)}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ position: "absolute", bottom: 6, right: 8, fontSize: 7, color: "rgba(255,255,255,0.18)", fontWeight: 600, letterSpacing: "0.5px" }}>via Logoplacers</div>
+    </div>
+  );
+
+  const emails = [
+    { from: "Marcus H.", subject: sv ? "Har du fem minuter?" : "Do you have five minutes?", preview: sv ? "Hej, jag hittade ditt LinkedIn och tänkte..." : "Hey, I found your LinkedIn and thought...", time: "09:14", read: true, standout: false, letter: "S", color: "#666", bg: "rgba(255,255,255,0.04)" },
+    { from: "Emma K.", subject: sv ? "Möte den här veckan?" : "Meeting this week?", preview: sv ? "Vi hjälper bolag som ert att skala outbound..." : "We help companies like yours scale outbound...", time: "09:51", read: true, standout: false, letter: "G", color: "#666", bg: "rgba(255,255,255,0.04)" },
+    { from: "Felix S.", subject: sv ? "Såhär ser ert brand ut hos oss →" : "Here's how your brand looks in our platform →", preview: sv ? "Hej Johan — skapade en demobild bara för er." : "Hey Johan — made a demo image just for you.", time: "10:03", read: false, standout: true, letter: "L", color: "#fff", bg: "#000", hasImage: true },
+    { from: "David R.", subject: sv ? "Öka din pipeline med 30%" : "Increase your pipeline by 30%", preview: sv ? "Vår AI-plattform hjälper säljteam att..." : "Our AI platform helps sales teams to...", time: "11:22", read: true, standout: false, letter: "R", color: "#666", bg: "rgba(255,255,255,0.04)" },
+    { from: "Lina B.", subject: sv ? "Snabbt meddelande" : "Quick note", preview: sv ? "Jag såg att ni nyligen expanderade och..." : "I noticed you recently expanded and...", time: "12:47", read: true, standout: false, letter: "O", color: "#666", bg: "rgba(255,255,255,0.04)" },
+  ];
+
+  const active = emails[activeEmail];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 0, background: "#0a0a0a", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", maxWidth: 1140, margin: "0 auto" }}>
+
+      {/* Inbox list */}
+      <div style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.8)", flex: 1 }}>Inbox</span>
+          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>5</span>
+        </div>
+        {emails.map((e, i) => (
+          <div key={i} onClick={() => setActiveEmail(i)}
+            style={{ padding: "12px 16px", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.04)", background: activeEmail === i ? "rgba(255,255,255,0.07)" : e.standout ? "rgba(255,255,255,0.02)" : "transparent", transition: "background .15s", position: "relative" }}
+            onMouseEnter={ev => { if (activeEmail !== i) ev.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+            onMouseLeave={ev => { if (activeEmail !== i) ev.currentTarget.style.background = e.standout ? "rgba(255,255,255,0.02)" : "transparent"; }}>
+            {!e.read && <div style={{ position: "absolute", left: 5, top: "50%", transform: "translateY(-50%)", width: 5, height: 5, borderRadius: "50%", background: "#fff" }} />}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <LogoBadge letter={e.letter} color={e.color} bg={e.bg} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                  <span style={{ fontSize: 12, fontWeight: e.read ? 500 : 700, color: e.standout ? "#fff" : "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>{e.from}</span>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", flexShrink: 0 }}>{e.time}</span>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: e.standout ? 700 : 400, color: e.standout ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2 }}>{e.subject}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.preview}</div>
+              </div>
+            </div>
+            {e.standout && (
+              <div style={{ marginTop: 6, marginLeft: 46, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "2px 7px" }}>
+                <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 5px #22c55e" }} />
+                {sv ? "Personaliserad bild" : "Personalised image"}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Email preview */}
+      <div style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 18, minHeight: 460 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <LogoBadge letter={active.letter} color={active.color} bg={active.bg} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{active.from}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>{sv ? "Idag" : "Today"}, {active.time}</span>
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)" }}>{sv ? "Till" : "To"}: Johan A. &lt;j***@company.com&gt;</div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.4px", lineHeight: 1.3 }}>{active.subject}</div>
+
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.48)", lineHeight: 1.85 }}>
+          {active.standout ? (
+            <>
+              <p style={{ margin: "0 0 12px" }}>{sv ? "Hej Johan," : "Hey Johan,"}</p>
+              <p style={{ margin: "0 0 16px" }}>{sv ? "Skapade en demobild bara för er på Company AB — över hur erat varumärke hade sett ut på vår plattform. Låt oss ta ett möte!" : "Made a demo image just for you at Company AB — showing how your brand would look inside our platform. Let's book a meeting!"}</p>
+              <PersonalisedImage />
+              <p style={{ margin: "14px 0 0" }}>{sv ? "Fem minuter den här veckan?" : "Five minutes this week?"}</p>
+            </>
+          ) : (
+            <>
+              <p style={{ margin: "0 0 12px" }}>{sv ? "Hej Johan," : "Hey Johan,"}</p>
+              <p style={{ margin: "0 0 12px" }}>{active.preview}</p>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.2)", fontStyle: "italic" }}>{sv ? "[generisk säljtext fortsätter...]" : "[generic sales copy continues...]"}</p>
+            </>
+          )}
+        </div>
+
+        {active.standout && (
+          <div style={{ marginTop: "auto", padding: "11px 16px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: 10, display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 7px #22c55e", flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{sv ? "Reply rate i våra tester runt 20% — 50% av dem bokade möte." : "Reply rate in our tests ~20% — 50% of replies booked a meeting."}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 function FeaturesShowcase() {
   const darkMode = useDarkMode();
   const { lang } = useLang();
@@ -1158,77 +1291,41 @@ function FeaturesShowcase() {
         </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 3, opacity: vis ? 1 : 0, transition: "opacity .6s .2s" }}>
-        {/* Row 1 */}
-        <div className="features-row-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
-          <div style={{ background: "#111", borderRadius: "16px 4px 4px 16px", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 280 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(129,140,248,0.12)", border: "1px solid rgba(129,140,248,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{Icon.search}</div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px", color: "#fff", margin: "0 0 10px" }}>{lang === "sv" ? "Automatisk logotypdetektering" : "Automatic logo detection"}</h3>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0, maxWidth: 340 }}>{lang === "sv" ? "Skriv ett bolagsnamn — logotypen hämtas direkt. Fungerar för vilket bolag som helst i världen." : "Type a company name — logo fetched instantly. Works for any company in the world."}</p>
+      {/* ── Fake inbox mockup ── */}
+      <div style={{ opacity: vis ? 1 : 0, transition: "opacity .6s .2s" }}>
+        <FakeInbox lang={lang} /></div>
+
+      {/* ── Not just demos ── */}
+      <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }} className="features-row-2col">
+        <div style={{ background: "#111", borderRadius: "16px 4px 4px 16px", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "flex-end", minHeight: 220 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "2px", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", marginBottom: 16 }}>
+            {lang === "sv" ? "Insikt" : "Insight"}
           </div>
-          <div style={{ background: "#111", borderRadius: "4px 16px 16px 4px", padding: "32px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {[{ co: "Rocketship", domain: "rocketship.io", color: "#818cf8", done: true }, { co: "Synapse AI", domain: "synapse.ai", color: "#34d399", done: true }, { co: "Orbit Labs", domain: "orbitlabs.se", color: "#fb7185", done: true }, { co: "Stackflow", domain: "stackflow.com", color: "#fbbf24", done: false }].map((r, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "11px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${r.color}18`, border: `1px solid ${r.color}35`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: r.color, flexShrink: 0 }}>{r.co[0]}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>{r.co}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{r.domain}</div>
-                </div>
-                {r.done ? <div style={{ fontSize: 9, color: "#22c55e", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}><div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 5px #22c55e" }} />LOGO ✓</div>
-                  : <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />}
+          <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px", color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
+            {lang === "sv" ? "Det behöver inte vara en demo." : "It does not have to be a demo."}
+          </h3>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.75, margin: 0 }}>
+            {lang === "sv"
+              ? "En pitch-slide, en prislista, en eventbild — valfri bild med mottagarens logotyp och namn räcker. De ser bilden och tänker: den här säljaren la 5 minuter på att göra detta bara för mig. Det är därför de svarar."
+              : "A pitch slide, a pricing sheet, an event image — any image with their logo and name is enough. They see it and think: this person spent 5 minutes making this just for me. That is why they reply."}
+          </p>
+        </div>
+        <div style={{ background: "#111", borderRadius: "4px 16px 16px 4px", padding: "36px", display: "flex", flexDirection: "column", gap: 10, justifyContent: "center" }}>
+          {[
+            { label: lang === "sv" ? "Produktdemo" : "Product demo", icon: "▣", color: "#818cf8" },
+            { label: lang === "sv" ? "Pitch-slide" : "Pitch slide", icon: "◈", color: "#34d399" },
+            { label: lang === "sv" ? "Prislista" : "Pricing sheet", icon: "≡", color: "#fbbf24" },
+            { label: lang === "sv" ? "Event-inbjudan" : "Event invite", icon: "◎", color: "#fb7185" },
+            { label: lang === "sv" ? "Välkomstbild" : "Welcome image", icon: "✦", color: "#a78bfa" },
+          ].map((item, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+              <span style={{ fontSize: 16, color: item.color }}>{item.icon}</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{item.label}</span>
+              <div style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: `${item.color}14`, border: `1px solid ${item.color}30`, color: item.color }}>
+                {lang === "sv" ? "+ deras logotyp" : "+ their logo"}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 2 */}
-        <div className="features-row-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
-          <div style={{ background: "#0f0f0f", borderRadius: "16px 4px 4px 16px", padding: "32px", display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "14px 16px" }}>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", fontWeight: 700, letterSpacing: "1px", marginBottom: 7 }}>COMPOSE</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>Hi <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 6px", color: "#fff", fontWeight: 700 }}>((name))</span>, here's a demo for <span style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, padding: "1px 6px", color: "#fff", fontWeight: 700 }}>((company))</span></div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: 10 }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 7px #22c55e" }} />
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Gmail connected · 15–45s anti-spam delay</span>
-            </div>
-            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-1px" }}>17 / 17</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", marginTop: 2 }}>{lang === "sv" ? "mejl skickade" : "emails sent"}</div>
-            </div>
-          </div>
-          <div style={{ background: "#0f0f0f", borderRadius: "4px 16px 16px 4px", padding: "40px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>{Icon.send}</div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-1px", color: "#fff", margin: "0 0 10px" }}>{lang === "sv" ? "Skicka direkt från Gmail" : "Send directly from Gmail"}</h3>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0, maxWidth: 340 }}>{lang === "sv" ? "Anslut Gmail med ett klick. Anti-spam-fördröjningar inbyggda. 100 personaliserade mejl på under 10 minuter." : "Connect Gmail in one click. Anti-spam delays built in. 100 personalised emails in under 10 minutes."}</p>
-          </div>
-        </div>
-
-        {/* Row 3 */}
-        <div className="features-row-3col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 3 }}>
-          <div style={{ background: "#111", borderRadius: "16px 4px 4px 4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.box}</div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Bulk på sekunder" : "Bulk in seconds"}</h3>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: "0 0 14px" }}>{lang === "sv" ? "100 personaliserade demos på den tid det brukar ta att göra en." : "100 personalised demos in the time it used to take to do one."}</p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}><span style={{ fontSize: 28, fontWeight: 800, color: "#a78bfa", letterSpacing: "-1.5px" }}>{demoCount.toLocaleString()}</span><span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{lang === "sv" ? "demos skapade" : "demos created"}</span></div>
-            </div>
-          </div>
-          <div style={{ background: "#111", borderRadius: "4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(251,146,60,0.12)", border: "1px solid rgba(251,146,60,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.move}</div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Pixelperfekt placering" : "Pixel-perfect placement"}</h3>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: 0 }}>{lang === "sv" ? "Dra och placera logotyp och text exakt där du vill — varje gång." : "Drag and place logo and text exactly where you want — every time."}</p>
-            </div>
-          </div>
-          <div style={{ background: "#111", borderRadius: "4px 16px 16px 4px", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.lock}</div>
-            <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px", color: "#fff", margin: "0 0 8px" }}>{lang === "sv" ? "Säkert & privat" : "Secure & private"}</h3>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.7, margin: "0 0 14px" }}>{lang === "sv" ? "Prospektdata sparas lokalt. Gmail-token är session-only. Kontodata lagras krypterat." : "Prospect data saved locally. Gmail token is session-only. Account data stored securely."}</p>
-              <div style={{ display: "flex", gap: 5 }}>{(lang === "sv" ? ["Lokalt", "GDPR"] : ["Local only", "GDPR"]).map((tag, i) => (<div key={i} style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 100, background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.2)", color: "rgba(34,211,238,0.7)" }}>{tag}</div>))}</div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
