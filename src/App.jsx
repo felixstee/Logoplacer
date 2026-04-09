@@ -335,9 +335,10 @@ const style = `
   .screenshot-placeholder { width: 40px; height: 26px; border: 1px dashed var(--sep); border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 12px; color: var(--t4); }
   .open-link-btn { font-size: 12px; color: rgba(255,255,255,0.75); background: none; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; display: flex; align-items: center; gap: 4px; transition: opacity .15s; }
   .open-link-btn:hover { opacity: .75; }
-  .gen-btn { background: var(--brand-grad); color: #fff; border: none; font-family: inherit; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 10px rgba(255,255,255,0.15); transition: opacity .15s, box-shadow .15s; }
-  .gen-btn:disabled { background: var(--bg4); color: var(--t4); cursor: not-allowed; box-shadow: none; }
-  .gen-btn.generating { background: var(--brand-grad); animation: pulse-glow 1.5s ease infinite; }
+  .gen-btn { background: var(--bg4); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.18); font-family: inherit; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; transition: border-color .15s, color .15s; }
+  .gen-btn:hover { border-color: rgba(255,255,255,0.45); color: #fff; }
+  .gen-btn:disabled { background: var(--bg4); color: var(--t4); border-color: var(--sep); cursor: not-allowed; }
+  .gen-btn.generating { background: var(--bg4); border-color: rgba(255,255,255,0.35); animation: pulse-glow 1.5s ease infinite; }
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 2px 10px rgba(255,255,255,0.1); } 50% { box-shadow: 0 4px 20px rgba(255,255,255,0.2); } }
 
   /* ── Premium micro-animations ────────────────────────── */
@@ -1253,6 +1254,7 @@ function DropZone({ accept, onFile, children, className, style: styleProp }) {
 }
 
 function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
+  const { lang } = useLang();
   const [myVideo, setMyVideo] = useState(null);
   const [myVideoName, setMyVideoName] = useState(null);
   const [overlay, setOverlay] = useState(DEFAULT_VIDEO_OVERLAY);
@@ -1438,7 +1440,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
   return (
     <div className="video-workspace" style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "calc(100vh - 101px)", overflow: "hidden" }}>
       <div className="sidebar">
-        <span className="s-label">Your video</span>
+        <span className="s-label">{lang === "sv" ? "Din video" : "Your video"}</span>
         <div className="card" style={{ margin: "0 10px" }}>
           <div className="card-pad">
             <DropZone accept="video/*" onFile={f => { if (f.type.startsWith("video/")) { setMyVideoName(f.name); setMyVideo(f); } }} className="upload-zone" style={{}}>
@@ -1447,7 +1449,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 <div className="uz-icon" style={{ color: "var(--t3)" }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="14" height="12" rx="2.5" /><path d="M16 10l5-3v10l-5-3V10z" /></svg>
                 </div>
-                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">Click or drag video here</p>}
+                {myVideoName ? <p className="uz-active">{myVideoName}</p> : <p className="uz-text">{lang === "sv" ? "Klicka eller dra video hit" : "Click or drag video here"}</p>}
                 <p className="uz-hint">MP4 · MOV · WEBM</p>
               </label>
             </DropZone>
@@ -1457,12 +1459,12 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
         {/* ── Slides ─────────────────────────────────────────── */}
         <div className="s-row">
-          <span className="s-label">Slides ({slideCount}) · set timing</span>
+          <span className="s-label">{lang === "sv" ? `Slides (${slideCount}) · välj tid` : `Slides (${slideCount}) · set timing`}</span>
         </div>
         <div className="card" style={{ margin: "0 10px" }}>
           <div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {slideCount === 1 && baseSlides.length === 0 && (
-              <span style={{ fontSize: 11, color: "var(--t3)" }}>Add more slides in Image mode (+ button on base image)</span>
+              <span style={{ fontSize: 11, color: "var(--t3)" }}>{lang === "sv" ? "Lägg till fler slides i Bildläge (+-knappen på basbilden)" : "Add more slides in Image mode (+ button on base image)"}</span>
             )}
             {Array.from({ length: slideCount }).map((_, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1473,7 +1475,7 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                   <img src={baseSlides[i].img?.src} alt=""
                     style={{ width: 38, height: 25, objectFit: "cover", borderRadius: 4, border: "1px solid var(--sep)", flexShrink: 0 }} />
                 ) : (
-                  <span style={{ fontSize: 11, color: "var(--t3)", flex: 1 }}>from Image mode</span>
+                  <span style={{ fontSize: 11, color: "var(--t3)", flex: 1 }}>{lang === "sv" ? "från Bildläge" : "from Image mode"}</span>
                 )}
                 <input className="timing-input" type="number" min={1} max={20} value={slideDurations[i] ?? 7}
                   onChange={e => updateDuration(i, Number(e.target.value))}
@@ -1484,28 +1486,28 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
           </div>
         </div>
 
-        <span className="s-label">Intro text overlay</span>
+        <span className="s-label">{lang === "sv" ? "Intro textöverlägg" : "Intro text overlay"}</span>
         <div className="card" style={{ margin: "0 10px" }}>
           <div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <input className="inp" value={overlay.text} placeholder="((name))'s future IR"
               onChange={e => updateOverlay({ text: e.target.value })} />
             <div className="tag-btns">
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ first name</button>
-              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ company</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((name))" })}>+ {lang === "sv" ? "förnamn" : "first name"}</button>
+              <button className="tag-btn" onClick={() => updateOverlay({ text: overlay.text + "((company))" })}>+ {lang === "sv" ? "företag" : "company"}</button>
             </div>
             <div className="timing-grid">
               <div className="timing-cell">
-                <span className="timing-label">Font size</span>
+                <span className="timing-label">{lang === "sv" ? "Teckenstorlek" : "Font size"}</span>
                 <input className="timing-input" type="number" min={12} max={120} value={overlay.fontSize} onChange={e => updateOverlay({ fontSize: Number(e.target.value) })} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Font</span>
+                <span className="timing-label">{lang === "sv" ? "Typsnitt" : "Font"}</span>
                 <select className="font-select" value={overlay.fontFamily} onChange={e => updateOverlay({ fontFamily: e.target.value })} style={{ background: "var(--bg4)" }}>
                   {["Inter", "Syne", "Montserrat", "Oswald", "Bebas Neue", "Raleway", "Arial"].map(f => <option key={f}>{f}</option>)}
                 </select>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Text colour</span>
+                <span className="timing-label">{lang === "sv" ? "Textfärg" : "Text colour"}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <div className="color-swatch" style={{ background: overlay.color }}>
                     <input type="color" value={overlay.color} onChange={e => updateOverlay({ color: e.target.value })} />
@@ -1514,11 +1516,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                 </div>
               </div>
               <div className="timing-cell">
-                <span className="timing-label">BG opacity</span>
+                <span className="timing-label">{lang === "sv" ? "BG-opacitet" : "BG opacity"}</span>
                 <input type="range" min={0} max={100} value={overlay.bgOpacity} onChange={e => updateOverlay({ bgOpacity: Number(e.target.value) })} style={{ accentColor: "rgba(255,255,255,0.85)" }} />
               </div>
               <div className="timing-cell">
-                <span className="timing-label">Intro duration</span>
+                <span className="timing-label">{lang === "sv" ? "Introlängd" : "Intro duration"}</span>
                 <input className="timing-input" type="number" min={1} max={15} value={overlay.duration} onChange={e => updateOverlay({ duration: Number(e.target.value) })} />
               </div>
             </div>
@@ -1528,11 +1530,11 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
 
       <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "10px 18px", borderBottom: "0.5px solid var(--sep)", background: "var(--bg2)", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 13, color: "var(--t2)" }}>{readyCompanies.length} companies ready</span>
+          <span style={{ fontSize: 13, color: "var(--t2)" }}>{readyCompanies.length} {lang === "sv" ? "företag redo" : "companies ready"}</span>
           <button className="btn-p" style={{ marginLeft: "auto", width: "auto", padding: "8px 16px", fontSize: 13 }}
             disabled={readyCompanies.length === 0 || !myVideo || generating !== null}
             onClick={async () => { for (const c of readyCompanies) await generateVideo(c); }}>
-            Generate all ({readyCompanies.length})
+            {lang === "sv" ? `Generera alla (${readyCompanies.length})` : `Generate all (${readyCompanies.length})`}
           </button>
         </div>
 
@@ -1541,13 +1543,13 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
             {previewText}
           </div>
           <span style={{ fontSize: 11, color: "var(--t3)", marginLeft: "auto" }}>
-            {slideDurations.map((d, i) => `Slide ${i + 1}: ${d}s`).join(" · ")} = <strong style={{ color: "rgba(255,255,255,0.7)" }}>{totalSec}s</strong>
+            {slideDurations.map((d, i) => `${lang === "sv" ? "Slide" : "Slide"} ${i + 1}: ${d}s`).join(" · ")} = <strong style={{ color: "rgba(255,255,255,0.7)" }}>{totalSec}s</strong>
           </span>
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
           {readyCompanies.length === 0 && (
-            <div style={{ textAlign: "center", color: "var(--t4)", fontSize: 13, paddingTop: 40 }}>Add companies in Image mode first</div>
+            <div style={{ textAlign: "center", color: "var(--t4)", fontSize: 13, paddingTop: 40 }}>{lang === "sv" ? "Lägg till företag i Bildläge först" : "Add companies in Image mode first"}</div>
           )}
           {readyCompanies.map(c => (
             <div key={c.id} className="contact-row">
@@ -1570,30 +1572,29 @@ function VideoMode({ companies, resolveTemplateFn, renderIngredients }) {
                       v.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90vw;max-height:85vh;z-index:1000;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);background:#000;";
                       const ov = document.createElement("div"); ov.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;cursor:pointer;";
                       ov.onclick = () => { ov.remove(); v.remove(); }; document.body.append(ov, v);
-                    }}>Play</button>
+                    }}>{lang === "sv" ? "Spela" : "Play"}</button>
                     <button className="btn-s" style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => {
                       const a = document.createElement("a"); a.href = generated[c.id];
                       a.download = c.companyName.toLowerCase().replace(/\s+/g, "_") + "_video.webm"; a.click();
-                    }}>Save</button>
+                    }}>{lang === "sv" ? "Spara" : "Save"}</button>
                   </>
                 )}
                 <button className={`gen-btn${generating === c.id ? " generating" : ""}`}
                   disabled={!myVideo || generating !== null}
                   onClick={() => generateVideo(c)}>
-                  {generating === c.id ? "Creating…" : generated[c.id] ? "Redo" : "Create"}
+                  {generating === c.id ? (lang === "sv" ? "Skapar…" : "Creating…") : generated[c.id] ? (lang === "sv" ? "Gör om" : "Redo") : (lang === "sv" ? "Skapa" : "Create")}
                 </button>
               </div>
             </div>
           ))}
         </div>
-        <div className="canvas-footer">{slideCount} slide{slideCount > 1 ? "s" : ""} · {totalSec}s total · Download .webm and attach to email</div>
+        <div className="canvas-footer">{slideCount} slide{slideCount > 1 ? "s" : ""} · {totalSec}s total · {lang === "sv" ? "Ladda ner .webm och bifoga i mejl" : "Download .webm and attach to email"}</div>
       </div>
     </div>
   );
 }
 
-function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
-  return new Promise(async (resolve, reject) => {
+function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {  return new Promise(async (resolve, reject) => {
     try {
       const boundary = "MP_" + Math.random().toString(36).slice(2);
       const subjB64 = btoa(unescape(encodeURIComponent(subject)));
@@ -1638,6 +1639,49 @@ function buildGmailRaw({ to, subject, bodyHtml, attachBlob, filename }) {
           const b64 = fr.result.split(",")[1];
           res2(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, ""));
         };
+        fr.onerror = rej2;
+        fr.readAsDataURL(new Blob([bytes]));
+      });
+      resolve(b64url);
+    } catch (err) { reject(err); }
+  });
+}
+
+// Multi-attachment version — sends multiple images in one email
+function buildGmailRawMulti({ to, subject, bodyHtml, attachments }) {
+  // attachments: [{blob, filename}]
+  return new Promise(async (resolve, reject) => {
+    try {
+      const boundary = "MP_" + Math.random().toString(36).slice(2);
+      const subjB64 = btoa(unescape(encodeURIComponent(subject)));
+      const bodyB64 = btoa(unescape(encodeURIComponent(bodyHtml)));
+      const chunk76 = s => { const r = []; for (let i = 0; i < s.length; i += 76) r.push(s.slice(i, i + 76)); return r; };
+      const rawParts = [
+        `To: ${to}`,
+        `Subject: =?UTF-8?B?${subjB64}?=`,
+        "MIME-Version: 1.0",
+        `Content-Type: multipart/mixed; boundary="${boundary}"`,
+        "",
+        `--${boundary}`,
+        "Content-Type: text/html; charset=UTF-8",
+        "Content-Transfer-Encoding: base64",
+        "",
+        ...chunk76(bodyB64),
+        "",
+      ];
+      for (const { blob, filename } of attachments) {
+        const attB64 = await new Promise((res, rej) => {
+          const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej; r.readAsDataURL(blob);
+        });
+        const safe = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "_");
+        rawParts.push(`--${boundary}`, `Content-Type: image/png; name="${safe}"`, "Content-Transfer-Encoding: base64", `Content-Disposition: attachment; filename="${safe}"`, "", ...chunk76(attB64), "");
+      }
+      rawParts.push(`--${boundary}--`);
+      const raw = rawParts.join("\r\n");
+      const bytes = new TextEncoder().encode(raw);
+      const b64url = await new Promise((res2, rej2) => {
+        const fr = new FileReader();
+        fr.onload = () => { const b64 = fr.result.split(",")[1]; res2(b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+/g, "")); };
         fr.onerror = rej2;
         fr.readAsDataURL(new Blob([bytes]));
       });
@@ -2756,7 +2800,7 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
   );
 }
 
-function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcquired, onTokenExpired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
+function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedToken, onTokenAcquired, onTokenExpired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
   const t = useT();
   const { lang } = useLang();
   const [step, setStep] = useState("compose");
@@ -2860,7 +2904,7 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
       setResults(r => ({ ...r, [c.id]: "ing" }));
       try {
         const imgScale = emailSize === "compact" ? 0.6 : emailSize === "spacious" ? 2 : 1;
-        const blob = await getImageBlob(c, imgScale);
+        const multiBlobs = getAllImageBlobs ? await getAllImageBlobs(c, imgScale) : null;
         const subj = resolveStr(subject, c);
         const videoBtn = videoLink.trim()
           ? `<div style="margin:18px 0"><a href="${videoLink.trim()}" style="display:inline-block;background:#000;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600">▶ Watch demo</a></div>`
@@ -2872,8 +2916,14 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
         const emailFontSize = "15px";
         const emailLineHeight = "1.7";
         const html = `<div style="font-family:sans-serif;font-size:${emailFontSize};line-height:${emailLineHeight};color:#1a1a1a;max-width:${emailMaxWidth}">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
-        const raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
+        let raw;
+        if (multiBlobs && multiBlobs.length > 1) {
+          raw = await buildGmailRawMulti({ to: c.email, subject: subj, bodyHtml: html, attachments: multiBlobs });
+        } else {
+          const blob = await getImageBlob(c, imgScale);
+          const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
+          raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
+        }
         const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
           method: "POST",
           headers: { Authorization: `Bearer ${sessionStorage.getItem("lp_gtoken")}`, "Content-Type": "application/json" },
@@ -3014,18 +3064,18 @@ function SendModal({ companies, getImageBlob, onClose, sharedToken, onTokenAcqui
                   <span style={{ fontSize: 12, color: "var(--t2)", fontWeight: 600 }}>{sendDelayMin}–{sendDelayMax}s {lang === "sv" ? "mellan mejl" : "between emails"}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24 }}>{lang === "sv" ? "Min" : "Min"}</span>
-                  <input type="range" min={5} max={sendDelayMax - 5} step={5} value={sendDelayMin}
-                    onChange={e => setSendDelayMin(+e.target.value)}
-                    style={{ flex: 1, accentColor: "var(--blue)" }} />
-                  <span style={{ fontSize: 11, color: "var(--t4)", width: 28, textAlign: "right" }}>{sendDelayMin}s</span>
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24, flexShrink: 0 }}>{lang === "sv" ? "Min" : "Min"}</span>
+                  <input type="range" min={5} max={115} step={5} value={sendDelayMin}
+                    onChange={e => { const v = +e.target.value; setSendDelayMin(Math.min(v, sendDelayMax - 5)); }}
+                    style={{ width: 140, flexShrink: 0, accentColor: "var(--blue)" }} />
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 32, textAlign: "right", flexShrink: 0 }}>{sendDelayMin}s</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6 }}>
-                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24 }}>Max</span>
-                  <input type="range" min={sendDelayMin + 5} max={120} step={5} value={sendDelayMax}
-                    onChange={e => setSendDelayMax(+e.target.value)}
-                    style={{ flex: 1, accentColor: "var(--blue)" }} />
-                  <span style={{ fontSize: 11, color: "var(--t4)", width: 28, textAlign: "right" }}>{sendDelayMax}s</span>
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 24, flexShrink: 0 }}>Max</span>
+                  <input type="range" min={10} max={120} step={5} value={sendDelayMax}
+                    onChange={e => { const v = +e.target.value; setSendDelayMax(Math.max(v, sendDelayMin + 5)); }}
+                    style={{ width: 140, flexShrink: 0, accentColor: "var(--blue)" }} />
+                  <span style={{ fontSize: 11, color: "var(--t4)", width: 32, textAlign: "right", flexShrink: 0 }}>{sendDelayMax}s</span>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--t4)", margin: "8px 0 0", lineHeight: 1.5 }}>{lang === "sv" ? "Längre intervall minskar spamrisk. Rekommenderat: 15–45s för varma konton, 30–60s för nya konton." : "Longer intervals reduce spam risk. Recommended: 15–45s for warm accounts, 30–60s for new accounts."}</p>
               </div>
@@ -4506,7 +4556,7 @@ function App() {
   useEffect(() => {
     if (!hasImage) return;
     redrawBaseCanvas();
-  }, [hasImage]);
+  }, [hasImage, mode]);
 
   // Apply pending base image once canvas is mounted
   useEffect(() => {
@@ -5126,6 +5176,21 @@ function App() {
                   <li>{lang === "sv" ? "Mejltext och ämnesrad sparas automatiskt — de finns kvar nästa gång du öppnar Skicka." : "Email subject and body are saved automatically — they reappear next time you open Send."}</li>
                 </ul>
               </div>
+              <div style={{ marginTop: 20, padding: "14px 18px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, display: "flex", alignItems: "center", gap: 14 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--t1)", marginBottom: 2 }}>
+                    {lang === "sv" ? "Tips, guider och best practices" : "Tips, guides & best practices"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--t3)" }}>
+                    {lang === "sv" ? "Hur du skapar en bra demobild, skriver mejl som får svar och mer." : "How to build a great demo image, write emails that get replies, and more."}
+                  </div>
+                </div>
+                <a href={lang === "sv" ? "/blogg" : "/blog"} target="_blank" rel="noreferrer"
+                  style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "6px 14px", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
+                  {lang === "sv" ? "Läs bloggen" : "Read blog"} →
+                </a>
+              </div>
             </div>
           </div>
         )}
@@ -5268,7 +5333,9 @@ function App() {
                     }
                   }
                 }} style={{ marginTop: 8, width: "100%", padding: "6px 0", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.2)", borderRadius: 8, color: "#f87171", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                  {baseSlides.filter(Boolean).length > 1 ? `Remove slide ${activeSlideIdx + 1}` : t("app.remove_image")}
+                  {baseSlides.filter(Boolean).length > 1
+                    ? (lang === "sv" ? `Ta bort slide ${activeSlideIdx + 1}` : `Remove slide ${activeSlideIdx + 1}`)
+                    : t("app.remove_image")}
                 </button>
               )}
             </div></div>
@@ -5534,7 +5601,7 @@ function App() {
 
             {companies.length > 0 && (<>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 6px" }}>
-                <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} companies · {readyCount} ready</span>
+                <span style={{ fontSize: 13, color: "var(--t2)" }}>{companies.length} {lang === "sv" ? "bolag" : "companies"} · {readyCount} {lang === "sv" ? "redo" : "ready"}</span>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button className="btn-text" style={{ fontSize: 11, color: "var(--t3)" }} title="Hämta om alla loggor" onClick={() => {
                     const ids = companies.map(c => c.id);
@@ -5544,8 +5611,8 @@ function App() {
                         .then(dataUrl => { const img = new Image(); img.onload = () => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "ok", logoDataUrl: dataUrl, logoEl: img } : x)); img.src = dataUrl; })
                         .catch(() => setCompanies(cs => cs.map(x => x.id === c.id ? { ...x, status: "error" } : x)));
                     });
-                    showToast(`Hämtar om ${companies.length} loggor…`);
-                  }}>↺ Reload all</button>
+                    showToast(`${lang === "sv" ? "Hämtar om" : "Reloading"} ${companies.length} ${lang === "sv" ? "loggor…" : "logos…"}`);
+                  }}>↺ {lang === "sv" ? "Ladda om alla" : "Reload all"}</button>
                   <button className="btn-text-red" onClick={() => setCompanies([])}>{t("app.clear_all")}</button>
                 </div>
               </div>
@@ -5798,6 +5865,22 @@ function App() {
             <SendModal
               companies={companies}
               getImageBlob={getImageBlob}
+              getAllImageBlobs={async (company, scale = 1) => {
+                const slides = baseSlides.filter(Boolean);
+                if (slides.length <= 1) return null; // single slide — use normal path
+                return Promise.all(slides.map(async (sl, i) => {
+                  const cfg = slideConfigsRef.current[i] || { logoInstances, myLogoEl, myLogoPos, myLogoSize, textLayers, symbols };
+                  const { w, h } = canvasSizeRef.current;
+                  const off = renderComposite(sl.img, cfg.logoInstances, cfg.myLogoEl, cfg.myLogoPos, cfg.myLogoSize, w, h, cfg.textLayers, cfg.symbols, company.personName, company.companyName, company.logoEl, { ...canvasBg, personalisedColors, colorToReplace, brandColor: company.brandColor || null }, false, company.address || "");
+                  const exportCanvas = (() => {
+                    if (scale === 1) return off;
+                    const s = document.createElement("canvas"); s.width = Math.round(off.width * scale); s.height = Math.round(off.height * scale);
+                    s.getContext("2d").drawImage(off, 0, 0, s.width, s.height); return s;
+                  })();
+                  const blob = await new Promise((res, rej) => { const t = setTimeout(() => rej(new Error("timeout")), 10000); exportCanvas.toBlob(b => { clearTimeout(t); b ? res(b) : rej(new Error("render failed")); }, "image/png"); });
+                  return { blob, filename: `${company.companyName.toLowerCase().replace(/\s+/g, "_")}_slide${i + 1}.png` };
+                }));
+              }}
               sharedToken={gmailToken}
               onTokenAcquired={t => { setGmailToken(t); setGmailWasConnected(true); sessionStorage.setItem("lp_gtoken", t); }}
               onTokenExpired={() => { setGmailToken(null); }}

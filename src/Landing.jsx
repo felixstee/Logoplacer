@@ -1099,10 +1099,10 @@ function FakeInbox({ lang }) {
   const active = emails[activeEmail];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 0, background: "#0a0a0a", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", maxWidth: 1140, margin: "0 auto" }}>
+    <div className="fake-inbox-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 0, background: "#0a0a0a", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden", maxWidth: 1140, margin: "0 auto" }}>
 
       {/* Inbox list */}
-      <div style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="fake-inbox-list" style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.8)", flex: 1 }}>Inbox</span>
           <span style={{ fontSize: 10, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>5</span>
@@ -1135,7 +1135,7 @@ function FakeInbox({ lang }) {
       </div>
 
       {/* Email preview */}
-      <div style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 18, minHeight: 460 }}>
+      <div className="fake-inbox-preview" style={{ padding: "28px 32px", display: "flex", flexDirection: "column", gap: 18, minHeight: 460 }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
           <LogoBadge letter={active.letter} color={active.color} bg={active.bg} />
           <div style={{ flex: 1 }}>
@@ -3719,6 +3719,11 @@ export default function Landing({ onEnterApp, onOpenBlog }) {
 
         /* ── Mobile responsive ── */
         @media (max-width: 768px) {
+          /* Fake inbox */
+          .fake-inbox-grid { grid-template-columns: 1fr !important; }
+          .fake-inbox-list { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; max-height: 280px; overflow-y: auto; }
+          .fake-inbox-preview { padding: 20px 18px !important; min-height: unset !important; }
+
           /* Hero */
           .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; padding: 60px 20px 40px !important; }
           .hero-demo-card { display: block !important; max-width: 100% !important; }
