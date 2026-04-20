@@ -484,6 +484,8 @@ const style = `
   /* Upload zone hover bounce icon */
   .upload-zone:hover .uz-icon { animation: iconBounce .4s ease; }
   @keyframes iconBounce { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-4px); } 70% { transform: translateY(-1px); } }
+  @keyframes tutPulse { 0%,100% { box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 24px rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.7); } 50% { box-shadow: 0 0 0 8px rgba(255,255,255,0.06), 0 0 40px rgba(255,255,255,0.15); border-color: rgba(255,255,255,1); } }
+  @keyframes tutCardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   /* Empty state subtle pulse */
   .empty-icon { animation: emptyFloat 3s ease-in-out infinite; }
@@ -1163,7 +1165,6 @@ function TextLayerCard({ layer, idx, total, onChange, onRemove, isOpen, onToggle
             <button className="tag-btn" onClick={() => insertTag("((name))")}>+ first name</button>
             <button className="tag-btn" onClick={() => insertTag("((fullname))")}>+ full name</button>
             <button className="tag-btn" onClick={() => insertTag("((company))")}>+ company</button>
-            <button className="tag-btn" onClick={() => insertTag("((address))")}>+ address</button>
           </div>
           <div className="cg">
             <div className="cg-cell">
@@ -2800,6 +2801,424 @@ function ProductMockupModal({ getImageBlob, companies, onClose }) {
   );
 }
 
+// ─── In-App Spotlight Tutorial ────────────────────────────────────────────────
+const TUT_STEPS_SV = [
+  {
+    id: "intro",
+    target: null, // full-screen welcome card
+    title: "Välkommen till Logoplacers",
+    body: "Verktyget låter dig automatiskt lägga in mottagarens logotyp i din bild och skicka personaliserade mail via Gmail — på sekunder istället för timmar.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--bg4)", border: "1px solid var(--sep)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div style={{ flex: 1, height: 8, borderRadius: 4, background: "var(--bg4)" }} />
+          <div style={{ width: 52, height: 28, borderRadius: 6, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 30, height: 12, borderRadius: 3, background: "rgba(255,255,255,0.25)" }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["Acme Corp", "Nova AB", "Zeno Inc"].map((n, i) => (
+            <div key={i} style={{ flex: 1, background: "var(--bg4)", borderRadius: 8, padding: "8px 10px", border: "1px solid var(--sep)", display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 18, height: 18, borderRadius: 4, background: `hsl(${i*80+180},40%,45%)`, flexShrink: 0 }} />
+              <div style={{ fontSize: 10, color: "var(--t2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--green)", display: "flex", alignItems: "center", gap: 5 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          3 personaliserade bilder redo att skicka
+        </div>
+      </div>
+    ),
+    hint: null,
+  },
+  {
+    id: "lang-settings",
+    target: "tut-lang",
+    title: "Språk och inställningar",
+    body: "Byt språk med flaggknappen. Kugghjulet öppnar dina inställningar — där hittar du den här guiden igen när som helst.",
+    mockup: null,
+    hint: "top",
+  },
+  {
+    id: "upload",
+    target: "tut-upload",
+    title: "Steg 1 — Ladda upp din bild",
+    body: "Välj en bild att använda som bas. Det kan vara en produktbild, en skärmdump av din app, eller en pitch-slide. Stöder JPG, PNG, WEBP och HEIC.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, border: "2px dashed rgba(255,255,255,0.2)", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div style={{ fontSize: 12, color: "var(--t3)" }}>Klicka eller dra hit</div>
+        <div style={{ fontSize: 10, color: "var(--t4)" }}>JPG · PNG · WEBP · HEIC</div>
+      </div>
+    ),
+    hint: "right",
+  },
+  {
+    id: "canvas",
+    target: "tut-canvas",
+    title: "Steg 2 — Placera logotyp och text",
+    body: "Din bild visas här. Dra mottagarens logotyp dit du vill ha den. Lägg till textlager med ((name)) och ((company)) — de byts ut per mottagare automatiskt.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, overflow: "hidden", position: "relative", height: 110 }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }} />
+        <div style={{ position: "absolute", top: 14, left: 14, width: 44, height: 44, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "1.5px dashed rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 28, height: 20, borderRadius: 3, background: "rgba(100,200,255,0.6)" }} />
+        </div>
+        <div style={{ position: "absolute", top: 24, right: 14, fontSize: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>Acme Corp</div>
+        <div style={{ position: "absolute", bottom: 10, left: 14, fontSize: 9, color: "rgba(255,255,255,0.4)" }}>Dra för att flytta · Ctrl+scroll för att zooma</div>
+        <div style={{ position: "absolute", top: 4, left: 4, fontSize: 8, background: "rgba(96,160,250,0.85)", color: "#fff", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>Logo 1</div>
+      </div>
+    ),
+    hint: "left",
+  },
+  {
+    id: "contacts",
+    target: "tut-contacts",
+    title: "Steg 3 — Lägg till mottagare",
+    body: "Klistra in e-postadresser direkt — ett per rad räcker. Verktyget plockar ut namn och bolag automatiskt och hämtar logotypen. Prova Email only-fliken.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+        {[
+          { name: "J. Rivera", co: "Acme Corp", ok: true },
+          { name: "M. Chen", co: "Nova AB", ok: true },
+          { name: "S. Park", co: "Zeno Inc", ok: false },
+        ].map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)" }}>
+            <div style={{ width: 22, height: 22, borderRadius: 5, background: r.ok ? `hsl(${i*80+180},40%,45%)` : "var(--bg3)", border: `1px solid ${r.ok ? "transparent" : "var(--sep)"}`, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: "var(--t1)", fontWeight: 600 }}>{r.name}</div>
+              <div style={{ fontSize: 10, color: "var(--t3)" }}>{r.co}</div>
+            </div>
+            <div style={{ fontSize: 10, color: r.ok ? "var(--green)" : "var(--t4)" }}>{r.ok ? "✓ logo" : "hämtar…"}</div>
+          </div>
+        ))}
+      </div>
+    ),
+    hint: "right",
+  },
+  {
+    id: "send",
+    target: "tut-preview",
+    title: "Steg 4 — Förhandsgranska och skicka",
+    body: "Klicka Preview för att se hur bilden ser ut per mottagare. Klicka sedan Skicka, skriv din mejlmall med ((name)) och ((company)), och spara den som template — då hittar du den snabbt nästa gång.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--t1)" }}>Ämne</div>
+        <div style={{ padding: "6px 10px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)", fontSize: 11, color: "var(--t2)" }}>En personlig demo för ((company))</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--t1)", marginTop: 2 }}>Meddelande</div>
+        <div style={{ padding: "7px 10px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)", fontSize: 11, color: "var(--t2)", lineHeight: 1.6 }}>Hej ((name)),{"\n"}här är en demo vi satt ihop för ((company))…</div>
+        <div style={{ display: "flex", gap: 6, fontSize: 10 }}>
+          {["+ name", "+ company"].map(t => (
+            <div key={t} style={{ padding: "2px 8px", background: "var(--bg)", border: "1px solid var(--sep)", borderRadius: 5, color: "var(--t3)" }}>{t}</div>
+          ))}
+        </div>
+      </div>
+    ),
+    hint: "bottom",
+  },
+  {
+    id: "video",
+    target: "tut-modes",
+    title: "Steg 5 — Bild eller video?",
+    body: "I Image-läget skickar du en personaliserad stillbild. Byt till Video för att ladda upp en basvideo — då ser det ut som att du presenterar mottagarens logotyp live. Samma mottagarlista, ännu mer impact.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--sep)" }}>
+          {["Bild", "Video"].map((label, i) => (
+            <div key={i} style={{ flex: 1, padding: "8px 0", textAlign: "center", fontSize: 12, fontWeight: 600, color: i === 1 ? "var(--t1)" : "var(--t3)", borderBottom: i === 1 ? "2px solid rgba(255,255,255,0.7)" : "2px solid transparent" }}>{label}</div>
+          ))}
+        </div>
+        <div style={{ padding: "14px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"><rect x="2" y="7" width="15" height="10" rx="2"/><path d="M17 9l5-3v10l-5-3"/></svg>
+          <div style={{ fontSize: 11, color: "var(--t3)" }}>Ladda upp en basvideo</div>
+          <div style={{ fontSize: 10, color: "var(--t4)" }}>MP4 · MOV · WEBM</div>
+        </div>
+      </div>
+    ),
+    hint: "bottom",
+  },
+];
+
+const TUT_STEPS_EN = [
+  {
+    id: "intro",
+    target: null,
+    title: "Welcome to Logoplacers",
+    body: "The tool automatically places each recipient's logo into your image and sends personalised emails via Gmail — in seconds instead of hours.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--bg4)", border: "1px solid var(--sep)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div style={{ flex: 1, height: 8, borderRadius: 4, background: "var(--bg4)" }} />
+          <div style={{ width: 52, height: 28, borderRadius: 6, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 30, height: 12, borderRadius: 3, background: "rgba(255,255,255,0.25)" }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["Acme Corp", "Nova AB", "Zeno Inc"].map((n, i) => (
+            <div key={i} style={{ flex: 1, background: "var(--bg4)", borderRadius: 8, padding: "8px 10px", border: "1px solid var(--sep)", display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 18, height: 18, borderRadius: 4, background: `hsl(${i*80+180},40%,45%)`, flexShrink: 0 }} />
+              <div style={{ fontSize: 10, color: "var(--t2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--green)", display: "flex", alignItems: "center", gap: 5 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          3 personalised images ready to send
+        </div>
+      </div>
+    ),
+    hint: null,
+  },
+  {
+    id: "lang-settings",
+    target: "tut-lang",
+    title: "Language and settings",
+    body: "Switch language with the flag button. The gear icon opens your account settings — you can re-open this guide any time from there.",
+    mockup: null,
+    hint: "top",
+  },
+  {
+    id: "upload",
+    target: "tut-upload",
+    title: "Step 1 — Upload your base image",
+    body: "Pick an image to use as your base. A product screenshot, app mockup, or pitch slide all work great. Supports JPG, PNG, WEBP and HEIC.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, border: "2px dashed rgba(255,255,255,0.2)", padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div style={{ fontSize: 12, color: "var(--t3)" }}>Click or drag here</div>
+        <div style={{ fontSize: 10, color: "var(--t4)" }}>JPG · PNG · WEBP · HEIC</div>
+      </div>
+    ),
+    hint: "right",
+  },
+  {
+    id: "canvas",
+    target: "tut-canvas",
+    title: "Step 2 — Place logo and text",
+    body: "Your image shows here. Drag each recipient's logo to wherever you want it. Add text layers using ((name)) and ((company)) — swapped automatically per recipient.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, overflow: "hidden", position: "relative", height: 110 }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }} />
+        <div style={{ position: "absolute", top: 14, left: 14, width: 44, height: 44, borderRadius: 8, background: "rgba(255,255,255,0.12)", border: "1.5px dashed rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 28, height: 20, borderRadius: 3, background: "rgba(100,200,255,0.6)" }} />
+        </div>
+        <div style={{ position: "absolute", top: 24, right: 14, fontSize: 10, color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>Acme Corp</div>
+        <div style={{ position: "absolute", bottom: 10, left: 14, fontSize: 9, color: "rgba(255,255,255,0.4)" }}>Drag to move · Ctrl+scroll to zoom</div>
+        <div style={{ position: "absolute", top: 4, left: 4, fontSize: 8, background: "rgba(96,160,250,0.85)", color: "#fff", borderRadius: 3, padding: "1px 5px", fontWeight: 700 }}>Logo 1</div>
+      </div>
+    ),
+    hint: "left",
+  },
+  {
+    id: "contacts",
+    target: "tut-contacts",
+    title: "Step 3 — Add recipients",
+    body: "Paste email addresses directly — one per line is enough. The tool extracts name and company automatically and fetches the logo. Try the Email only tab first.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+        {[
+          { name: "J. Rivera", co: "Acme Corp", ok: true },
+          { name: "M. Chen", co: "Nova AB", ok: true },
+          { name: "S. Park", co: "Zeno Inc", ok: false },
+        ].map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)" }}>
+            <div style={{ width: 22, height: 22, borderRadius: 5, background: r.ok ? `hsl(${i*80+180},40%,45%)` : "var(--bg3)", border: `1px solid ${r.ok ? "transparent" : "var(--sep)"}`, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: "var(--t1)", fontWeight: 600 }}>{r.name}</div>
+              <div style={{ fontSize: 10, color: "var(--t3)" }}>{r.co}</div>
+            </div>
+            <div style={{ fontSize: 10, color: r.ok ? "var(--green)" : "var(--t4)" }}>{r.ok ? "✓ logo" : "fetching…"}</div>
+          </div>
+        ))}
+      </div>
+    ),
+    hint: "right",
+  },
+  {
+    id: "send",
+    target: "tut-preview",
+    title: "Step 4 — Preview and send",
+    body: "Click Preview to see how each recipient's image looks. Then hit Send, write your email template with ((name)) and ((company)), and save it as a template — so it's ready next time in one click.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--t1)" }}>Subject</div>
+        <div style={{ padding: "6px 10px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)", fontSize: 11, color: "var(--t2)" }}>A personal demo for ((company))</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--t1)", marginTop: 2 }}>Message</div>
+        <div style={{ padding: "7px 10px", background: "var(--bg4)", borderRadius: 7, border: "1px solid var(--sep)", fontSize: 11, color: "var(--t2)", lineHeight: 1.6 }}>Hi ((name)),{"\n"}here's a demo we put together for ((company))…</div>
+        <div style={{ display: "flex", gap: 6, fontSize: 10 }}>
+          {["+ name", "+ company"].map(t => (
+            <div key={t} style={{ padding: "2px 8px", background: "var(--bg)", border: "1px solid var(--sep)", borderRadius: 5, color: "var(--t3)" }}>{t}</div>
+          ))}
+        </div>
+      </div>
+    ),
+    hint: "bottom",
+  },
+  {
+    id: "video",
+    target: "tut-modes",
+    title: "Step 5 — Image or video?",
+    body: "Image mode sends a personalised still image. Switch to Video to upload a base clip — it looks like you're presenting the recipient's logo live. Same contact list, even more impact.",
+    mockup: (
+      <div style={{ background: "var(--bg3)", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--sep)" }}>
+          {["Image", "Video"].map((label, i) => (
+            <div key={i} style={{ flex: 1, padding: "8px 0", textAlign: "center", fontSize: 12, fontWeight: 600, color: i === 1 ? "var(--t1)" : "var(--t3)", borderBottom: i === 1 ? "2px solid rgba(255,255,255,0.7)" : "2px solid transparent" }}>{label}</div>
+          ))}
+        </div>
+        <div style={{ padding: "14px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"><rect x="2" y="7" width="15" height="10" rx="2"/><path d="M17 9l5-3v10l-5-3"/></svg>
+          <div style={{ fontSize: 11, color: "var(--t3)" }}>Upload a base video</div>
+          <div style={{ fontSize: 10, color: "var(--t4)" }}>MP4 · MOV · WEBM</div>
+        </div>
+      </div>
+    ),
+    hint: "bottom",
+  },
+];
+
+function TutorialModal({ onClose, lang }) {
+  const [step, setStep] = useState(0);
+  const [rect, setRect] = useState(null);
+  const [cardPos, setCardPos] = useState({ top: "50%", left: "50%", transform: "translate(-50%,-50%)" });
+  const [visible, setVisible] = useState(true);
+  const steps = lang === "sv" ? TUT_STEPS_SV : TUT_STEPS_EN;
+  const s = steps[step];
+  const CARD_W = 320;
+  const CARD_H_EST = 380;
+  const MARGIN = 16;
+
+  useEffect(() => {
+    if (!s.target) { setRect(null); return; }
+    const el = document.querySelector(`[data-tutorial="${s.target}"]`);
+    if (!el) { setRect(null); return; }
+    const r = el.getBoundingClientRect();
+    setRect(r);
+
+    // Position card based on hint direction
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let pos = {};
+    if (s.hint === "right") {
+      const left = Math.min(r.right + 16, vw - CARD_W - MARGIN);
+      const top = Math.max(MARGIN, Math.min(r.top, vh - CARD_H_EST - MARGIN));
+      pos = { top, left, transform: "none" };
+    } else if (s.hint === "left") {
+      const left = Math.max(MARGIN, r.left - CARD_W - 16);
+      const top = Math.max(MARGIN, Math.min(r.top, vh - CARD_H_EST - MARGIN));
+      pos = { top, left, transform: "none" };
+    } else if (s.hint === "bottom") {
+      const top = Math.min(r.bottom + 12, vh - CARD_H_EST - MARGIN);
+      const left = Math.max(MARGIN, Math.min(r.left, vw - CARD_W - MARGIN));
+      pos = { top, left, transform: "none" };
+    } else {
+      // top
+      const top = Math.max(MARGIN, r.bottom + 12);
+      const left = Math.max(MARGIN, Math.min(r.left, vw - CARD_W - MARGIN));
+      pos = { top, left, transform: "none" };
+    }
+    setCardPos(pos);
+  }, [step, s]);
+
+  const goTo = (next) => {
+    setVisible(false);
+    setTimeout(() => { setStep(next); setVisible(true); }, 140);
+  };
+
+  // Spotlight clip path
+  const spotlightStyle = rect ? {
+    background: "transparent",
+    boxShadow: `0 0 0 9999px rgba(0,0,0,0.72)`,
+    position: "fixed",
+    top: rect.top - 6,
+    left: rect.left - 6,
+    width: rect.width + 12,
+    height: rect.height + 12,
+    borderRadius: 12,
+    zIndex: 9997,
+    pointerEvents: "none",
+    animation: "tutPulse 2s ease infinite",
+    border: "1.5px solid rgba(255,255,255,0.7)",
+  } : null;
+
+  return (
+    <>
+      {/* Dim overlay — no spotlight when intro */}
+      {!rect && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 9996 }}
+          onClick={onClose} />
+      )}
+      {/* Spotlight box */}
+      {rect && <div style={spotlightStyle} />}
+
+      {/* Tutorial card */}
+      <div style={{
+        position: "fixed",
+        zIndex: 9999,
+        width: CARD_W,
+        background: "var(--bg2)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        borderRadius: 16,
+        boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+        opacity: visible ? 1 : 0,
+        transition: "opacity .14s ease",
+        animation: "tutCardIn .22s ease both",
+        ...cardPos,
+      }}>
+        {/* Step dots */}
+        <div style={{ display: "flex", gap: 5, justifyContent: "center", padding: "14px 20px 0" }}>
+          {steps.map((_, i) => (
+            <button key={i} onClick={() => goTo(i)}
+              style={{ width: i === step ? 18 : 5, height: 5, borderRadius: 3, background: i === step ? "var(--t1)" : "var(--bg4)", border: "none", cursor: "pointer", padding: 0, transition: "all .2s ease" }} />
+          ))}
+        </div>
+
+        <div style={{ padding: "12px 20px 0" }}>
+          {/* Mockup if present */}
+          {s.mockup && (
+            <div style={{ marginBottom: 12 }}>{s.mockup}</div>
+          )}
+          <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)", letterSpacing: "-0.4px", marginBottom: 5 }}>{s.title}</div>
+          <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.65 }}>{s.body}</div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "12px 20px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
+          <button onClick={onClose}
+            style={{ padding: "7px 14px", background: "none", border: "1px solid var(--sep)", borderRadius: 8, color: "var(--t3)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+            {lang === "sv" ? "Hoppa över" : "Skip"}
+          </button>
+          <div style={{ display: "flex", gap: 6 }}>
+            {step > 0 && (
+              <button onClick={() => goTo(step - 1)}
+                style={{ padding: "7px 14px", background: "none", border: "1px solid var(--sep)", borderRadius: 8, color: "var(--t2)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                ←
+              </button>
+            )}
+            {step < steps.length - 1
+              ? <button onClick={() => goTo(step + 1)}
+                  style={{ padding: "7px 18px", background: "var(--t1)", border: "none", borderRadius: 8, color: "var(--bg)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  {lang === "sv" ? "Nästa →" : "Next →"}
+                </button>
+              : <button onClick={onClose}
+                  style={{ padding: "7px 18px", background: "var(--t1)", border: "none", borderRadius: 8, color: "var(--bg)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  {lang === "sv" ? "Kör igång ✓" : "Let's go ✓"}
+                </button>
+            }
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedToken, onTokenAcquired, onTokenExpired, spendCredits, creditsBalance = 999, onUpgrade, isFreePlan = false, onAutoRemoveSent }) {
   const t = useT();
   const { lang } = useLang();
@@ -2824,6 +3243,7 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
   const subjectRef = useRef(null);
   const bodyRef = useRef(null);
   const cancelledRef = useRef(false);
+  const mouseDownOnOverlay = useRef(false); // prevents drag-from-textarea triggering close
 
   const withEmail = companies.filter(c => c.email);
 
@@ -2974,7 +3394,9 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
   const doneErr = Object.values(results).filter(v => v === "err").length;
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="modal-overlay"
+      onMouseDown={e => { mouseDownOnOverlay.current = e.target === e.currentTarget; }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnOverlay.current) onClose(); }}>
       <div className="modal-box">
         <div className="modal-head">
           <div>
@@ -3012,7 +3434,6 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((name))")}>+ name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((fullname))")}>+ full name</button>
                   <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((company))")}>+ company</button>
-                  <button className="tag-btn" onClick={() => insertAtCursor(bodyRef, setBodyText, "((address))")}>+ address</button>
                 </div>
                 <p style={{ fontSize: 11, color: "var(--t3)" }}>Personalised image attached automatically as .png per recipient.</p>
               </div>
@@ -3879,7 +4300,7 @@ function DeleteAccountModal({ sessionUser, onClose, onConfirmed }) {
   );
 }
 
-function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp, onManageSubscription, onRenewGmail, currentPlan, t, tokenExpired }) {
+function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp, onTutorial, onManageSubscription, onRenewGmail, currentPlan, t, tokenExpired }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -3934,6 +4355,13 @@ function UserMenu({ sessionUser, onSignOut, onDeleteAccount, onFeedback, onHelp,
             onMouseLeave={e => e.currentTarget.style.background = "none"}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             Help center
+          </button>
+          {/* Getting started tutorial */}
+          <button onClick={() => { setOpen(false); onTutorial && onTutorial(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            {t("lang") === "sv" ? "Kom igång-guide" : "Getting started"}
           </button>
           {/* Feedback */}
           <button onClick={() => { setOpen(false); onFeedback && onFeedback(); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", background: "none", border: "none", borderRadius: 8, color: "var(--t2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "background .1s" }}
@@ -4336,8 +4764,16 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showManual, setShowManual] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  // Auto-show tutorial on first ever login
+  useEffect(() => {
+    if (authed && !localStorage.getItem("lp_tutorial_seen")) {
+      setShowTutorial(true);
+      localStorage.setItem("lp_tutorial_seen", "1");
+    }
+  }, [authed]);
   const [showSymbols, setShowSymbols] = useState(false);
-  const [importMode, setImportMode] = useState("manual"); // "manual" | "email" | "columns" | "csv"
+  const [importMode, setImportMode] = useState("email"); // "email" | "manual" | "columns" | "csv"
   const [emailOnlyText, setEmailOnlyText] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
@@ -4992,14 +5428,16 @@ function App() {
             <div><div className="header-name">Logoplacers</div><div className="header-sub">{t("hero.sub").substring(0, 22)}…</div></div>
           </div>
           <div className="header-btns">
-            <LangToggle />
+            <span data-tutorial="tut-lang"><LangToggle /></span>
             {sessionUser?.picture && (
+              <span data-tutorial="tut-settings">
               <UserMenu
                 sessionUser={sessionUser}
                 onSignOut={() => { sessionStorage.clear(); setAuthed(false); }}
                 onDeleteAccount={() => setShowDeleteModal(true)}
                 onFeedback={() => setShowFeedback(true)}
                 onHelp={() => setShowManual(true)}
+                onTutorial={() => setShowTutorial(true)}
                 onManageSubscription={async () => {
                   const res = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: sessionUser.email }) });
                   const data = await res.json();
@@ -5025,17 +5463,18 @@ function App() {
                 t={t}
                 tokenExpired={gmailWasConnected && !gmailToken}
               />
+              </span>
             )}
             <CreditBadge credits={credits} onUpgrade={() => setShowUpgradeModal(true)} synced={creditsSynced} />
             {saving && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>{t("app.saving")}</span>}
             {!saving && sessionLoaded && <span style={{ fontSize: 11, color: "var(--t3)", display: "flex", alignItems: "center", gap: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>{t("app.saved")}</span>}
-            <button className="btn-s" disabled={!hasImage} onClick={showPreview} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+            <button data-tutorial="tut-preview" className="btn-s" disabled={!hasImage} onClick={showPreview} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                 {t("app.preview")}
               </span>
             </button>
-            <button className="btn-s" onClick={() => { sendModalEverOpened.current = true; setShowSendModal(true); }} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
+            <button data-tutorial="tut-send" className="btn-s" onClick={() => { sendModalEverOpened.current = true; setShowSendModal(true); }} style={{ display: "flex", alignItems: "center", gap: 6, background: "#000", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2L15 22 11 13 2 9l20-7z" /></svg>
               {t("app.send")}
               {companies.filter(c => c.email).length > 0 && <span style={{ fontSize: 10, background: "#000", color: "#fff", borderRadius: "100px", padding: "1px 5px", border: "1px solid rgba(255,255,255,0.2)" }}>{companies.filter(c => c.email).length}</span>}
@@ -5104,6 +5543,7 @@ function App() {
         )}
 
         {/* USER MANUAL MODAL */}
+        {showTutorial && <TutorialModal lang={lang} onClose={() => setShowTutorial(false)} />}
         {showManual && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }} onClick={() => setShowManual(false)}>
             <div style={{ background: "var(--bg2)", border: "0.5px solid var(--sep)", borderRadius: 20, width: "100%", maxWidth: 620, maxHeight: "85vh", overflow: "auto", padding: "32px 36px" }} onClick={e => e.stopPropagation()}>
@@ -5238,7 +5678,7 @@ function App() {
           </div>
         )}
 
-        <div className="mode-tabs">
+        <div className="mode-tabs" data-tutorial="tut-modes">
           <button className={`mode-tab${mode === "image" ? " active" : ""}`} onClick={() => setMode("image")}>{t("app.image_mode")}</button>
           <button className={`mode-tab${mode === "video" ? " active" : ""}`} onClick={() => setMode("video")}>{t("app.video_mode")}</button>
         </div>
@@ -5252,7 +5692,7 @@ function App() {
         {mode === "image" && <div className="workspace">
           <div className="sidebar">
             <span className="s-label">{t("app.base_image")} <span style={{ fontSize: 10, fontWeight: 700, background: "#000", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.85)", borderRadius: 4, padding: "1px 6px", marginLeft: 4 }}>{lang === "sv" ? "Steg 1" : "Step 1"}</span></span>
-            <div className="card"><div className="card-pad">
+            <div className="card" data-tutorial="tut-upload"><div className="card-pad">
               <DropZone accept="image/*" onFile={file => handleFileUpload({ target: { files: [file] } })} className="upload-zone" style={{}}>
                 <label style={{ cursor: "pointer", display: "block", textAlign: "center" }}>
                   <input ref={baseImageInputRef} type="file" accept="image/*,.heic,.heif" style={{ display: "none" }} onChange={handleFileUpload} />
@@ -5473,7 +5913,7 @@ function App() {
             </div>}
 
             <span className="s-label">{t("app.contacts")}</span>
-            <div className="card"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div className="card" data-tutorial="tut-contacts"><div className="card-pad" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {/* Step hint */}
               <div className="cd-shimmer-box">
                 {lang === "sv"
@@ -5484,8 +5924,8 @@ function App() {
               {/* ── Import mode selector ── */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 5 }}>
                 {[
-                { key: "manual", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, label: lang === "sv" ? "Manuellt" : "Manual" },
                 { key: "email",  icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>, label: lang === "sv" ? "Bara e-post" : "Email only" },
+                { key: "manual", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, label: lang === "sv" ? "Manuellt" : "Manual" },
                 { key: "columns", icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>, label: lang === "sv" ? "Kolumner" : "Columns" },
                 { key: "csv",    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>, label: "CSV" },
               ].map(m => (
@@ -5725,11 +6165,6 @@ function App() {
                                 </div>
                               )}
                             </div>
-                            <div>
-                              <div style={{ fontSize: 10, color: "var(--t4)", marginBottom: 3 }}>Adress</div>
-                              <input className="domain-inp" style={{ width: "100%" }} value={editingContact.address || ""}
-                                placeholder="Storgatan 1, Stockholm" onChange={e => setEditingContact(ec => ({ ...ec, address: e.target.value }))} />
-                            </div>
                           </div>
                           <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", marginTop: 2 }}>
                             <button className="btn-s" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => setEditingContact(null)}>Avbryt</button>
@@ -5757,7 +6192,7 @@ function App() {
           </div>
 
           <div className="canvas-area">
-            <div className="canvas-wrapper" ref={canvasWrapperRef}>
+            <div className="canvas-wrapper" data-tutorial="tut-canvas" ref={canvasWrapperRef}>
               {!hasImage ? (
                 <div className="empty-state" onClick={() => baseImageInputRef.current?.click()} style={{ cursor: "pointer" }}>
                   <div className="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg></div>
@@ -5812,7 +6247,7 @@ function App() {
               )}
             </div>
             <div className="canvas-footer" style={{ position: "relative" }}>
-              {cw > 0 ? <span>Ctrl + scroll för att zooma · dra för att flytta element</span> : t("canvas.empty")}
+              {cw > 0 ? <span>{lang === "sv" ? "Ctrl + scroll för att zooma · dra för att flytta element" : "Ctrl + scroll to zoom · drag to move elements"}</span> : t("canvas.empty")}
               {hasImage && (
                 <div className="zoom-controls">
                   <button className="zoom-btn" onClick={() => setCanvasZoom(z => Math.max(0.2, +(z - 0.1).toFixed(2)))}>−</button>
