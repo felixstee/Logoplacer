@@ -3,7 +3,7 @@ import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
 import Legal from "./Legal";
-import { loginWithMicrosoft, initMSAL, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
+import { loginWithMicrosoft, initMSAL, handleMSRedirect, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -4652,6 +4652,37 @@ function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
+
+  // ── Handle Microsoft redirect on page load ────────────────
+  useEffect(() => {
+    handleMSRedirect().then(msUser => {
+      if (!msUser) return;
+      const email = msUser.email || msUser.username;
+      const name = msUser.name;
+      sessionStorage.setItem("lp_authed", "1");
+      sessionStorage.setItem("lp_user", JSON.stringify({ name, email, picture: null }));
+      sessionStorage.setItem("lp_verified_plan", "free");
+      sbGetUser(email).then(row => {
+        if (row) {
+          let effectivePlan = row.plan;
+          if (row.trial_until && new Date(row.trial_until) > new Date()) effectivePlan = "pro";
+          sessionStorage.setItem("lp_verified_plan", effectivePlan);
+          initCredits(effectivePlan);
+        } else {
+          initCredits("free");
+          sbUpsertUser(email, { plan: "free", name });
+        }
+        refreshCredits().finally(() => setCreditsSynced(true));
+      }).catch(() => {});
+      setAuthed(true);
+      setTimeout(() => {
+        if (window.location.pathname !== "/app") {
+          window.history.pushState({}, "", "/app");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }
+      }, 50);
+    });
+  }, []);
 
   const handleLogin = async () => {
     setAuthLoading(true);
