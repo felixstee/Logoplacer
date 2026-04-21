@@ -92,22 +92,34 @@ export function getMSUser() {
 
 async function getMSToken() {
   const instance = await getMSAL();
+
+  // Always try to get account from MSAL cache first (survives page reload)
   if (!_msalAccount) {
-    const stored = sessionStorage.getItem("lp_ms_account");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const accounts = instance.getAllAccounts();
-      _msalAccount = accounts.find(a => a.homeAccountId === parsed.homeAccountId) || accounts[0];
+    const accounts = instance.getAllAccounts();
+    if (accounts.length > 0) {
+      const stored = sessionStorage.getItem("lp_ms_account");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        _msalAccount = accounts.find(a => a.homeAccountId === parsed.homeAccountId) || accounts[0];
+      } else {
+        _msalAccount = accounts[0];
+      }
     }
   }
+
   if (!_msalAccount) throw new Error("No Microsoft account — please log in again.");
+
   try {
     const result = await instance.acquireTokenSilent({ scopes: MS_SCOPES, account: _msalAccount });
     return result.accessToken;
   } catch {
-    // Silent failed — redirect to re-auth
-    await instance.acquireTokenRedirect({ scopes: MS_SCOPES, account: _msalAccount, redirectUri: MS_REDIRECT_URI });
-    throw new Error("Redirecting for re-auth...");
+    // Silent failed — use popup so user stays in app (don't redirect away during send)
+    const result = await instance.acquireTokenPopup({
+      scopes: MS_SCOPES,
+      account: _msalAccount,
+      redirectUri: MS_REDIRECT_URI,
+    });
+    return result.accessToken;
   }
 }
 
