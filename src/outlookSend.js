@@ -5,29 +5,18 @@
 // Gmail send path in App.jsx is NEVER touched by this file.
 // ─────────────────────────────────────────────────────────────
 
+import { PublicClientApplication } from "@azure/msal-browser";
+
 const MS_CLIENT_ID = "e8263b7c-da1f-45de-91ce-fd95224247ae";
 const MS_SCOPES = ["openid", "profile", "email", "Mail.Send"];
 
 let _msalInstance = null;
 let _msalAccount = null;
 
-// ── Load MSAL browser lib via CDN (same pattern as loadGIS) ──
-export function loadMSAL() {
-  return new Promise(resolve => {
-    if (window.msal) { resolve(); return; }
-    const s = document.createElement("script");
-    s.src = "https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js";
-    s.onload = resolve;
-    s.onerror = () => { console.error("Failed to load MSAL"); resolve(); };
-    document.head.appendChild(s);
-  });
-}
-
 // ── Init MSAL instance (idempotent) ──────────────────────────
 async function getMSAL() {
-  await loadMSAL();
   if (_msalInstance) return _msalInstance;
-  _msalInstance = new window.msal.PublicClientApplication({
+  _msalInstance = new PublicClientApplication({
     auth: {
       clientId: MS_CLIENT_ID,
       authority: "https://login.microsoftonline.com/common",
@@ -42,10 +31,13 @@ async function getMSAL() {
   return _msalInstance;
 }
 
-// ── Pre-init — call on mount so popup fires synchronously on click ──
+// ── Pre-init — call on mount so popup fires instantly on click ──
 export async function initMSAL() {
-  await getMSAL(); // loads script + creates instance, no popup involved
+  await getMSAL();
 }
+
+// ── loadMSAL — kept for backwards compat, no-op now ──────────
+export function loadMSAL() { return Promise.resolve(); }
 
 // ── Login popup — returns { email, name } ────────────────────
 // _msalInstance must already be set via initMSAL() on mount,
