@@ -3,7 +3,7 @@ import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
 import Legal from "./Legal";
-import { loginWithMicrosoft, initMSAL, handleMSRedirect, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
+import { loginWithMicrosoft, initMSAL, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -3658,7 +3658,7 @@ function LoginPage({ onLogin, onMicrosoftLogin, loading, gdprConsent, onSetGdprC
   const [hoveredMs, setHoveredMs] = useState(false);
 
   // Preload MSAL so popup fires instantly on click
-  useEffect(() => { initMSAL(); }, []);
+  useEffect(() => { }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -4652,15 +4652,21 @@ function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
+  const [msRedirectPending, setMsRedirectPending] = useState(
+    () => !!(window.location.search.includes("code=") && window.location.search.includes("state="))
+  );
 
   // ── Handle Microsoft redirect on page load ────────────────
   useEffect(() => {
+    if (!msRedirectPending) return;
     handleMSRedirect().then(msUser => {
+      setMsRedirectPending(false);
       if (!msUser) return;
       const email = msUser.email || msUser.username;
       const name = msUser.name;
       sessionStorage.setItem("lp_authed", "1");
       sessionStorage.setItem("lp_user", JSON.stringify({ name, email, picture: null }));
+      sessionStorage.setItem("lp_provider", "microsoft");
       sessionStorage.setItem("lp_verified_plan", "free");
       sbGetUser(email).then(row => {
         if (row) {
@@ -4675,13 +4681,9 @@ function App() {
         refreshCredits().finally(() => setCreditsSynced(true));
       }).catch(() => {});
       setAuthed(true);
-      setTimeout(() => {
-        if (window.location.pathname !== "/app") {
-          window.history.pushState({}, "", "/app");
-          window.dispatchEvent(new PopStateEvent("popstate"));
-        }
-      }, 50);
-    });
+      window.history.replaceState({}, "", "/app");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }).catch(() => setMsRedirectPending(false));
   }, []);
 
   const handleLogin = async () => {
@@ -5515,6 +5517,12 @@ function App() {
   const previewPerson = companies[0]?.personName || "Demo";
   const previewCompany = companies[0]?.companyName || "Exempelbolaget AB";
   const companyLogoEl = companies.find(c => c.status === "ok")?.logoEl || null;
+
+  if (msRedirectPending) return (
+    <div style={{ position: "fixed", inset: 0, background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontFamily: "sans-serif" }}>Signing in...</div>
+    </div>
+  );
 
   if (!authed) return <LoginPage
     onLogin={handleLogin}
