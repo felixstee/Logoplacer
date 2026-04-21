@@ -3,9 +3,15 @@ import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
 import Legal from "./Legal";
-import { loginWithMicrosoft, initMSAL, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
+import { loginWithMicrosoft, initMSAL, handleMSRedirect, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
 import JSZip from "jszip";
 import heic2any from "heic2any";
+
+// ── Sync rewrite: if returning from Microsoft auth, ensure route is /app ──
+// Runs before React mounts so the router never sees the wrong path.
+if (window.location.hash.includes("code=") && window.location.hash.includes("state=")) {
+  window.history.replaceState({}, "", "/app" + window.location.hash);
+}
 
 const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;600&family=Raleway:wght@400;600;700&family=Roboto+Condensed:wght@400;700&family=Montserrat:wght@400;600;700&family=Bebas+Neue&family=Space+Grotesk:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Barlow:wght@400;600;700&display=swap";
 
@@ -3658,7 +3664,7 @@ function LoginPage({ onLogin, onMicrosoftLogin, loading, gdprConsent, onSetGdprC
   const [hoveredMs, setHoveredMs] = useState(false);
 
   // Preload MSAL so popup fires instantly on click
-  useEffect(() => { }, []);
+  useEffect(() => { initMSAL(); }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -4652,19 +4658,15 @@ function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
-  const [msRedirectPending, setMsRedirectPending] = useState(() => {
-    const search = window.location.search;
-    const hash = window.location.hash;
-    return !!(
-      (search.includes("code=") || hash.includes("code=")) &&
-      (search.includes("state=") || hash.includes("state="))
-    );
-  });
+  const [msRedirectPending, setMsRedirectPending] = useState(
+    () => !!sessionStorage.getItem("lp_ms_logging_in")
+  );
 
   // ── Handle Microsoft redirect on page load ────────────────
   useEffect(() => {
     if (!msRedirectPending) return;
     handleMSRedirect().then(msUser => {
+      sessionStorage.removeItem("lp_ms_logging_in");
       setMsRedirectPending(false);
       if (!msUser) return;
       const email = msUser.email || msUser.username;
@@ -4688,7 +4690,10 @@ function App() {
       setAuthed(true);
       window.history.replaceState({}, "", "/app");
       window.dispatchEvent(new PopStateEvent("popstate"));
-    }).catch(() => setMsRedirectPending(false));
+    }).catch(() => {
+      sessionStorage.removeItem("lp_ms_logging_in");
+      setMsRedirectPending(false);
+    });
   }, []);
 
   const handleLogin = async () => {
@@ -5525,7 +5530,7 @@ function App() {
 
   if (msRedirectPending) return (
     <div style={{ position: "fixed", inset: 0, background: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontFamily: "sans-serif" }}>Signing in...</div>
+      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontFamily: "sans-serif" }}>Signing in with Microsoft...</div>
     </div>
   );
 

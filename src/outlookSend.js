@@ -5,14 +5,6 @@
 
 import { PublicClientApplication } from "@azure/msal-browser";
 
-// DEBUG — remove after confirming URL format
-localStorage.setItem("lp_debug_url", JSON.stringify({
-  href: window.location.href,
-  search: window.location.search,
-  hash: window.location.hash,
-  ts: Date.now()
-}));
-
 const MS_CLIENT_ID = "e8263b7c-da1f-45de-91ce-fd95224247ae";
 const MS_SCOPES = ["openid", "profile", "email", "Mail.Send"];
 const MS_REDIRECT_URI = window.location.hostname === "localhost"
