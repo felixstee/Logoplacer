@@ -2,17 +2,21 @@
 <html>
 <head><title>Authenticating...</title></head>
 <body>
-<script type="module">
-  // MSAL v5 — initialize() handles the popup redirect response automatically
-  import { PublicClientApplication } from "https://esm.sh/@azure/msal-browser@5";
-  const app = new PublicClientApplication({
-    auth: {
-      clientId: "e8263b7c-da1f-45de-91ce-fd95224247ae",
-      authority: "https://login.microsoftonline.com/common",
-      redirectUri: window.location.href.split("?")[0].split("#")[0],
-    },
-  });
-  await app.initialize();
+<script>
+// Minimal MSAL popup handler — reads hash from URL and posts to opener
+(function() {
+  // Tell the parent window MSAL can process the response
+  if (window.opener) {
+    // MSAL listens for storage events and window messages
+    // Just posting the hash back is enough for popup flow
+    try {
+      window.opener.postMessage(
+        { type: "msal:popupHashChanged", hash: window.location.hash + window.location.search },
+        window.location.origin
+      );
+    } catch(e) {}
+  }
+})();
 </script>
 </body>
 </html>
