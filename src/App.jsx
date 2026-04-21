@@ -3,6 +3,7 @@ import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
 import Legal from "./Legal";
+import { loginWithMicrosoft, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -3336,40 +3337,65 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
         const emailFontSize = "15px";
         const emailLineHeight = "1.7";
         const html = `<div style="font-family:sans-serif;font-size:${emailFontSize};line-height:${emailLineHeight};color:#1a1a1a;max-width:${emailMaxWidth}">${resolveStr(bodyText, c).replace(/\n/g, "<br>")}${videoBtn}${viralFooter}</div>`;
-        let raw;
-        if (multiBlobs && multiBlobs.length > 1) {
-          raw = await buildGmailRawMulti({ to: c.email, subject: subj, bodyHtml: html, attachments: multiBlobs });
-        } else {
-          const blob = await getImageBlob(c, imgScale);
-          const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
-          raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
-        }
-        const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${sessionStorage.getItem("lp_gtoken")}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ raw }),
-        });
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          const errMsg = errBody?.error?.message || `HTTP ${res.status}`;
-          console.error("Gmail send error:", res.status, errMsg, "for", c.email);
-          if (res.status === 401) {
-            tokenExpired = true;
-            // Clear the stale token so the header correctly shows tokenExpired
-            sessionStorage.removeItem("lp_gtoken");
-            onTokenExpired && onTokenExpired();
-            // Remove already-sent contacts so no double-send on retry
-            const sentIds = [...getSentSet()];
-            if (sentIds.length > 0) {
-              onAutoRemoveSent && onAutoRemoveSent(sentIds);
+
+        // ── Provider routing — Gmail path is completely unchanged ──
+        const provider = sessionStorage.getItem("lp_provider") || "google";
+
+        if (provider === "microsoft") {
+          // ── Outlook / Microsoft Graph send ──
+          try {
+            if (multiBlobs && multiBlobs.length > 1) {
+              await sendWithOutlook({ to: c.email, subject: subj, bodyHtml: html, attachments: multiBlobs });
+            } else {
+              const blob = await getImageBlob(c, imgScale);
+              const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
+              await sendWithOutlook({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
             }
-            sessionStorage.removeItem(SENT_KEY);
+            addToSentSet(c.id);
+            setResults(r => ({ ...r, [c.id]: "ok" }));
+          } catch (msErr) {
+            console.error("Outlook send error:", msErr.message, "for", c.email);
+            if (msErr.message === "OUTLOOK_TOKEN_EXPIRED") {
+              tokenExpired = true;
+              onTokenExpired && onTokenExpired();
+              sessionStorage.removeItem(SENT_KEY);
+            }
+            setResults(r => ({ ...r, [c.id]: "err" }));
+            setSendErrMsg(msErr.message === "OUTLOOK_TOKEN_EXPIRED" ? "Outlook session expired — please log in again." : `Error: ${msErr.message}`);
           }
-          setResults(r => ({ ...r, [c.id]: "err" }));
-          setSendErrMsg(res.status === 401 ? "Gmail session expired — reconnect below" : `Error: ${errMsg}`);
         } else {
-          addToSentSet(c.id);
-          setResults(r => ({ ...r, [c.id]: "ok" }));
+          // ── Gmail send — untouched ──
+          let raw;
+          if (multiBlobs && multiBlobs.length > 1) {
+            raw = await buildGmailRawMulti({ to: c.email, subject: subj, bodyHtml: html, attachments: multiBlobs });
+          } else {
+            const blob = await getImageBlob(c, imgScale);
+            const filename = `${c.companyName.toLowerCase().replace(/\s+/g, "_")}.png`;
+            raw = await buildGmailRaw({ to: c.email, subject: subj, bodyHtml: html, attachBlob: blob, filename });
+          }
+          const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${sessionStorage.getItem("lp_gtoken")}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ raw }),
+          });
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => ({}));
+            const errMsg = errBody?.error?.message || `HTTP ${res.status}`;
+            console.error("Gmail send error:", res.status, errMsg, "for", c.email);
+            if (res.status === 401) {
+              tokenExpired = true;
+              sessionStorage.removeItem("lp_gtoken");
+              onTokenExpired && onTokenExpired();
+              const sentIds = [...getSentSet()];
+              if (sentIds.length > 0) onAutoRemoveSent && onAutoRemoveSent(sentIds);
+              sessionStorage.removeItem(SENT_KEY);
+            }
+            setResults(r => ({ ...r, [c.id]: "err" }));
+            setSendErrMsg(res.status === 401 ? "Gmail session expired — reconnect below" : `Error: ${errMsg}`);
+          } else {
+            addToSentSet(c.id);
+            setResults(r => ({ ...r, [c.id]: "ok" }));
+          }
         }
       } catch (err) {
         console.error("Send failed for", c.email, err);
@@ -3626,7 +3652,7 @@ function LangToggle() {
   );
 }
 
-function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
+function LoginPage({ onLogin, onMicrosoftLogin, loading, gdprConsent, onSetGdprConsent }) {
   const canvasRef = useRef(null);
   const [hovered, setHovered] = useState(false);
 
@@ -3719,6 +3745,17 @@ function LoginPage({ onLogin, loading, gdprConsent, onSetGdprConsent }) {
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 11, padding: "13px 20px", borderRadius: 12, border: "none", background: (!gdprConsent || loading) ? "rgba(255,255,255,0.18)" : hovered ? "#ffffff" : "rgba(255,255,255,0.92)", color: (!gdprConsent || loading) ? "rgba(0,0,0,0.35)" : "#111", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s", boxShadow: (!gdprConsent || loading) ? "none" : hovered ? "0 0 0 2px rgba(180,160,255,0.5), 0 0 28px rgba(180,160,255,0.2), 0 8px 32px rgba(0,0,0,0.5)" : "0 4px 16px rgba(0,0,0,0.4)", transform: hovered && !loading && gdprConsent ? "translateY(-1px)" : "none" }}>
             <svg width="18" height="18" viewBox="0 0 18 18"><path fill={(!gdprConsent || loading) ? "#aaa" : "#4285F4"} d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#34A853"} d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#FBBC05"} d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" /><path fill={(!gdprConsent || loading) ? "#aaa" : "#EA4335"} d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" /></svg>
             {loading ? "Loggar in..." : gdprConsent ? "Fortsätt med Google" : "Godkänn för att fortsätta"}
+          </button>
+          {/* ── Microsoft login ── */}
+          <div style={{ width: "100%", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>eller</span>
+            <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <button onClick={onMicrosoftLogin} disabled={loading || !gdprConsent}
+            style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 11, padding: "13px 20px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: (!gdprConsent || loading) ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.75)", fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: (loading || !gdprConsent) ? "not-allowed" : "pointer", transition: "all .18s" }}>
+            <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill={(!gdprConsent || loading) ? "#555" : "#f25022"}/><rect x="11" y="1" width="9" height="9" fill={(!gdprConsent || loading) ? "#555" : "#7fba00"}/><rect x="1" y="11" width="9" height="9" fill={(!gdprConsent || loading) ? "#555" : "#00a4ef"}/><rect x="11" y="11" width="9" height="9" fill={(!gdprConsent || loading) ? "#555" : "#ffb900"}/></svg>
+            Fortsätt med Microsoft
           </button>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.16)", textAlign: "center", marginTop: -8, lineHeight: 1.6 }}>
             Vi läser aldrig din inkorg — vi skickar bara mejl <em>från</em> dig.
@@ -4680,6 +4717,42 @@ function App() {
     setAuthLoading(false);
   };
 
+  // ── Microsoft login handler ───────────────────────────────
+  const handleMicrosoftLogin = async () => {
+    setAuthLoading(true);
+    try {
+      const msUser = await loginWithMicrosoft();
+      const email = msUser.email || msUser.username;
+      const name = msUser.name;
+      sessionStorage.setItem("lp_authed", "1");
+      sessionStorage.setItem("lp_user", JSON.stringify({ name, email, picture: null }));
+      sessionStorage.setItem("lp_provider", "microsoft");
+      sessionStorage.setItem("lp_verified_plan", "free");
+      sbGetUser(email).then(row => {
+        if (row) {
+          let effectivePlan = row.plan;
+          if (row.trial_until && new Date(row.trial_until) > new Date()) effectivePlan = "pro";
+          sessionStorage.setItem("lp_verified_plan", effectivePlan);
+          initCredits(effectivePlan);
+        } else {
+          initCredits("free");
+          sbUpsertUser(email, { plan: "free", name });
+        }
+        refreshCredits().finally(() => setCreditsSynced(true));
+      }).catch(() => {});
+      setAuthed(true);
+      setTimeout(() => {
+        if (window.location.pathname !== "/app") {
+          window.history.pushState({}, "", "/app");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }
+      }, 50);
+    } catch (e) {
+      console.error("Microsoft login failed", e);
+    }
+    setAuthLoading(false);
+  };
+
   const sessionUser = JSON.parse(sessionStorage.getItem("lp_user") || "{}");
 
   // If user arrived via pricing page and is already logged in → go to Stripe
@@ -5409,6 +5482,7 @@ function App() {
 
   if (!authed) return <LoginPage
     onLogin={handleLogin}
+    onMicrosoftLogin={handleMicrosoftLogin}
     loading={authLoading}
     gdprConsent={gdprConsent}
     onSetGdprConsent={(v) => {
