@@ -3281,8 +3281,9 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
   };
 
   const sendAll = async () => {
+    const isMicrosoft = sessionStorage.getItem("lp_provider") === "microsoft";
     const currentToken = token || sessionStorage.getItem("lp_gtoken");
-    if (!currentToken) {
+    if (!isMicrosoft && !currentToken) {
       setSendErrMsg("Gmail not connected — please log out and log in again.");
       return;
     }
@@ -3291,7 +3292,7 @@ function SendModal({ companies, getImageBlob, getAllImageBlobs, onClose, sharedT
       setSendErrMsg(lang === "sv" ? "Inga mottagare valda — se till att kontakter har e-postadresser." : "No recipients selected — make sure contacts have email addresses.");
       return;
     }
-    if (!token) {
+    if (!isMicrosoft && !token) {
       setSendErrMsg(lang === "sv" ? "Gmail ej ansluten — gå tillbaka och anslut Gmail först." : "Gmail not connected — go back and connect Gmail first.");
       return;
     }
