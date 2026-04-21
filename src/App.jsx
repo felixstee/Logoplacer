@@ -4652,9 +4652,14 @@ function App() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem("lp_authed"));
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
-  const [msRedirectPending, setMsRedirectPending] = useState(
-    () => !!(window.location.search.includes("code=") && window.location.search.includes("state="))
-  );
+  const [msRedirectPending, setMsRedirectPending] = useState(() => {
+    const search = window.location.search;
+    const hash = window.location.hash;
+    return !!(
+      (search.includes("code=") || hash.includes("code=")) &&
+      (search.includes("state=") || hash.includes("state="))
+    );
+  });
 
   // ── Handle Microsoft redirect on page load ────────────────
   useEffect(() => {

@@ -61,6 +61,7 @@ export async function loginWithMicrosoft() {
   await instance.loginRedirect({
     scopes: MS_SCOPES,
     redirectUri: MS_REDIRECT_URI,
+    prompt: "select_account",
   });
   // Browser navigates away — code below never runs
 }
