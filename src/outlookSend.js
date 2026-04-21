@@ -10,7 +10,9 @@ import { PublicClientApplication } from "@azure/msal-browser";
 const MS_CLIENT_ID = "e8263b7c-da1f-45de-91ce-fd95224247ae";
 const MS_SCOPES = ["openid", "profile", "email", "Mail.Send"];
 
-let _msalInstance = null;
+const MS_REDIRECT_URI = "https://logoplacers.com/auth-redirect.html";
+const MS_REDIRECT_URI_LOCAL = "http://localhost:5173/auth-redirect.html";
+const MS_POPUP_REDIRECT = window.location.hostname === "localhost" ? MS_REDIRECT_URI_LOCAL : MS_REDIRECT_URI;
 let _msalAccount = null;
 
 // ── Init MSAL instance (idempotent) ──────────────────────────
@@ -20,7 +22,7 @@ async function getMSAL() {
     auth: {
       clientId: MS_CLIENT_ID,
       authority: "https://login.microsoftonline.com/common",
-      redirectUri: window.location.origin,
+      redirectUri: MS_POPUP_REDIRECT,
     },
     cache: {
       cacheLocation: "sessionStorage",
@@ -44,7 +46,7 @@ export async function loginWithMicrosoft() {
   if (!_msalInstance) await getMSAL();
   const result = await _msalInstance.loginPopup({
     scopes: MS_SCOPES,
-    redirectUri: `${window.location.origin}/auth-redirect.html`, // blank page — prevents app loading in popup
+    redirectUri: MS_POPUP_REDIRECT,
   });
   _msalAccount = result.account;
   const accountData = {
