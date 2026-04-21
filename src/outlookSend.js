@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// outlookSend.js — Microsoft Outlook auth + send module
+// outlookSend.js — Microsoft Outlook auth + send (MSAL v5)
 // ─────────────────────────────────────────────────────────────
 // Completely isolated from Gmail code.
 // Gmail send path in App.jsx is NEVER touched by this file.
@@ -9,43 +9,48 @@ import { PublicClientApplication } from "@azure/msal-browser";
 
 const MS_CLIENT_ID = "e8263b7c-da1f-45de-91ce-fd95224247ae";
 const MS_SCOPES = ["openid", "profile", "email", "Mail.Send"];
+const MS_POPUP_REDIRECT = window.location.hostname === "localhost"
+  ? "http://localhost:5173/auth-redirect.html"
+  : "https://logoplacers.com/auth-redirect.html";
 
-const MS_REDIRECT_URI = "https://logoplacers.com/auth-redirect.html";
-const MS_REDIRECT_URI_LOCAL = "http://localhost:5173/auth-redirect.html";
-const MS_POPUP_REDIRECT = window.location.hostname === "localhost" ? MS_REDIRECT_URI_LOCAL : MS_REDIRECT_URI;
 let _msalInstance = null;
 let _msalAccount = null;
+let _msalReady = false;
 
-// ── Init MSAL instance (idempotent) ──────────────────────────
+// ── Init MSAL instance (idempotent, v5) ──────────────────────
 async function getMSAL() {
-  if (_msalInstance) return _msalInstance;
-  _msalInstance = new PublicClientApplication({
-    auth: {
-      clientId: MS_CLIENT_ID,
-      authority: "https://login.microsoftonline.com/common",
-      redirectUri: MS_POPUP_REDIRECT,
-    },
-    cache: {
-      cacheLocation: "sessionStorage",
-      storeAuthStateInCookie: false,
-    },
-  });
+  if (_msalInstance && _msalReady) return _msalInstance;
+  if (!_msalInstance) {
+    _msalInstance = new PublicClientApplication({
+      auth: {
+        clientId: MS_CLIENT_ID,
+        authority: "https://login.microsoftonline.com/common",
+        redirectUri: MS_POPUP_REDIRECT,
+      },
+      cache: {
+        cacheLocation: "sessionStorage",
+        storeAuthStateInCookie: false,
+      },
+    });
+  }
+  // In MSAL v5, initialize() also handles any pending redirect response
   await _msalInstance.initialize();
+  _msalReady = true;
   return _msalInstance;
 }
 
-// ── Pre-init — call on mount so popup fires instantly on click ──
+// ── Pre-init on mount — wrapped so errors don't block the button ──
 export async function initMSAL() {
-  await getMSAL();
+  try { await getMSAL(); } catch (e) { console.warn("MSAL pre-init failed:", e); }
 }
 
-// ── loadMSAL — kept for backwards compat, no-op now ──────────
+// ── loadMSAL — no-op, kept for compat ────────────────────────
 export function loadMSAL() { return Promise.resolve(); }
 
 // ── Login popup — returns { email, name } ────────────────────
 export async function loginWithMicrosoft() {
-  if (!_msalInstance) await getMSAL();
-  const result = await _msalInstance.loginPopup({
+  const instance = await getMSAL();
+  const result = await instance.loginPopup({
     scopes: MS_SCOPES,
     redirectUri: MS_POPUP_REDIRECT,
   });
@@ -88,13 +93,16 @@ async function getMSToken() {
     });
     return result.accessToken;
   } catch {
-    // Silent failed — try popup (token expired)
-    const result = await instance.acquireTokenPopup({ scopes: MS_SCOPES, account: _msalAccount });
+    const result = await instance.acquireTokenPopup({
+      scopes: MS_SCOPES,
+      account: _msalAccount,
+      redirectUri: MS_POPUP_REDIRECT,
+    });
     return result.accessToken;
   }
 }
 
-// ── Convert Blob to base64 string ────────────────────────────
+// ── Convert Blob to base64 ────────────────────────────────────
 async function blobToBase64(blob) {
   const buf = await blob.arrayBuffer();
   const bytes = new Uint8Array(buf);
@@ -116,48 +124,31 @@ async function buildAttachment(blob, name, contentId) {
   };
 }
 
-// ── Main send function — mirrors Gmail send signature ─────────
-// Params match what EmailSender already prepares:
-//   { to, subject, bodyHtml, attachBlob, filename, attachments }
-// Returns true on success, throws on error.
+// ── Send via Microsoft Graph ──────────────────────────────────
 export async function sendWithOutlook({ to, subject, bodyHtml, attachBlob, filename, attachments }) {
   const token = await getMSToken();
-
   let graphAttachments = [];
-  let finalHtml = bodyHtml;
 
   if (attachments && attachments.length > 1) {
-    // Multi-image send
     graphAttachments = await Promise.all(
-      attachments.map((blob, i) => {
-        const cid = `img_${i}@logoplacers`;
-        const name = `image_${i}.png`;
-        return buildAttachment(blob, name, cid);
-      })
+      attachments.map((blob, i) => buildAttachment(blob, `image_${i}.png`, `img_${i}@logoplacers`))
     );
   } else if (attachBlob) {
-    const cid = `img_0@logoplacers`;
-    const name = filename || "image.png";
-    graphAttachments = [await buildAttachment(attachBlob, name, cid)];
+    graphAttachments = [await buildAttachment(attachBlob, filename || "image.png", "img_0@logoplacers")];
   }
-
-  const message = {
-    subject,
-    body: {
-      contentType: "HTML",
-      content: finalHtml,
-    },
-    toRecipients: [{ emailAddress: { address: to } }],
-    attachments: graphAttachments,
-  };
 
   const res = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ message, saveToSentItems: true }),
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: "HTML", content: bodyHtml },
+        toRecipients: [{ emailAddress: { address: to } }],
+        attachments: graphAttachments,
+      },
+      saveToSentItems: true,
+    }),
   });
 
   if (res.status === 401) throw new Error("OUTLOOK_TOKEN_EXPIRED");
@@ -174,4 +165,5 @@ export function logoutMicrosoft() {
   sessionStorage.removeItem("lp_ms_account");
   _msalInstance = null;
   _msalAccount = null;
+  _msalReady = false;
 }
