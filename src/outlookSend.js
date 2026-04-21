@@ -42,16 +42,23 @@ async function getMSAL() {
   return _msalInstance;
 }
 
+// ── Pre-init — call on mount so popup fires synchronously on click ──
+export async function initMSAL() {
+  await getMSAL(); // loads script + creates instance, no popup involved
+}
+
 // ── Login popup — returns { email, name } ────────────────────
+// _msalInstance must already be set via initMSAL() on mount,
+// so loginPopup fires in the same call stack as the click event.
 export async function loginWithMicrosoft() {
-  const instance = await getMSAL();
-  const result = await instance.loginPopup({ scopes: MS_SCOPES });
+  if (!_msalInstance) await getMSAL(); // fallback
+  const result = await _msalInstance.loginPopup({ scopes: MS_SCOPES });
   _msalAccount = result.account;
   const accountData = {
     homeAccountId: result.account.homeAccountId,
     username: result.account.username,
     name: result.account.name,
-    email: result.account.username, // UPN is email for personal accounts
+    email: result.account.username,
   };
   sessionStorage.setItem("lp_provider", "microsoft");
   sessionStorage.setItem("lp_ms_account", JSON.stringify(accountData));

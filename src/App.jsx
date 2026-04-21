@@ -3,7 +3,7 @@ import Landing from "./Landing";
 import Blog from "./Blog";
 import { LanguageProvider, useLang, useT } from "./i18n.jsx";
 import Legal from "./Legal";
-import { loginWithMicrosoft, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
+import { loginWithMicrosoft, initMSAL, sendWithOutlook, logoutMicrosoft } from "./outlookSend";
 import JSZip from "jszip";
 import heic2any from "heic2any";
 
@@ -3658,7 +3658,7 @@ function LoginPage({ onLogin, onMicrosoftLogin, loading, gdprConsent, onSetGdprC
   const [hoveredMs, setHoveredMs] = useState(false);
 
   // Preload MSAL so popup fires instantly on click
-  useEffect(() => { import("./outlookSend").then(m => m.loadMSAL()); }, []);
+  useEffect(() => { initMSAL(); }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
