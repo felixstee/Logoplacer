@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Authenticating...</title></head>
+<body>
+<script>
+  // This page is only loaded inside the MSAL popup window.
+  // It handles the auth response and closes itself automatically.
+  window.onload = function() {
+    // Signal to MSAL in the parent window that auth is complete
+    if (window.opener && window.opener !== window) {
+      // MSAL will pick up the hash/query params and close the popup
+    }
+  };
+</script>
+</body>
+</html>

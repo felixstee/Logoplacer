@@ -40,11 +40,12 @@ export async function initMSAL() {
 export function loadMSAL() { return Promise.resolve(); }
 
 // ── Login popup — returns { email, name } ────────────────────
-// _msalInstance must already be set via initMSAL() on mount,
-// so loginPopup fires in the same call stack as the click event.
 export async function loginWithMicrosoft() {
-  if (!_msalInstance) await getMSAL(); // fallback
-  const result = await _msalInstance.loginPopup({ scopes: MS_SCOPES });
+  if (!_msalInstance) await getMSAL();
+  const result = await _msalInstance.loginPopup({
+    scopes: MS_SCOPES,
+    redirectUri: `${window.location.origin}/auth-redirect.html`, // blank page — prevents app loading in popup
+  });
   _msalAccount = result.account;
   const accountData = {
     homeAccountId: result.account.homeAccountId,
