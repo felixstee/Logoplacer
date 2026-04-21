@@ -13,6 +13,7 @@ const MS_SCOPES = ["openid", "profile", "email", "Mail.Send"];
 const MS_REDIRECT_URI = "https://logoplacers.com/auth-redirect.html";
 const MS_REDIRECT_URI_LOCAL = "http://localhost:5173/auth-redirect.html";
 const MS_POPUP_REDIRECT = window.location.hostname === "localhost" ? MS_REDIRECT_URI_LOCAL : MS_REDIRECT_URI;
+let _msalInstance = null;
 let _msalAccount = null;
 
 // ── Init MSAL instance (idempotent) ──────────────────────────
