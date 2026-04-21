@@ -57,7 +57,17 @@ export async function handleMSRedirect() {
 
 // ── Initiates redirect to Microsoft login — browser navigates away ──
 export async function loginWithMicrosoft() {
+  // Clear any stale interaction state from previous failed attempts
+  const msalKey = `msal.interaction.status`;
+  sessionStorage.removeItem(msalKey);
+  // Also clear any MSAL keys with clientId to reset interaction
+  Object.keys(sessionStorage).forEach(k => {
+    if (k.includes("interaction.status")) sessionStorage.removeItem(k);
+  });
+
   const instance = await getMSAL();
+  // Flag in localStorage (survives navigation away)
+  localStorage.setItem("lp_ms_logging_in", "1");
   await instance.loginRedirect({
     scopes: MS_SCOPES,
     redirectUri: MS_REDIRECT_URI,

@@ -4659,14 +4659,14 @@ function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(() => !!localStorage.getItem("lp_gdpr_consent"));
   const [msRedirectPending, setMsRedirectPending] = useState(
-    () => !!sessionStorage.getItem("lp_ms_logging_in")
+    () => !!localStorage.getItem("lp_ms_logging_in")
   );
 
   // ── Handle Microsoft redirect on page load ────────────────
   useEffect(() => {
     if (!msRedirectPending) return;
     handleMSRedirect().then(msUser => {
-      sessionStorage.removeItem("lp_ms_logging_in");
+      localStorage.removeItem("lp_ms_logging_in");
       setMsRedirectPending(false);
       if (!msUser) return;
       const email = msUser.email || msUser.username;
@@ -4691,7 +4691,7 @@ function App() {
       window.history.replaceState({}, "", "/app");
       window.dispatchEvent(new PopStateEvent("popstate"));
     }).catch(() => {
-      sessionStorage.removeItem("lp_ms_logging_in");
+      localStorage.removeItem("lp_ms_logging_in");
       setMsRedirectPending(false);
     });
   }, []);
